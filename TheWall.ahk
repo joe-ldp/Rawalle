@@ -234,7 +234,7 @@ SwitchInstance(idx)
     send {Numpad%idx% down}
     sleep, %obsDelay%
     send {Numpad%idx% up}
-    WinMinimize, Fullscreen Projecto
+    WinMinimize, Fullscreen Projector
     if (wideResets)
       WinMaximize, ahk_pid %pid%
     if (fullscreen) {
