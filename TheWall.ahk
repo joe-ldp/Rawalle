@@ -1,7 +1,7 @@
-; A Multi-Instance macro for Minecraft ResetInstance
-; A publicly avalable version of "The Wall" made by jojoe77777
+; A Wall-Style Multi-Instance macro for Minecraft
 ; By Specnr
-;
+; v0.3.3
+
 #NoEnv
 #SingleInstance Force
 
@@ -13,14 +13,17 @@ SetTitleMatchMode, 2
 global rows := 3 ; Number of row on the wall scene
 global cols := 3 ; Number of columns on the wall scene
 global performanceMethod := "S" ; F = Instance Freezing, S = Settings Changing RD, N = Nothing
-global affinity := False ; A funky performance addition, enable for minor performance boost
+global affinity := True ; A funky performance addition, enable for minor performance boost
 global wideResets := True
 global fullscreen := False
 global disableTTS := False
 global resetSounds := True ; :)
+global lockSounds := True
 global countAttempts := True
+
+; Advanced settings
 global resumeDelay := 50 ; increase if instance isnt resetting (or have to press reset twice)
-global maxLoops := 20 ; increase if instance isnt resetting (or have to press reset twice)
+global maxLoops := 50 ; increase if instance isnt resetting (or have to press reset twice)
 global beforeFreezeDelay := 500 ; increase if doesnt join world
 global beforePauseDelay := 500 ; basically the delay before dynamic FPS does its thing
 global fullScreenDelay := 270 ; increse if fullscreening issues
@@ -28,11 +31,13 @@ global restartDelay := 200 ; increase if saying missing instanceNumber in .minec
 global scriptBootDelay := 6000 ; increase if instance freezes before world gen
 global obsDelay := 100 ; increase if not changing scenes in obs
 global settingsDelay := 10 ; increase if settings arent changing
+global lowBitmaskMultiplier := 0.75 ; for affinity, find a happy medium, max=1.0
+global useObsWebsocket := False ; Allows for > 9 instances (Additional setup required)
 
-; Leave as 0 if you dont want to settings reset
+; Set to 0 if you dont want to settings reset
 ; Sense and FOV may be off by 1, mess around with +-1 if you care about specifics
 global renderDistance := 18
-global FOV := 111 ; For quake pro put 111
+global FOV := 110 ; For quake pro put 110
 global mouseSensitivity := 35
 global lowRender := 5 ; For settings change performance method
 
@@ -46,11 +51,10 @@ global rawPIDs := []
 global PIDs := []
 global resetScriptTime := []
 global resetIdx := []
-global threadCount := 0
+global locked := []
 global highBitMask := (2 ** threadCount) - 1
-global lowBitMask := (2 ** Ceil(threadCount / 2)) - 1
+global lowBitMask := (2 ** Ceil(threadCount * lowBitmaskMultiplier)) - 1
 
-EnvGet, threadCount, NUMBER_OF_PROCESSORS
 if (performanceMethod == "F") {
   UnsuspendAll()
   sleep, %restartDelay%
@@ -195,11 +199,10 @@ GetAllPIDs()
   }
 }
 
-SetAffinity(pid, toSet)
-{
-  h:=DllCall("OpenProcess", "UInt", 0x001F0FFF, "Int", 0, "Int", pid)
-  DllCall( "SetProcessAffinityMask", Int, h, Int, toSet)
-  DllCall("CloseHandle", "Int", h)
+SetAffinity(pid, mask) {
+  hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
+  DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
+  DllCall("CloseHandle", "Ptr", hProc)
 }
 
 FreeMemory(pid)
@@ -241,6 +244,10 @@ ResumeInstance(pid) {
 SwitchInstance(idx)
 {
   if (idx <= instances) {
+    if (useObsWebsocket) {
+      cmd := Format("python.exe obs.py 1 {1}", idx)
+      Run, %cmd%,, Hide
+    }
     locked[idx] := false
     pid := PIDs[idx]
     if (affinity) {
@@ -256,13 +263,10 @@ SwitchInstance(idx)
       ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
       sleep, %settingsDelay%
       ResetSettings(pid, renderDistance, True)
-      ControlSend, ahk_parent, {Blind}{F3 Down}{D}{Esc}{F3 Up}, ahk_pid %pid%
+      ControlSend, ahk_parent, {Blind}{F3 Down}{D}{F3 Up}, ahk_pid %pid%
     }
     WinSet, AlwaysOnTop, On, ahk_pid %pid%
     WinSet, AlwaysOnTop, Off, ahk_pid %pid%
-    send {Numpad%idx% down}
-    sleep, %obsDelay%
-    send {Numpad%idx% up}
     WinMinimize, Fullscreen Projector
     if (wideResets)
       WinMaximize, ahk_pid %pid%
@@ -271,6 +275,11 @@ SwitchInstance(idx)
       sleep, %fullScreenDelay%
     }
     send {LButton} ; Make sure the window is activated
+    if (!useObsWebsocket) {
+      send {Numpad%idx% down}
+      sleep, %obsDelay%
+      send {Numpad%idx% up}
+    }
   }
 }
 
@@ -302,7 +311,7 @@ ExitWorld()
     }
     ToWall()
     if (performanceMethod == "S")
-      ResetSettings(pid, 5, False)
+      ResetSettings(pid, lowRender, False)
     else
       ResetSettings(pid, renderDistance)
     ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
@@ -331,9 +340,7 @@ ResetInstance(idx) {
     logFile := McDirectories[idx] . "logs\latest.log"
     If (FileExist(idleFile))
       FileDelete, %idleFile%
-    Run, reset.ahk %pid% %logFile% %maxLoops% %bfd% %idleFile% %beforePauseDelay%
-    if (resetSounds)
-      SoundPlay, reset.wav
+    Run, reset.ahk %pid% %logFile% %maxLoops% %bfd% %idleFile% %beforePauseDelay% %resetSounds%
     Critical, On
     resetScriptTime.Push(A_TickCount)
     resetIdx.Push(idx)
@@ -367,16 +374,22 @@ SetTitles() {
 
 ToWall() {
   WinActivate, Fullscreen Projector
-  send {F12 down}
-  sleep, %obsDelay%
-  send {F12 up}
+  if (useObsWebsocket) {
+    cmd := Format("python.exe obs.py 0", idx)
+    Run, %cmd%,, Hide
+  }
+  else {
+    send {F12 down}
+    sleep, %obsDelay%
+    send {F12 up}
+  }
 }
 
 ; Focus hovered instance and background reset all other instances
 FocusReset(focusInstance) {
   SwitchInstance(focusInstance)
   loop, %instances% {
-    if (A_Index != focusInstance && !locked[idx]) {
+    if (A_Index != focusInstance && !locked[A_Index]) {
       ResetInstance(A_Index)
     }
   }
@@ -392,7 +405,8 @@ ResetAll() {
 
 LockInstance(idx) {
   locked[idx] := true
-  SoundPlay, lock.wav
+  if (lockSounds)
+    SoundPlay, lock.wav
 }
 
 ; Reset your settings to preset settings preferences
@@ -403,12 +417,12 @@ ResetSettings(pid, rd, justRD:=False)
   {
     RDPresses := rd-2
     ; Reset then preset render distance to custom value with f3 shortcuts
-    ControlSend, ahk_parent, {Blind}{RShift down}{F3 down}{F 32}{F3 up}{RShift up}, ahk_pid %pid%
+    ControlSend, ahk_parent, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
     ControlSend, ahk_parent, {Blind}{F3 down}{F %RDPresses%}{F3 up}, ahk_pid %pid%
   }
   if (FOV && !justRD)
   {
-    FOVPresses := ceil((FOV-30)*1.7611)
+    FOVPresses := ceil((FOV-30)*1.763)
     ; Tab to FOV
     ControlSend, ahk_parent, {Blind}{Esc}{Tab 6}{enter}{Tab}, ahk_pid %pid%
     ; Reset then preset FOV to custom value with arrow keys
@@ -417,7 +431,7 @@ ResetSettings(pid, rd, justRD:=False)
   }
   if (mouseSensitivity && !justRD)
   {
-    SensPresses := ceil(mouseSensitivity/1.4)
+    SensPresses := ceil(mouseSensitivity/1.408)
     ; Tab to mouse sensitivity
     ControlSend, ahk_parent, {Blind}{Esc}{Tab 6}{enter}{Tab 7}{enter}{tab}{enter}{tab}, ahk_pid %pid%
     ; Reset then preset mouse sensitivity to custom value with arrow keys

@@ -1,17 +1,9 @@
 # MultiResetWall
-
-A wall-style multi-instance macro for Minecraft RSG resetting
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/specnr)
 
 ## Instructions
 
-A similar setup to [my normal multi-instance macro](https://gist.github.com/Specnr/c851a92a258dd1fdbe3eee588f3f14d8), but with a few more steps.
-
-To start, download the [latest release](https://github.com/Specnr/MultiResetWall/releases/latest), and extract the zip into a folder. Dont move the files out of the folder,
-if you need to, you can make a shortcut for TheWall.ahk and move that outside.
-
-Update the configurable variables in the macro to match your setup. :)
-
-Additionally, you need to make a new OBS scene with all your instances visible, and make an OBS hotkey to be F12 to switch to that scene.
+Watch the [NEW Multi Instance & Wall Setup Video](https://youtu.be/0xAHMW93MQw)
 
 ## Usage
 
@@ -28,7 +20,22 @@ On the Fullscreen projector, you have a few hotkeys:
 
 No longer moves worlds, it slows down the macro a lot, use [this world moving macro](https://gist.github.com/Specnr/f7a5450d932a1277fdcd6c141ad7bf6a).
 
+## OBS Websocket
+
+1) Download [Python](https://www.python.org/downloads/)
+2) Install [OBS websocket](https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/)
+3) Open up command prompt, and run this command in `pip install obs-websocket-py`
+4) Now, open up obs.py in whatever text editor you want. 
+5) For scene_name_format you want to put in whatever the prefix of all your scenes are. 
+6) For wall_scene_name, its pretty self explanetory, just put in the scene name of your wall.
+7) Now, for the password, you can put in a password if you want, and if you use it you can go to `Tools -> WebSockets Server Settings -> Enable Authentication` and then put in whatever password you want. Then you can put the same password in the password variable quotes.
+
+After that it should be working. Ping @Tech Support in the [Discord](https://discord.gg/tXxwrYw) if you have any issues.  
+
 ## Credit
 
-- Me :)
+- Me
+- The collaborators listed for minor enhancements
+- PodX12 for some minor enchancements
+- Sam Dao (real)
 - jojoe77777 for making the original wall macro

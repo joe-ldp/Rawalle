@@ -1,8 +1,12 @@
 #NoEnv
 SetKeyDelay, 0
+; v0.3.3
+
+if (%7%)
+  SoundPlay, reset.wav
 
 ControlSend, ahk_parent, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
-sleep, 100
+sleep, 1000
 while (True) {
   WinGetTitle, title, ahk_pid %1%
   if (InStr(title, " - "))
