@@ -398,12 +398,13 @@ FocusReset(focusInstance) {
 ; Reset all instances
 ResetAll() {
   loop, %instances% {
-    if (!locked[A_Index])
+    if (!locked[A_Index] && GetActiveInstanceNum() != A_Index)
       ResetInstance(A_Index)
   }
 }
 
 LockInstance(idx) {
+  if (GetActiveInstanceNum() != idx)
   locked[idx] := true
   if (lockSounds)
     SoundPlay, lock.wav
