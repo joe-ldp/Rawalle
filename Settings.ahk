@@ -14,7 +14,7 @@ global fullscreen := False
 global disableTTS := False
 global countAttempts := True
 global borderless := True
-global coopResets := True ; Use forceport and some method of forwarding port 25565
+global coopResets := False ; Use forceport and some method of forwarding port 25565
 
 ; Advanced settings
 
@@ -36,40 +36,3 @@ global renderDistance := 18
 global FOV := 110 ; For quake pro put 110
 global mouseSensitivity := 100
 global lowRender := 5 ; For settings change performance method
-
-; Hotkeys
-
-RAlt::Suspend ; Pause all macros
-NumpadHome:: ; Reload if macro locks up
-  Reload
-return
-#IfWinActive, Minecraft
-{
-  *F19:: ExitWorld() ; Reset
-
-  *NumpadAdd::ResetAll()
-
-  *NumpadDiv::LockInstance(1)
-  *NumpadMult::LockInstance(2)
-  *NumpadSub::LockInstance(3)
-  *Numpad7::LockInstance(4)
-  *Numpad8::LockInstance(5)
-  *Numpad9::LockInstance(6)
-  *Numpad4::LockInstance(7)
-  *Numpad5::LockInstance(8)
-  *Numpad6::LockInstance(9)
-  *Numpad1::LockInstance(10)
-  *Numpad2::LockInstance(11)
-  *Numpad3::LockInstance(12)
-}
-return
-NumpadIns::SetTitles()
-
-#IfWinActive, Fullscreen Projector
-{
-  *E::ResetInstance(MousePosToInstNumber())
-  *R::SwitchInstance(MousePosToInstNumber())
-  *F::FocusReset(MousePosToInstNumber())
-  *T::ResetAll()
-  +LButton::LockInstance(MousePosToInstNumber()) ; lock an instance so the above "blanket reset" functions don't reset it
-}
