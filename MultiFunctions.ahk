@@ -1,3 +1,5 @@
+; v0.4.1
+
 SetKeyDelay, 0
 
 SetTitles() {

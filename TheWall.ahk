@@ -1,6 +1,6 @@
 ; A Wall-Style Multi-Instance macro for Minecraft
 ; By Specnr, forked by Ravalle
-; v0.4.0
+; v0.4.1
 
 #NoEnv
 #SingleInstance Force
@@ -38,14 +38,14 @@ for i, mcdir in McDirectories {
     if (!FileExist(idle))
         FileAppend,,%idle%
     pid := PIDs[i]
+    if (borderless) {
+        WinSet, Style, -0xC40000, ahk_pid %pid%
+    }
     if (wideResets) {
         WinRestore, ahk_pid %pid%
         WinMove, ahk_pid %pid%,,0,0,%A_ScreenWidth%,%A_ScreenHeight%
         newHeight := Floor(A_ScreenHeight / 2.5)
         WinMove, ahk_pid %pid%,,0,0,%A_ScreenWidth%,%newHeight%
-    }
-    if (borderless) {
-        WinSet, Style, -0xC40000, ahk_pid %pid%
     }
     UnlockInstance(i)
     WinSet, AlwaysOnTop, Off, ahk_pid %pid%
@@ -63,32 +63,22 @@ if (!disableTTS)
     ComObjCreate("SAPI.SpVoice").Speak("Ready")
 
 #Persistent
-SetTimer, CheckScripts, 20
+    SetTimer, CheckScripts, 20
 return
 
 CheckScripts:
     Critical
-    if (performanceMethod == "F") {
-        toRemove := []
-        for i, rIdx in resetIdx {
-            idleCheck := McDirectories[rIdx] . "idle.tmp"
-            if (A_TickCount - resetScriptTime[i] > scriptBootDelay && FileExist(idleCheck)) {
-                SuspendInstance(PIDs[rIdx])
-                toRemove.Push(resetScriptTime[i])
-            }
-        }
-        for i, x in toRemove {
-            idx := resetScriptTime.Length()
-            while (idx) {
-                resetTime := resetScriptTime[idx]
-                if (x == resetTime) {
-                    resetScriptTime.RemoveAt(idx)
-                    resetIdx.RemoveAt(idx)
+        if (performanceMethod == "F") {
+            Loop, %instances% {
+                rIdx := A_Index
+                idleCheck := McDirectories[rIdx] . "idle.tmp"
+                if (resetIdx[rIdx] && FileExist(idleCheck) && (A_TickCount - resetScriptTime[i]) > scriptBootDelay) {
+                    SuspendInstance(PIDs[rIdx])
+                    resetScriptTime[i] := 0
+                    resetIdx[rIdx] := False
                 }
-                idx--
             }
         }
-    }
 return
 
 MousePosToInstNumber() {
@@ -106,19 +96,21 @@ SwitchInstance(idx) {
         pid := PIDs[idx]
         if (affinity) {
             for i, tmppid in PIDs {
-                if (tmppid != pid){
-                SetAffinity(tmppid, lowBitMask)
+                if (tmppid != pid) {
+                    SetAffinity(tmppid, lowBitMask)
                 }
             }
         }
         if (performanceMethod == "F")
             ResumeInstance(pid)
-        else if (performanceMethod == "S") {
+        if (unpauseOnSwitch)
             ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
+        if (performanceMethod == "S") {
             sleep, %settingsDelay%
             ResetSettings(pid, renderDistance, True)
             ControlSend, ahk_parent, {Blind}{F3 Down}{D}{F3 Up}, ahk_pid %pid%
         }
+        
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
         WinSet, AlwaysOnTop, Off, ahk_pid %pid%
         WinMinimize, Fullscreen Projector
@@ -150,13 +142,13 @@ ExitWorld()
         send {F11}
         sleep, %fullScreenDelay%
     }
-    if (idx := GetActiveInstanceNum()) > 0
-    {
+    if ((idx := GetActiveInstanceNum()) > 0) {
         ToWall()
         pid := PIDs[idx]
         if (wideResets) {
             newHeight := Floor(A_ScreenHeight / 2.5)
             WinRestore, ahk_pid %pid%
+            sleep, 20
             WinMove, ahk_pid %pid%,,0,0,%A_ScreenWidth%,%newHeight%
         }
         if (performanceMethod == "S") {
@@ -179,6 +171,7 @@ ResetInstance(idx) {
     if (idx <= instances && FileExist(idleFile)) {
         UnlockInstance(idx)
         pid := PIDs[idx]
+        
         if (performanceMethod == "F") {
             bfd := beforeFreezeDelay
             ResumeInstance(pid)
@@ -187,15 +180,20 @@ ResetInstance(idx) {
         }
         ControlSend, ahk_parent, {Blind}{Esc 2}, ahk_pid %pid%
         ; Reset
+
         logFile := McDirectories[idx] . "logs\latest.log"
         If (FileExist(idleFile))
-        FileDelete, %idleFile%
+            FileDelete, %idleFile%
+
         Run, reset.ahk %pid% %logFile% %maxLoops% %bfd% %idleFile% %beforePauseDelay% %resetSounds%
-        Critical, On
-        resetScriptTime.Push(A_TickCount)
-        resetIdx.Push(idx)
-        Critical, Off
-        
+
+        if (performanceMethod == "F") {
+            Critical, On
+            resetScriptTime[idx] := A_TickCount
+            resetIdx[idx] := True
+            Critical, Off
+        }
+
         ; Count Attempts
         if (countAttempts) {
             FileRead, WorldNumber, ATTEMPTS.txt
@@ -221,8 +219,7 @@ ToWall() {
     if (useObsWebsocket) {
         cmd := Format("python.exe obs.py 0", idx)
         Run, %cmd%,, Hide
-    }
-    else {
+    } else {
         send {F12 down}
         sleep, %obsDelay%
         send {F12 up}
@@ -250,8 +247,7 @@ ResetAll() {
 ToggleLock(idx) {
     if (locked[idx]) {
         UnlockInstance(idx)
-    }
-    else {
+    } else {
         LockInstance(idx)
     }
 }
@@ -273,38 +269,4 @@ UnlockInstance(idx) {
     ;Run, %cmd%,, Hide
 }
 
-RAlt::Suspend ; Pause all macros
-NumpadHome:: ; Reload if macro locks up
-  Reload
-return
-
-NumpadIns::SetTitles()
-
-#IfWinActive, Minecraft
-{
-  *F19:: ExitWorld() ; Reset
-
-  *NumpadAdd::ResetAll()
-
-  *NumpadDiv::LockInstance(1)
-  *NumpadMult::LockInstance(2)
-  *NumpadSub::LockInstance(3)
-  *Numpad7::LockInstance(4)
-  *Numpad8::LockInstance(5)
-  *Numpad9::LockInstance(6)
-  *Numpad4::LockInstance(7)
-  *Numpad5::LockInstance(8)
-  *Numpad6::LockInstance(9)
-  *Numpad1::LockInstance(10)
-  *Numpad2::LockInstance(11)
-  *Numpad3::LockInstance(12)
-}
-
-#IfWinActive, Fullscreen Projector
-{
-  *E::ResetInstance(MousePosToInstNumber())
-  *R::SwitchInstance(MousePosToInstNumber())
-  *F::FocusReset(MousePosToInstNumber())
-  *T::ResetAll()
-  +LButton::LockInstance(MousePosToInstNumber()) ; lock an instance so the above "blanket reset" functions don't reset it
-}
+#Include Hotkeys.ahk
