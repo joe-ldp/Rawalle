@@ -26,7 +26,9 @@ To use background resetting, I'd advise:
 - Open a windowed projector
 - Make it small, put it somewhere convenient
 - Right click it -> select stay on top
+
 To actually background reset, lock good looking instances then reset all.
+
 I'd advise messing with the default hotkeys for background resetting in Hotkeys.ahk and finding something you're comfortable with.
 (Don't worry about these being bound to numpad keys and it affecting your OBS - when the macro is running, the key presses won't affect OBS)
 
