@@ -20,6 +20,7 @@ On the Fullscreen projector, you have a few hotkeys:
 - Shift + L Mouse button: Lock instance so other "blanket reset" functions skip over it
 
 When in-game, you can reset other instances in the background:
+
 To use background resetting, I'd advise:
 - Right click on wall scene (or your verification scene) in OBS scene list
 - Open a windowed projector
