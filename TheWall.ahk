@@ -1,6 +1,6 @@
 ; A Wall-Style Multi-Instance macro for Minecraft
 ; By Specnr, forked by Ravalle
-; v0.4.1
+; v0.4.2
 
 #NoEnv
 #SingleInstance Force
@@ -57,8 +57,6 @@ if (affinity) {
     }
 }
 
-IfNotExist, %oldWorldsFolder%
-    FileCreateDir %oldWorldsFolder%
 if (!disableTTS)
     ComObjCreate("SAPI.SpVoice").Speak("Ready")
 
@@ -103,13 +101,15 @@ SwitchInstance(idx) {
         }
         if (performanceMethod == "F")
             ResumeInstance(pid)
-        if (unpauseOnSwitch)
-            ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
         if (performanceMethod == "S") {
+            ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
             sleep, %settingsDelay%
             ResetSettings(pid, renderDistance, True)
             ControlSend, ahk_parent, {Blind}{F3 Down}{D}{F3 Up}, ahk_pid %pid%
+            ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
         }
+        if (unpauseOnSwitch)
+            ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
         
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
         WinSet, AlwaysOnTop, Off, ahk_pid %pid%
@@ -120,7 +120,6 @@ SwitchInstance(idx) {
             ControlSend, ahk_parent, {Blind}{F11}, ahk_pid %pid%
             sleep, %fullScreenDelay%
         }
-        send {LButton} ; Make sure the window is activated
         if (!useObsWebsocket) {
             send {Numpad%idx% down}
             sleep, %obsDelay%
@@ -133,6 +132,7 @@ SwitchInstance(idx) {
             Sleep, 100
             ControlSend, ahk_parent, {Text}time set 0, ahk_pid %pid%
         }
+        send {LButton} ; Make sure the window is activated
     }
 }
 
@@ -143,7 +143,6 @@ ExitWorld()
         sleep, %fullScreenDelay%
     }
     if ((idx := GetActiveInstanceNum()) > 0) {
-        ToWall()
         pid := PIDs[idx]
         if (wideResets) {
             newHeight := Floor(A_ScreenHeight / 2.5)
@@ -163,6 +162,29 @@ ExitWorld()
                 SetAffinity(tmppid, highBitMask)
             }
         }
+        if (bypassWall) {
+            ToWallOrNextInstance()
+        } else {
+            ToWall()
+        }
+    }
+}
+
+ToWallOrNextInstance() {
+    minTime := A_TickCount
+    goToIdx := 0
+    for idx, lockTime in locked
+    {
+        if (lockTime && lockTime < minTime) {
+            minTime := lockTime
+            goToIdx := idx
+        }
+    }
+
+    if (goToIdx != 0) {
+        SwitchInstance(goToIdx)
+    } else {
+        ToWall()
     }
 }
 
@@ -253,7 +275,7 @@ ToggleLock(idx) {
 }
 
 LockInstance(idx) {
-    locked[idx] := True
+    locked[idx] := A_TickCount
     ;LockInstanceIndicator(idx)
     ;cmd := Format("python.exe obs.py 3 {1}", idx)
     ;Run, %cmd%,, Hide
@@ -263,7 +285,7 @@ LockInstance(idx) {
 }
 
 UnlockInstance(idx) {
-    locked[idx] := False
+    locked[idx] := 0
     ;LockInstanceIndicator(idx)
     ;cmd := Format("python.exe obs.py 2 {1}", idx)
     ;Run, %cmd%,, Hide

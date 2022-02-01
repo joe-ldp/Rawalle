@@ -1,15 +1,14 @@
-; v0.4.1
+; v0.4.2
 
 SetKeyDelay, 0
 
 SetTitles() {
-  for i, pid in PIDs {
-    WinSetTitle, ahk_pid %pid%, , Minecraft* - Instance %i%
-  }
+    for i, pid in PIDs {
+        WinSetTitle, ahk_pid %pid%, , Minecraft* - Instance %i%
+    }
 }
 
-RunHide(Command)
-{
+RunHide(Command) {
     dhw := A_DetectHiddenWindows
     DetectHiddenWindows, On
     Run, %ComSpec%,, Hide, cPid
@@ -35,8 +34,8 @@ GetMcDir(pid) {
     } else {
         strStart := RegExMatch(rawOut, "P)(?:-Djava\.library\.path=(.+?) )|(?:\""-Djava\.library.path=(.+?)\"")", strLen, 1)
         if (SubStr(rawOut, strStart+20, 1) == "=") {
-        strLen -= 1
-        strStart += 1
+            strLen -= 1
+            strStart += 1
         }
         return StrReplace(SubStr(rawOut, strStart+20, strLen-28) . ".minecraft\", "/", "\")
     }
@@ -51,8 +50,8 @@ GetInstanceTotal() {
         WinGet, pid, PID, % "ahk_id " all%A_Index%
         WinGetTitle, title, ahk_pid %pid%
         if (InStr(title, "Minecraft*")) {
-        rawPIDs[idx] := pid
-        idx += 1
+            rawPIDs[idx] := pid
+            idx += 1
         }
     }
     return rawPIDs.MaxIndex()
@@ -114,7 +113,8 @@ ResumeInstance(pid) {
 GetAllPIDs(ByRef McDirectories, ByRef PIDs, ByRef instances) {
     instances := GetInstanceTotal()
     ; Generate mcdir and order PIDs
-    Loop, %instances% {
+    Loop, %instances%
+    {
         mcdir := GetMcDir(rawPIDs[A_Index])
         if (num := GetInstanceNumberFromMcDir(mcdir)) == -1
         ExitApp
@@ -137,30 +137,27 @@ GetActiveInstanceNum() {
 
 ; Reset your settings to preset settings preferences
 ResetSettings(pid, rd, justRD := False) {
-  ; Find required presses to set FOV, sensitivity, and render distance
-  if (rd)
-  {
-    RDPresses := rd-2
-    ; Reset then preset render distance to custom value with f3 shortcuts
-    ControlSend, ahk_parent, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
-    ControlSend, ahk_parent, {Blind}{F3 down}{F %RDPresses%}{F3 up}, ahk_pid %pid%
-  }
-  if (FOV && !justRD)
-  {
-    FOVPresses := ceil((FOV-30)*1.763)
-    ; Tab to FOV
-    ControlSend, ahk_parent, {Blind}{Esc}{Tab 6}{enter}{Tab}, ahk_pid %pid%
-    ; Reset then preset FOV to custom value with arrow keys
-    ControlSend, ahk_parent, {Blind}{Left 151}, ahk_pid %pid%
-    ControlSend, ahk_parent, {Blind}{Right %FOVPresses%}{Esc}, ahk_pid %pid%
-  }
-  if (mouseSensitivity && !justRD)
-  {
-    SensPresses := ceil(mouseSensitivity/1.408)
-    ; Tab to mouse sensitivity
-    ControlSend, ahk_parent, {Blind}{Esc}{Tab 6}{enter}{Tab 7}{enter}{tab}{enter}{tab}, ahk_pid %pid%
-    ; Reset then preset mouse sensitivity to custom value with arrow keys
-    ControlSend, ahk_parent, {Blind}{Left 146}, ahk_pid %pid%
-    ControlSend, ahk_parent, {Blind}{Right %SensPresses%}{Esc 3}, ahk_pid %pid%
-  }
+    ; Find required presses to set FOV, sensitivity, and render distance
+    if (rd) {
+        RDPresses := rd-2
+        ; Reset then preset render distance to custom value with f3 shortcuts
+        ControlSend, ahk_parent, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
+        ControlSend, ahk_parent, {Blind}{F3 down}{F %RDPresses%}{F3 up}, ahk_pid %pid%
+    }
+    if (FOV && !justRD) {
+        FOVPresses := ceil((FOV-30)*1.763)
+        ; Tab to FOV
+        ControlSend, ahk_parent, {Blind}{Esc}{Tab 6}{enter}{Tab}, ahk_pid %pid%
+        ; Reset then preset FOV to custom value with arrow keys
+        ControlSend, ahk_parent, {Blind}{Left 151}, ahk_pid %pid%
+        ControlSend, ahk_parent, {Blind}{Right %FOVPresses%}{Esc}, ahk_pid %pid%
+    }
+    if (mouseSensitivity && !justRD) {
+        SensPresses := ceil(mouseSensitivity/1.408)
+        ; Tab to mouse sensitivity
+        ControlSend, ahk_parent, {Blind}{Esc}{Tab 6}{enter}{Tab 7}{enter}{tab}{enter}{tab}, ahk_pid %pid%
+        ; Reset then preset mouse sensitivity to custom value with arrow keys
+        ControlSend, ahk_parent, {Blind}{Left 146}, ahk_pid %pid%
+        ControlSend, ahk_parent, {Blind}{Right %SensPresses%}{Esc 3}, ahk_pid %pid%
+    }
 }

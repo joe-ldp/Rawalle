@@ -1,37 +1,37 @@
-; v0.4.1
+; v0.4.2
+
 #NoEnv
 SetKeyDelay, 0
 
 if (%7%)
-  SoundPlay, reset.wav
+    SoundPlay, reset.wav
 
 ControlSend, ahk_parent, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
 sleep, 1000
 while (True) {
-  WinGetTitle, title, ahk_pid %1%
-  if (InStr(title, " - "))
-    break
+    WinGetTitle, title, ahk_pid %1%
+    if (InStr(title, " - "))
+        break
 }
 
 while (True) {
-  numLines := 0
-  Loop, Read, %2%
-  {
-    numLines += 1
-  }
-  saved := False
-  Loop, Read, %2%
-  {
-    if ((numLines - A_Index) < 5)
+    numLines := 0
+    Loop, Read, %2%
     {
-      if (InStr(A_LoopReadLine, "Loaded 0") || (InStr(A_LoopReadLine, "Saving chunks for level 'ServerLevel") && InStr(A_LoopReadLine, "minecraft:the_end"))) {
-        saved := True
-        break
-      }
+        numLines += 1
     }
-  }
-  if (saved || A_Index > %3%)
-    break
+    saved := False
+    Loop, Read, %2%
+    {
+        if ((numLines - A_Index) < 5) {
+            if (InStr(A_LoopReadLine, "Loaded 0") || (InStr(A_LoopReadLine, "Saving chunks for level 'ServerLevel") && InStr(A_LoopReadLine, "minecraft:the_end"))) {
+                saved := True
+                break
+            }
+        }
+    }
+    if (saved || A_Index > %3%)
+        break
 }
 sleep, %6%
 ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %1%
