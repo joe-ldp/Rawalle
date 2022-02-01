@@ -1,4 +1,4 @@
-# MultiResetWall
+# MultiResetWall // Rawalle Variation
 Support Specnr (original macro author)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/specnr)
 
