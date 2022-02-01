@@ -1,4 +1,5 @@
 # MultiResetWall
+Support Specnr (original macro author)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/specnr)
 
 ## Instructions
@@ -18,7 +19,23 @@ On the Fullscreen projector, you have a few hotkeys:
 - T: Will reset all instances
 - Shift + L Mouse button: Lock instance so other "blanket reset" functions skip over it
 
-No longer moves worlds, it slows down the macro a lot, use [this world moving macro](https://gist.github.com/Specnr/f7a5450d932a1277fdcd6c141ad7bf6a).
+When in-game, you can reset other instances in the background:
+To use background resetting, I'd advise:
+- Right click on wall scene (or your verification scene) in OBS scene list
+- Open a windowed projector
+- Make it small, put it somewhere convenient
+- Right click it -> select stay on top
+To actually background reset, lock good looking instances then reset all.
+I'd advise messing with the default hotkeys for background resetting in Hotkeys.ahk and finding something you're comfortable with.
+(Don't worry about these being bound to numpad keys and it affecting your OBS - when the macro is running, the key presses won't affect OBS)
+
+Other extra options:
+- Borderless: Like fullscreen, but less annoying and easier for OBS to capture. May have more input lag than fullscreen, but try it out.
+- Coop resets: When enabled, the macro will open to lan (with cheats on) and type (but not send) "/time set 0" when you play an instance. I may fine tune the behaviour of this feature, let me know if you'd rather it do something slightly different.
+- Bypass wall: When enabled, when you exit a world (reset), if there are any other instances currently locked you will get sent straight to that instance, bypassing the wall entirely. I only recommend this if you're background resetting.
+- Unpause on switch: Unpause or don't unpause when you play an instance
+
+No longer moves worlds, it slows down the macro a lot. Use [this world moving macro](https://gist.github.com/Specnr/f7a5450d932a1277fdcd6c141ad7bf6a).
 
 ## OBS Websocket
 
@@ -34,8 +51,10 @@ After that it should be working. Ping @Tech Support in the [Discord](https://dis
 
 ## Credit
 
-- Me
-- The collaborators listed for minor enhancements
+- Specnr for originally authoring this macro
+- Me (Ravalle/Joe) for this fork
+- The collaborators listed on GitHub for minor enhancements
 - PodX12 for some minor enchancements
 - Sam Dao (real)
 - jojoe77777 for making the original wall macro
+- Everyone I can't list who has contributed ideas
