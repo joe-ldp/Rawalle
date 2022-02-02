@@ -161,3 +161,14 @@ ResetSettings(pid, rd, justRD := False) {
         ControlSend, ahk_parent, {Blind}{Right %SensPresses%}{Esc 3}, ahk_pid %pid%
     }
 }
+
+countResets(dir, attemptType) {
+    filename := dir . attemptType . ".txt"
+    FileRead, WorldNumber, %filename%
+    if (ErrorLevel)
+        WorldNumber = 0
+    else
+        FileDelete, %filename%
+    WorldNumber += 1
+    FileAppend, %WorldNumber%, %filename%
+}

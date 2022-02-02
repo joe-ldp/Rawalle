@@ -2,12 +2,26 @@
 
 #NoEnv
 SetKeyDelay, 0
+global 1
 
-if (%7%)
-    SoundPlay, reset.wav
+TryReset() {
+    ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %1%
+    ControlSend, ahk_parent, {Blind}{Esc}{Tab}{Enter}, ahk_pid %1%
+    Sleep, 50
+    ControlSend, ahk_parent, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
+}
 
-ControlSend, ahk_parent, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
-sleep, 1000
+resetSounds = %7%
+if (resetSounds) {
+    SoundPlay, A_ScriptDir\..\media\reset.wav
+}
+
+TryReset()
+; remove the next 2 lines of code if you are using chunkmod or worldpreview
+Sleep, 1100
+TryReset()
+
+Sleep, 1000
 while (True) {
     WinGetTitle, title, ahk_pid %1%
     if (InStr(title, " - "))
@@ -33,8 +47,9 @@ while (True) {
     if (saved || A_Index > %3%)
         break
 }
-sleep, %6%
+
+Sleep, %6%
 ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %1%
-sleep, %4%
+Sleep, %4%
 FileAppend,, %5%
 ExitApp

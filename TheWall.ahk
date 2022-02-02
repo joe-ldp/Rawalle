@@ -4,7 +4,7 @@
 
 #NoEnv
 #SingleInstance Force
-#Include MultiFunctions.ahk
+#Include %A_ScriptDir%\scripts\MultiFunctions.ahk
 #Include Settings.ahk
 
 SetKeyDelay, 0
@@ -22,6 +22,7 @@ global PIDs := []
 global resetScriptTime := []
 global resetIdx := []
 global locked := []
+global isOnWall := True
 global highBitMask := (2 ** threadCount) - 1
 global lowBitMask := (2 ** Ceil(threadCount * lowBitmaskMultiplier)) - 1
 
@@ -87,8 +88,9 @@ MousePosToInstNumber() {
 SwitchInstance(idx) {
     if (idx <= instances) {
         locked[idx] := True
+        isOnWall := False
         if (useObsWebsocket) {
-            cmd := Format("python.exe obs.py 1 {1}", idx)
+            cmd := Format("python.exe " . A_ScriptDir . "\scripts\obs.py 1 {1}", idx)
             Run, %cmd%,, Hide
         }
         pid := PIDs[idx]
@@ -103,7 +105,7 @@ SwitchInstance(idx) {
             ResumeInstance(pid)
         if (performanceMethod == "S") {
             ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
-            sleep, %settingsDelay%
+            Sleep, %settingsDelay%
             ResetSettings(pid, renderDistance, True)
             ControlSend, ahk_parent, {Blind}{F3 Down}{D}{F3 Up}, ahk_pid %pid%
             ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
@@ -118,12 +120,12 @@ SwitchInstance(idx) {
             WinMaximize, ahk_pid %pid%
         if (fullscreen) {
             ControlSend, ahk_parent, {Blind}{F11}, ahk_pid %pid%
-            sleep, %fullScreenDelay%
+            Sleep, %fullScreenDelay%
         }
         if (!useObsWebsocket) {
-            send {Numpad%idx% down}
-            sleep, %obsDelay%
-            send {Numpad%idx% up}
+            Send, {Numpad%idx% down}
+            Sleep, %obsDelay%
+            Send, {Numpad%idx% up}
         }
         if (coopResets) {
             ControlSend, ahk_parent, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
@@ -132,22 +134,22 @@ SwitchInstance(idx) {
             Sleep, 100
             ControlSend, ahk_parent, {Text}time set 0, ahk_pid %pid%
         }
-        send {LButton} ; Make sure the window is activated
+        Send, {LButton} ; Make sure the window is activated
     }
 }
 
 ExitWorld()
 {
     if (fullscreen) {
-        send {F11}
-        sleep, %fullScreenDelay%
+        Send, {F11}
+        Sleep, %fullScreenDelay%
     }
     if ((idx := GetActiveInstanceNum()) > 0) {
         pid := PIDs[idx]
         if (wideResets) {
             newHeight := Floor(A_ScreenHeight / 2.5)
             WinRestore, ahk_pid %pid%
-            sleep, 20
+            Sleep, 20
             WinMove, ahk_pid %pid%,,0,0,%A_ScreenWidth%,%newHeight%
         }
         if (performanceMethod == "S") {
@@ -155,7 +157,6 @@ ExitWorld()
         } else {
             ResetSettings(pid, renderDistance)
         }
-        ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
         ResetInstance(idx)
         if (affinity) {
             for i, tmppid in PIDs {
@@ -167,24 +168,6 @@ ExitWorld()
         } else {
             ToWall()
         }
-    }
-}
-
-ToWallOrNextInstance() {
-    minTime := A_TickCount
-    goToIdx := 0
-    for idx, lockTime in locked
-    {
-        if (lockTime && lockTime < minTime) {
-            minTime := lockTime
-            goToIdx := idx
-        }
-    }
-
-    if (goToIdx != 0) {
-        SwitchInstance(goToIdx)
-    } else {
-        ToWall()
     }
 }
 
@@ -200,14 +183,12 @@ ResetInstance(idx) {
         } else {
             bfd := 0
         }
-        ControlSend, ahk_parent, {Blind}{Esc 2}, ahk_pid %pid%
-        ; Reset
 
         logFile := McDirectories[idx] . "logs\latest.log"
         If (FileExist(idleFile))
             FileDelete, %idleFile%
-
-        Run, reset.ahk %pid% %logFile% %maxLoops% %bfd% %idleFile% %beforePauseDelay% %resetSounds%
+        
+        Run, %A_ScriptDir%\scripts\reset.ahk %pid% %logFile% %maxLoops% %bfd% %idleFile% %beforePauseDelay% %resetSounds%
 
         if (performanceMethod == "F") {
             Critical, On
@@ -216,35 +197,44 @@ ResetInstance(idx) {
             Critical, Off
         }
 
-        ; Count Attempts
         if (countAttempts) {
-            FileRead, WorldNumber, ATTEMPTS.txt
-            if (ErrorLevel)
-                WorldNumber = 0
-            else
-                FileDelete, ATTEMPTS.txt
-            WorldNumber += 1
-            FileAppend, %WorldNumber%, ATTEMPTS.txt
-            FileRead, WorldNumber, ATTEMPTS_DAY.txt
-            if (ErrorLevel)
-                WorldNumber = 0
-            else
-                FileDelete, ATTEMPTS_DAY.txt
-            WorldNumber += 1
-            FileAppend, %WorldNumber%, ATTEMPTS_DAY.txt
+            attemptsDir := A_ScriptDir . "\attempts\"
+            countResets(attemptsDir, "ATTEMPTS")
+            countResets(attemptsDir, "ATTEMPTS_DAY")
+            if (!isOnWall)
+                countResets(attemptsDir, "BG")
+            }
         }
+}
+
+ToWallOrNextInstance() {
+    minTime := A_TickCount
+    goToIdx := 0
+    for idx, lockTime in locked
+    {
+        if (lockTime && lockTime < minTime) {
+            minTime := lockTime
+            goToIdx := idx
+        }
+    }
+    
+    if (goToIdx != 0) {
+        SwitchInstance(goToIdx)
+    } else {
+        ToWall()
     }
 }
 
 ToWall() {
     WinActivate, Fullscreen Projector
+    isOnWall := True
     if (useObsWebsocket) {
-        cmd := Format("python.exe obs.py 0", idx)
+            cmd := Format("python.exe " . A_ScriptDir . "\scripts\obs.py 0 {1}", idx)
         Run, %cmd%,, Hide
     } else {
-        send {F12 down}
-        sleep, %obsDelay%
-        send {F12 up}
+        Send, {F12 down}
+        Sleep, %obsDelay%
+        Send, {F12 up}
     }
 }
 
@@ -280,8 +270,9 @@ LockInstance(idx) {
     ;cmd := Format("python.exe obs.py 3 {1}", idx)
     ;Run, %cmd%,, Hide
 
-    if (lockSounds)
-        SoundPlay, lock.wav
+    if (lockSounds) {
+        SoundPlay, A_ScriptDir\..\media\lock.wav
+    }
 }
 
 UnlockInstance(idx) {
