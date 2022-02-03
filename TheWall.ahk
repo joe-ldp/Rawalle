@@ -36,6 +36,10 @@ ToWall()
 
 for i, mcdir in McDirectories {
     idle := mcdir . "idle.tmp"
+    if (autoBop) {
+        cmd := Format("python.exe " . A_ScriptDir . "\scripts\worldBopper9000.py {1}", mcdir)
+        Run, %cmd%,, Hide
+    }
     if (!FileExist(idle))
         FileAppend,,%idle%
     pid := PIDs[i]

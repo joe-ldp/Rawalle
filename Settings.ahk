@@ -7,6 +7,7 @@ global borderless := True ; Enable to use borderless windowed (like fullscreen, 
 global disableTTS := False ; Disables "ready" TTS notification
 global countAttempts := True ; Counts attempts...
 global coopResets := False ; Use forceport and some method of forwarding port 25565
+global autoBop := True ; Automatically deletes old worlds when you open the macro
 
 ; Set to 0 if you don't want the specific setting to be reset
 ; Sensitivity and FOV may be off by 1, mess around with +-1 if you care about specifics
