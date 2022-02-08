@@ -60,7 +60,7 @@ No longer actively moves worlds, it slows down the macro a lot. Use [this world 
 3) Open up command prompt, and run this command in `pip install obs-websocket-py`
 4) Now, open up obs.py in whatever text editor you want. 
 5) For scene_name_format you want to put in whatever the prefix of all your scenes are. 
-6) For wall_scene_name, its pretty self explanetory, just put in the scene name of your wall.
+6) For wall_scene_name, it's pretty self explanatory, just put in the scene name of your wall.
 7) Now, for the password, you can put in a password if you want, and if you use it you can go to `Tools -> WebSockets Server Settings -> Enable Authentication` and then put in whatever password you want. Then you can put the same password in the password variable quotes.
 
 After that it should be working. Ping @Tech Support in the [Discord](https://discord.gg/tXxwrYw) if you have any issues.
