@@ -4,27 +4,20 @@
 
 #NoEnv
 #SingleInstance Force
-#Include %A_ScriptDir%\scripts\MultiFunctions.ahk
-#Include Settings.ahk
+SetWorkingDir, %A_ScriptDir%
 
 SetKeyDelay, 0
 SetWinDelay, 1
 SetTitleMatchMode, 2
 
-; Don't configure these
-EnvGet, threadCount, NUMBER_OF_PROCESSORS
+#Include Settings.ahk
+
 global instWidth := Floor(A_ScreenWidth / cols)
 global instHeight := Floor(A_ScreenHeight / rows)
-global McDirectories := []
-global instances := 0
-global rawPIDs := []
-global PIDs := []
-global resetScriptTime := []
-global resetIdx := []
-global locked := []
 global isOnWall := True
-global highBitMask := (2 ** threadCount) - 1
-global lowBitMask := (2 ** Ceil(threadCount * lowBitmaskMultiplier)) - 1
+global locked := []
+
+#Include scripts/MultiFunctions.ahk
 
 if (performanceMethod == "F") {
     UnsuspendAll()
@@ -66,10 +59,10 @@ if (!disableTTS)
     ComObjCreate("SAPI.SpVoice").Speak("Ready")
 
 #Persistent
-    SetTimer, CheckScripts, 20
+    SetTimer, FreezeInstances, 20
 return
 
-CheckScripts:
+FreezeInstances:
     Critical
         if (performanceMethod == "F") {
             Loop, %instances% {
@@ -89,133 +82,30 @@ MousePosToInstNumber() {
     return (Floor(mY / instHeight) * cols) + Floor(mX / instWidth) + 1
 }
 
-SwitchInstance(idx) {
-    if (idx <= instances) {
-        locked[idx] := True
-        isOnWall := False
-        if (useObsWebsocket) {
-            cmd := Format("python.exe " . A_ScriptDir . "\scripts\obs.py 1 {1}", idx)
-            Run, %cmd%,, Hide
-        }
-        pid := PIDs[idx]
-        if (affinity) {
-            for i, tmppid in PIDs {
-                if (tmppid != pid) {
-                    SetAffinity(tmppid, lowBitMask)
-                }
-            }
-        }
-        if (performanceMethod == "F")
-            ResumeInstance(pid)
-        if (performanceMethod == "S") {
-            ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
-            Sleep, %settingsDelay%
-            ResetSettings(pid, renderDistance, True)
-            ControlSend, ahk_parent, {Blind}{F3 Down}{D}{F3 Up}, ahk_pid %pid%
-            ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-        }
-        if (unpauseOnSwitch)
-            ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
-        
-        WinSet, AlwaysOnTop, On, ahk_pid %pid%
-        WinSet, AlwaysOnTop, Off, ahk_pid %pid%
-        WinMinimize, Fullscreen Projector
-        if (wideResets)
-            WinMaximize, ahk_pid %pid%
-        if (fullscreen) {
-            ControlSend, ahk_parent, {Blind}{F11}, ahk_pid %pid%
-            Sleep, %fullScreenDelay%
-        }
-        if (!useObsWebsocket) {
-            Send, {Numpad%idx% down}
-            Sleep, %obsDelay%
-            Send, {Numpad%idx% up}
-        }
-        if (coopResets) {
-            ControlSend, ahk_parent, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
-            Sleep, 500
-            ControlSend, ahk_parent, /, ahk_pid %pid%
-            Sleep, 100
-            ControlSend, ahk_parent, {Text}time set 0, ahk_pid %pid%
-        }
-        Send, {LButton} ; Make sure the window is activated
-    }
+Play(idx) {
+    locked[idx] := True
+    SwitchInstance(idx)
 }
 
-ExitWorld()
-{
-    if (fullscreen) {
-        Send, {F11}
-        Sleep, %fullScreenDelay%
-    }
-    if ((idx := GetActiveInstanceNum()) > 0) {
-        pid := PIDs[idx]
-        if (wideResets) {
-            newHeight := Floor(A_ScreenHeight / 2.5)
-            WinRestore, ahk_pid %pid%
-            Sleep, 20
-            WinMove, ahk_pid %pid%,,0,0,%A_ScreenWidth%,%newHeight%
-        }
-        if (performanceMethod == "S") {
-            ResetSettings(pid, lowRender)
-        } else {
-            ResetSettings(pid, renderDistance)
-        }
-        ResetInstance(idx)
-        if (affinity) {
-            for i, tmppid in PIDs {
-                SetAffinity(tmppid, highBitMask)
-            }
-        }
+Reset(idx := -1) {
+    if (idx == -1)
+        idx := GetActiveInstanceNum()
+    locked[idx] := False
+    if (GetActiveInstanceNum() == idx) {
+        ExitWorld()
         if (bypassWall) {
             ToWallOrNextInstance()
         } else {
             ToWall()
         }
     }
-}
-
-ResetInstance(idx) {
-    idleFile := McDirectories[idx] . "idle.tmp"
-    if (idx <= instances && FileExist(idleFile)) {
-        UnlockInstance(idx)
-        pid := PIDs[idx]
-        
-        if (performanceMethod == "F") {
-            bfd := beforeFreezeDelay
-            ResumeInstance(pid)
-        } else {
-            bfd := 0
-        }
-
-        logFile := McDirectories[idx] . "logs\latest.log"
-        If (FileExist(idleFile))
-            FileDelete, %idleFile%
-        
-        Run, %A_ScriptDir%\scripts\reset.ahk %pid% %logFile% %maxLoops% %bfd% %idleFile% %beforePauseDelay% %resetSounds%
-
-        if (performanceMethod == "F") {
-            Critical, On
-            resetScriptTime[idx] := A_TickCount
-            resetIdx[idx] := True
-            Critical, Off
-        }
-
-        if (countAttempts) {
-            attemptsDir := A_ScriptDir . "\attempts\"
-            countResets(attemptsDir, "ATTEMPTS")
-            countResets(attemptsDir, "ATTEMPTS_DAY")
-            if (!isOnWall)
-                countResets(attemptsDir, "BG")
-            }
-        }
+    ResetInstance(idx)
 }
 
 ToWallOrNextInstance() {
     minTime := A_TickCount
     goToIdx := 0
-    for idx, lockTime in locked
-    {
+    for idx, lockTime in locked {
         if (lockTime && lockTime < minTime) {
             minTime := lockTime
             goToIdx := idx
@@ -223,7 +113,7 @@ ToWallOrNextInstance() {
     }
     
     if (goToIdx != 0) {
-        SwitchInstance(goToIdx)
+        Play(goToIdx)
     } else {
         ToWall()
     }
@@ -233,7 +123,7 @@ ToWall() {
     WinActivate, Fullscreen Projector
     isOnWall := True
     if (useObsWebsocket) {
-            cmd := Format("python.exe " . A_ScriptDir . "\scripts\obs.py 0 {1}", idx)
+        cmd := Format("python.exe " . A_ScriptDir . "\scripts\obs.py 0")
         Run, %cmd%,, Hide
     } else {
         Send, {F12 down}
@@ -244,10 +134,10 @@ ToWall() {
 
 ; Focus hovered instance and background reset all other instances
 FocusReset(focusInstance) {
-    SwitchInstance(focusInstance)
+    Play(focusInstance)
     loop, %instances% {
         if (A_Index != focusInstance && !locked[A_Index]) {
-            ResetInstance(A_Index)
+            Reset(A_Index)
         }
     }
 }
@@ -256,7 +146,7 @@ FocusReset(focusInstance) {
 ResetAll() {
     loop, %instances% {
         if (!locked[A_Index])
-            ResetInstance(A_Index)
+            Reset(A_Index)
     }
 }
 

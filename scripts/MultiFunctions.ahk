@@ -1,5 +1,15 @@
 ; v0.4.2
 
+EnvGet, threadCount, NUMBER_OF_PROCESSORS
+global McDirectories := []
+global instances := 0
+global rawPIDs := []
+global PIDs := []
+global resetScriptTime := []
+global resetIdx := []
+global highBitMask := (2 ** threadCount) - 1
+global lowBitMask := (2 ** Ceil(threadCount * lowBitmaskMultiplier)) - 1
+
 SetKeyDelay, 0
 
 SetTitles() {
@@ -133,6 +143,121 @@ GetActiveInstanceNum() {
         }
     }
     return -1
+}
+
+ExitWorld()
+{
+    if (fullscreen) {
+        Send, {F11}
+        Sleep, %fullScreenDelay%
+    }
+    if ((idx := GetActiveInstanceNum()) > 0) {
+        pid := PIDs[idx]
+        if (wideResets) {
+            newHeight := Floor(A_ScreenHeight / 2.5)
+            WinRestore, ahk_pid %pid%
+            Sleep, 200
+            WinMove, ahk_pid %pid%,,0,0,%A_ScreenWidth%,%newHeight%
+        }
+        if (performanceMethod == "S") {
+            ResetSettings(pid, lowRender)
+        } else {
+            ResetSettings(pid, renderDistance)
+        }
+        ResetInstance(idx)
+        if (affinity) {
+            for i, tmppid in PIDs {
+                SetAffinity(tmppid, highBitMask)
+            }
+        }
+    }
+}
+
+ResetInstance(idx) {
+    idleFile := McDirectories[idx] . "idle.tmp"
+    if (idx <= instances && FileExist(idleFile)) {
+        pid := PIDs[idx]
+        
+        if (performanceMethod == "F") {
+            bfd := beforeFreezeDelay
+            ResumeInstance(pid)
+        } else {
+            bfd := 0
+        }
+
+        logFile := McDirectories[idx] . "logs\latest.log"
+        If (FileExist(idleFile))
+            FileDelete, %idleFile%
+        
+        Run, %A_ScriptDir%\scripts\reset.ahk %pid% %logFile% %maxLoops% %bfd% %idleFile% %beforePauseDelay% %resetSounds%
+
+        if (performanceMethod == "F") {
+            Critical, On
+            resetScriptTime[idx] := A_TickCount
+            resetIdx[idx] := True
+            Critical, Off
+        }
+
+        if (countAttempts) {
+            attemptsDir := A_ScriptDir . "\attempts\"
+            countResets(attemptsDir, "ATTEMPTS")
+            countResets(attemptsDir, "ATTEMPTS_DAY")
+            if (idx != currentInstance)
+                countResets(attemptsDir, "BG")
+        }
+    }
+}
+
+SwitchInstance(idx) {
+    if (idx <= instances) {
+        if (useObsWebsocket) {
+            cmd := Format("python.exe " . A_ScriptDir . "\scripts\obs.py 1 {1}", idx)
+            Run, %cmd%,, Hide
+        }
+        pid := PIDs[idx]
+        if (affinity) {
+            for i, tmppid in PIDs {
+                if (tmppid != pid) {
+                    SetAffinity(tmppid, lowBitMask)
+                }
+            }
+        }
+        if (performanceMethod == "F")
+            ResumeInstance(pid)
+        if (performanceMethod == "S") {
+            ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
+            Sleep, %settingsDelay%
+            ResetSettings(pid, renderDistance, True)
+            ControlSend, ahk_parent, {Blind}{F3 Down}{D}{F3 Up}, ahk_pid %pid%
+            ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+        }
+        if (unpauseOnSwitch)
+            ControlSend, ahk_parent, {Blind}{Esc}, ahk_pid %pid%
+        
+        WinSet, AlwaysOnTop, On, ahk_pid %pid%
+        WinSet, AlwaysOnTop, Off, ahk_pid %pid%
+        WinMinimize, Fullscreen Projector
+        if (wideResets)
+            WinMaximize, ahk_pid %pid%
+        if (fullscreen) {
+            ControlSend, ahk_parent, {Blind}{F11}, ahk_pid %pid%
+            Sleep, %fullScreenDelay%
+        }
+        if (!useObsWebsocket) {
+            Send, {Numpad%idx% down}
+            Sleep, %obsDelay%
+            Send, {Numpad%idx% up}
+        }
+        if (coopResets) {
+            ControlSend, ahk_parent, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
+            Sleep, 500
+            ControlSend, ahk_parent, /, ahk_pid %pid%
+            Sleep, 100
+            ControlSend, ahk_parent, {Text}time set 0, ahk_pid %pid%
+        }
+        Sleep, 100
+        Send, {LButton} ; Make sure the window is activated
+    }
 }
 
 ; Reset your settings to preset settings preferences
