@@ -1,18 +1,16 @@
 ; v0.4.2
 
 RAlt::Suspend ; Pause all macros
-NumpadHome:: ; Reload if macro locks up
-    Reload
-return
-
-NumpadIns::SetTitles()
+^LAlt::Reload
+^RCtrl::UnsuspendAll()
+*I::SetTitles() ; Set titles if you are setting up obs
 
 #IfWinActive, Minecraft
 {
-    *U::ExitWorld()
+    *U::Reset()
 
     *NumpadAdd::ResetAll()
-    *`::ResetAll()
+    *`::ResetAll() ; 2 hotkeys on opposite sides of the keyboard just for convenience
     
     *Numpad7::LockInstance(1)
     *Numpad8::LockInstance(2)
@@ -27,35 +25,35 @@ NumpadIns::SetTitles()
 
 #IfWinActive, Fullscreen Projector
 {
-    *E::ResetInstance(MousePosToInstNumber())
-    *R::SwitchInstance(MousePosToInstNumber())
+    *E::Reset(MousePosToInstNumber())
+    *R::Play(MousePosToInstNumber())
     *F::FocusReset(MousePosToInstNumber())
     *T::ResetAll()
     +LButton::LockInstance(MousePosToInstNumber()) ; lock an instance so the above "blanket reset" functions don't reset it
 
     ; Reset keys (1-9)
-    *1::ResetInstance(1)
-    *2::ResetInstance(2)
-    *3::ResetInstance(3)
-    *4::ResetInstance(4)
-    *5::ResetInstance(5)
-    *6::ResetInstance(6)
-    *7::ResetInstance(7)
-    *8::ResetInstance(8)
-    *9::ResetInstance(9)
+    *1::Reset(1)
+    *2::Reset(2)
+    *3::Reset(3)
+    *4::Reset(4)
+    *5::Reset(5)
+    *6::Reset(6)
+    *7::Reset(7)
+    *8::Reset(8)
+    *9::Reset(9)
 
     ; Switch to instance keys (Shift + 1-9)
-    +1::SwitchInstance(1)
-    +2::SwitchInstance(2)
-    +3::SwitchInstance(3)
-    +4::SwitchInstance(4)
-    +5::SwitchInstance(5)
-    +6::SwitchInstance(6)
-    +7::SwitchInstance(7)
-    +8::SwitchInstance(8)
-    +9::SwitchInstance(9)
+    +1::Play(1)
+    +2::Play(2)
+    +3::Play(3)
+    +4::Play(4)
+    +5::Play(5)
+    +6::Play(6)
+    +7::Play(7)
+    +8::Play(8)
+    +9::Play(9)
     
-    ; Focus reset instance keys (Shift + 1-9)
+    ; Focus reset instance keys (Control + 1-9)
     ^1::FocusReset(1)
     ^2::FocusReset(2)
     ^3::FocusReset(3)
@@ -65,4 +63,4 @@ NumpadIns::SetTitles()
     ^7::FocusReset(7)
     ^8::FocusReset(8)
     ^9::FocusReset(9)
-    }
+}
