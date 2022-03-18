@@ -7,7 +7,7 @@
 
 #IfWinActive, Minecraft
 {
-    *F19::Reset()
+    *U::Reset()
     *O::ResetPie()
 
     ; Inverted "mass-resetting" background reset hotkeys (reccommended for >4 instances)
@@ -23,13 +23,6 @@
     *Numpad1::LockInstance(7)
     *Numpad2::LockInstance(8)
     *Numpad3::LockInstance(9)
-
-    ; Normal background resetting hotkeys (uncomment and remove above hotkeys to use)
-
-    ;*Numpad1::LockInstance(1)
-    ;*Numpad2::LockInstance(2)
-    ;*Numpad3::LockInstance(3)
-    ;*Numpad4::LockInstance(4)
 
     ; Checking functions lol
     ; Uncomment (remove ;s) from the following lines if you want these hotkeys
