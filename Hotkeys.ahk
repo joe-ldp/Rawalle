@@ -26,11 +26,11 @@
 
     ; Checking functions lol
     ; Uncomment (remove ;s) from the following lines if you want these hotkeys
-	;*I::CheckNetherStructures()
+    ;*I::CheckNetherStructures()
     ;*B::CheckBuriedTreasure()
     ;*N::CheckStronghold()
-	;*M::OpenToLAN()
-	;*K::SetPortal()
+    ;*M::OpenToLAN()
+    ;*K::SetPortal()
 }
 
 #IfWinActive, Fullscreen Projector
