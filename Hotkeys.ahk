@@ -1,17 +1,19 @@
-; v0.4.3
+; v0.5.0-alpha
 
-RAlt::Suspend ; Pause all macros
-^LAlt::Reload
-^RCtrl::UnsuspendAll()
-*I::SetTitles() ; Set titles if you are setting up obs
+*RAlt::Suspend ; Pause all macros
+*^RAlt::Reboot()
+^RCtrl::UnfreezeAll()
+;*I::SetTitles() ; Set titles if you are setting up obs
 
 #IfWinActive, Minecraft
 {
-    *U::Reset()
+    *F19::Reset()
+    *O::ResetPie()
 
+    ; Inverted "mass-resetting" background reset hotkeys (reccommended for >4 instances)
     *NumpadAdd::ResetAll()
-    *`::ResetAll() ; 2 hotkeys on opposite sides of the keyboard just for convenience
-    
+    *CapsLock::ResetAll() ; 2 hotkeys on opposite sides of the keyboard just for convenience
+
     *Numpad7::LockInstance(1)
     *Numpad8::LockInstance(2)
     *Numpad9::LockInstance(3)
@@ -21,6 +23,21 @@ RAlt::Suspend ; Pause all macros
     *Numpad1::LockInstance(7)
     *Numpad2::LockInstance(8)
     *Numpad3::LockInstance(9)
+
+    ; Normal background resetting hotkeys (uncomment and remove above hotkeys to use)
+
+    ;*Numpad1::LockInstance(1)
+    ;*Numpad2::LockInstance(2)
+    ;*Numpad3::LockInstance(3)
+    ;*Numpad4::LockInstance(4)
+
+    ; Checking functions lol
+    ; Uncomment (remove ;s) from the following lines if you want these hotkeys
+	;*I::CheckNetherStructures()
+    ;*B::CheckBuriedTreasure()
+    ;*N::CheckStronghold()
+	;*M::OpenToLAN()
+	;*K::SetPortal()
 }
 
 #IfWinActive, Fullscreen Projector
@@ -42,7 +59,7 @@ RAlt::Suspend ; Pause all macros
     *8::Reset(8)
     *9::Reset(9)
 
-    ; Switch to instance keys (Shift + 1-9)
+    ; Play instance keys (Shift + 1-9)
     +1::Play(1)
     +2::Play(2)
     +3::Play(3)
