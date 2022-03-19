@@ -16,7 +16,7 @@ global entityDistance := 5 ; 50% = 0.5, 500% = 5
 
 
 ; Wall Config
-global rows := 4 ; Number of rows on the wall scene
+global rows := 3 ; Number of rows on the wall scene
 global cols := 3 ; Number of columns on the wall scene
 global resetSounds := True ; :)
 global lockSounds := True
