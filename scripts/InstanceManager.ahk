@@ -207,7 +207,7 @@ ResetSettings() {
 }
 
 SetTitle() {
-    WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %3%
+    WinSetTitle, ahk_pid %1%,, Minecraft* - Instance %3%
 }
 
 GetLogLines(offset := 16) {
