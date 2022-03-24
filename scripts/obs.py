@@ -1,17 +1,102 @@
-from obswebsocket import obsws, requests
-import sys
+# cmd formatting:
+# cmd[0] specifies command, later args are for cmd args
+# cmd[0]: "ToWall" goes to wall scene
+# cmd[0]: "Play" goes to main/playing scene, cmd[1] specifies instance to play
+# cmd[0]: "Lock" shows or hides lock, cmd[1] specifies which lock, cmd[2] specifies to show or hide (1 = show, 0 = hide)
+# cmd[0]: "GetImg" loads screenshot of instance into program memory, uses inst_num from last played instance
+# cmd[0]: "SaveImg" saves current screenshot, cmd[1] specifies filename, cmd[2] specifies if run entered (1 = entered, 0 = did not)
 
-host = "localhost"
-port = 4444
-password = ""  # Edit this if you use a password (reccomended)
-scene_name_format = "Instance "  # Edit this
-wall_scene_name = "The Wall"    # Edit this
+import shutil
+from obswebsocket import obsws, requests
+from os.path import exists
+import os
+import csv
+import sys
+import urllib.request
+
+print(sys.argv)
+host = sys.argv[1]
+port = int(sys.argv[2])
+password = sys.argv[3]
+wall_scene = sys.argv[4]
+main_scene = sys.argv[5]
+instance_source_format = sys.argv[6]
+lock_layer_format = sys.argv[7]
+num_instances = int(sys.argv[8])
+inst_num = 0
+img_data = ""
 
 ws = obsws(host, port, password)
 ws.connect()
 scenes = ws.call(requests.GetSceneList())
-if bool(int(sys.argv[1])):
-    ws.call(requests.SetCurrentScene(f"{scene_name_format}{sys.argv[2]}"))
-else:
-    ws.call(requests.SetCurrentScene(f"{wall_scene_name}"))
+
+for i in range(num_instances):
+    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{i}", False, f"{main_scene}"))
+    ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{i}", False, f"{wall_scene}"))
+    
+try:
+    ws.call(requests.SetCurrentScene(f"{wall_scene}"))
+except:
+    print("No wall scene found, not switching")
+
+def get_cmd(path):
+    cmdFiles = []
+    cmd = []
+    for folder, subs, files in os.walk(path):
+        for filename in files:
+            cmdFiles.append(os.path.abspath(os.path.join(path, filename)))
+
+    oldest_file = min(cmdFiles, key=os.path.getctime)
+    while (cmd == []):
+        try:
+            with open(oldest_file) as cmd_file:
+                csv_reader = csv.reader(cmd_file, delimiter=",")
+                for row in csv_reader:
+                    for value in row:
+                        cmd.append(value)
+        except:
+            cmd = []
+
+    os.remove(oldest_file)
+    return cmd
+
+def execute_cmd(cmd):
+    if (len(cmd) > 0):
+        match cmd[0]:
+            case "ToWall":
+                ws.call(requests.SetCurrentScene(f"{wall_scene}"))
+            case "Play":
+                global inst_num
+                old_inst_num = inst_num
+                inst_num = cmd[1]
+                ws.call(requests.SetSceneItemRender(f"{instance_source_format}{inst_num}", True, f"{main_scene}"))
+                if (inst_num != old_inst_num):
+                    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{old_inst_num}", False, f"{main_scene}"))
+                ws.call(requests.SetCurrentScene(f"{main_scene}"))
+            case "Lock":
+                lock_num = cmd[1]
+                render = True if int(cmd[2]) else False
+                ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{lock_num}", render, f"{wall_scene}"))
+            case "GetImg":
+                global img_data
+                img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_source_format}{inst_num}", "png")).datain["img"]
+            case "SaveImg":
+                path = os.path.dirname(os.path.realpath(__file__)) + "\\..\\screenshots\\" + ("entered\\" if int(cmd[2]) else "unentered\\")
+                filename = cmd[1]
+                response = urllib.request.urlopen(img_data)
+                with open(f"{path}{filename}.png", "wb") as f:
+                    f.write(response.file.read())
+
+path = os.path.dirname(os.path.realpath(__file__)) + "\\"
+cmdsPath = path + "pyCmds"
+if (os.path.exists(cmdsPath)):
+    shutil.rmtree(cmdsPath)
+os.mkdir(cmdsPath)
+print(f"Listening to {cmdsPath}...")
+while(exists(path + "runPy.tmp")):
+    if (os.listdir(cmdsPath)):
+        cmd = get_cmd(cmdsPath)
+        print(cmd)
+        execute_cmd(cmd)
+
 ws.disconnect()

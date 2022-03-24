@@ -1,6 +1,6 @@
-; Instance Manager for Ravalle's Multi Instance Macros
+; Instance Manager for Ravalle's Multi Instance Macro
 ; Author: Ravalle / Joe
-; v0.5.0-alpha
+; v0.5.1-alpha
 
 #NoEnv
 #SingleInstance, Off
@@ -9,121 +9,142 @@ SetWorkingDir, %A_ScriptDir%
 SetKeyDelay, 0
 SetWinDelay, 1
 
-#include %A_ScriptDir%/states.ahk
-#include %A_ScriptDir%/messages.ahk
+#Include %A_ScriptDir%/messages.ahk
 #Include %A_ScriptDir%/../Settings.ahk
 
 OnMessage(MSG_RESET, "Reset")
-OnMessage(MSG_PLAY, "Play")
-OnMessage(MSG_FREEZE, "Freeze")
-OnMessage(MSG_UNFREEZE, "Unfreeze")
+OnMessage(MSG_SWITCH, "Switch")
 OnMessage(MSG_SETTITLE, "SetTitle")
-OnMessage(MSG_WAIT_LOAD, "WaitForLoad")
+OnMessage(MSG_CLOSE, "Close")
+OnMessage(MSG_REVEAL, "Reveal")
+OnMessage(MSG_RELOAD, "Reload")
 
-global ready := False
+global STATE_INIT       := 0 ; Unknown
+global STATE_READY      := 1 ; World fully loaded, game paused
+global STATE_PLAYING    := 2 ; Playing. May be paused/in an inventory/etc
+global STATE_RESETTING  := 3 ; Undergoing settings changes, widening, or on saving/loading screen
+global STATE_PREVIEWING := 4 ; On preview screen
+
 global 1
 global 2
 global 3
 global options := []
 global frozen := False
 global lastLogLine := 0
+global percentLoaded := 0
+global currentWorldDir := ""
+global currentWorldEntered := False
 global currentState := STATE_INIT
 
 I_Icon = ../media/IM.ico
-IfExist, %I_Icon%
+if (FileExist(I_Icon))
     Menu, Tray, Icon, %I_Icon%
 Menu, Tray, Tip, Instance %3% Manager
 
 SetTitle()
 GetSettings()
+LastLogLine()
 
 if (borderless)
     WinSet, Style, -0xC40000, ahk_pid %1%
+else
+    WinSet, Style, +0xC40000, ahk_pid %1%
+
+if (multiMode)
+    wideResets := False
+
 if (wideResets)
     Widen()
+else
+    WinMaximize, ahk_pid %1%
 
-ready := True
-
-WaitForLoad() {
-    while (!ready) {
-    }
-    return ready
+Reveal() {
+    ToolTip, %percentLoaded%
 }
 
 Reset(force := False) {
-    if (currentState == STATE_RESETTING) {
+    if (currentState == STATE_RESETTING)  { ; || (currentState == STATE_PREVIEWING && percentLoaded >= 80)) {
         return
     } else {
-        GetEndOfLog()
+        CurrentWorldEntered()
+        LastLogLine()
         if (!force) {
             Log("Resetting")
+            if (useObsWebsocket && currentState == STATE_PLAYING) {
+                if (!multiMode)
+                    SendOBSCommand("ToWall")
+                if (currentState == STATE_PLAYING)
+                    SendOBSCommand("SaveImg," . A_NowUTC . "," . currentWorldEntered)
+            }
             if (instanceFreezing && frozen)
                 Unfreeze()
             if (resetSounds)
                 SoundPlay, %A_ScriptDir%\..\media\reset.wav
-
-            if (currentState == STATE_READY) {
-                ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %1%
-
-            } else if (currentState == STATE_PREVIEWING) {
-                lp := options.key_LeavePreview
-                ControlSend,, {Blind}{%lp%}, ahk_pid %1%
-
-            } else if (currentState == STATE_PLAYING) {
-                if (fullscreen) {
-                    Send, {F11}
-                    Sleep, fullScreenDelay
-                }
-                if (wideResets)
-                    Widen()
-                ResetSettings()
-
-                ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
-
-            } else if (currentState == STATE_INIT) {
-                ControlSend,, {Blind}/, ahk_pid %1%
-                Sleep, 120
-                ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
+            
+            switch currentState
+            {
+                case STATE_READY:
+                    ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %1%
+                case STATE_PREVIEWING:
+                    lp := options.key_LeavePreview
+                    ControlSend,, {Blind}{%lp%}, ahk_pid %1%
+                case STATE_PLAYING:
+                    if (fullscreen) {
+                        ControlSend,, {Blind}{F11}, ahk_pid %1%
+                        Sleep, fullScreenDelay
+                    }
+                    if (wideResets)
+                        Widen()
+                    ResetSettings()
+                    ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
+                case STATE_INIT:
+                    ControlSend,, {Blind}/, ahk_pid %1%
+                    Sleep, 120
+                    ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %1%
             }
         } else {
             Log("Found failed reset. Forcing reset")
             lp := options.key_LeavePreview
-            ControlSend,, {Blind}{%lp%}, ahk_pid %1%
-            ControlSend,, {Blind}/, ahk_pid %1%
+            ControlSend,, {Blind}{%lp%}}/, ahk_pid %1%
             Sleep, 120
-            ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %1%
-            ControlSend,, {Blind}/, ahk_pid %1%
+            ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}/, ahk_pid %1%
             Sleep, 120
             ControlSend,, {Blind}{Esc 2}{Tab 8}{Enter}, ahk_pid %1%
         }
     }
+    if (currentState == STATE_PREVIEWING) {
+        SetTimer, CheckReset, -300
+    } else {
+        SetTimer, CheckReset, -1250
+    }
     currentState := STATE_RESETTING
     SetTimer, ManageState, 250
-    SetTimer, ForceReset, -1250
     return
 }
 
-Play() {
-    if (currentState != STATE_RESETTING && currentState != STATE_PREVIEWING) {
-        Log("Playing")
-        currentState := STATE_PLAYING
+Switch() {
+    if ((currentState != STATE_RESETTING && (multiMode || currentState != STATE_PREVIEWING))) { ; || (currentState == STATE_PREVIEWING && percentLoaded >= 70)) {
+        Log("Switched to instance")
 
-        if (instanceFreezing && frozen)
-            Unfreeze()
-        if (unpauseOnSwitch || coopResets)
-            ControlSend,, {Blind}{Esc}, ahk_pid %1%
-        if (coopResets) {
-            Sleep, 50
-            ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 5}{Enter}, ahk_pid %1%
-            if (unpauseOnSwitch)
-                ControlSend,, {Blind}{Esc}, ahk_pid %1%
+        if (useObsWebsocket) {
+            idx = %3%
+            SendOBSCommand("Play," . idx)
+            if (screenshotWorlds)
+                SendOBSCommand("GetImg")
+        } else {
+            Send, {Numpad%3% down}
+            Sleep, obsDelay
+            Send, {Numpad%3% up}
         }
+        if (currentState == STATE_READY || currentState == STATE_INIT)
+            Play()
 
-        WinSet, AlwaysOnTop, On, ahk_pid %1%
-        WinSet, AlwaysOnTop, Off, ahk_pid %1%
-        WinRestore, ahk_pid %1%
-        WinMinimize, Fullscreen Projector
+        ;WinSet, AlwaysOnTop, On, ahk_pid %1%
+        ;WinSet, AlwaysOnTop, Off, ahk_pid %1%
+        WinActivate, ahk_pid %1%
 
+        if (!multiMode)
+            WinMinimize, Fullscreen Projector
         if (wideResets)
             WinMaximize, ahk_pid %1%
         if (fullscreen) {
@@ -135,8 +156,24 @@ Play() {
         Send, {LButton}
         return 0
     } else {
-        return 1
+        return -1
     }
+}
+
+Play() {
+    if (instanceFreezing && frozen)
+        Unfreeze()
+    if ((unpauseOnSwitch || coopResets) && (currentState == STATE_READY || currentState == STATE_INIT))
+        ControlSend,, {Blind}{Esc}, ahk_pid %1%
+    if (coopResets) {
+        Sleep, 50
+        ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 5}{Enter}, ahk_pid %1%
+        if (unpauseOnSwitch)
+            ControlSend,, {Blind}{Esc}, ahk_pid %1%
+    }
+    
+    Log("Playing")
+    currentState := STATE_PLAYING
 }
 
 Freeze() {
@@ -212,17 +249,24 @@ SetTitle() {
 
 GetLogLines(offset := 16) {
     out := ""
+    pcntLoadedLine := ""
     Loop Read, %2%logs/latest.log
     {
-        if (A_Index > lastLogLine + offset) {
-            out := % out . A_LoopReadLine . "`n"
-            i := Mod(i+nLines-1,nLines)
-        }
+        line := A_LoopReadLine
+        if (A_Index > lastLogLine + offset)
+            out := % out . line . "`n"
+        if (InStr(line, "%"))
+            pcntLoadedLine := line
     }
+    pos := InStr(pcntLoadedLine, "]")
+    pos := InStr(pcntLoadedLine, ":",, pos, 2)+1
+    percentLoaded := SubStr(SubStr(line, pos), 2, 3)
+    if (InStr(percentLoaded, "%"))
+        percentLoaded := SubStr(percentLoaded, 1, 2)
     return out
 }
 
-GetEndOfLog() {
+LastLogLine() {
     Loop, Read, %2%logs/latest.log
     {
         lastLogLine := A_Index
@@ -248,17 +292,48 @@ GetSettings() {
     }
 }
 
+global cmdNum := 1
+SendOBSCommand(cmd) {
+    idx = %3%
+    cmdDir := A_ScriptDir . "\pyCmds\"
+    cmdFile := cmdDir . "IM" . idx . "CMD" . cmdNum . ".txt"
+    cmdNum++
+    FileAppend, %cmd%, %cmdFile%
+}
+
+CurrentWorldEntered() {
+    log := GetLogLines()
+    currentWorldEntered := InStr(log, "We Need To Go Deeper")
+}
+
 Widen() {
+    if (multiMode)
+        return
     newHeight := Floor(A_ScreenHeight / 2.5)
     WinMaximize, ahk_pid %1%
     WinRestore, ahk_pid %1%
     Sleep, 200
-    WinMove, ahk_pid %1%,,0,0,%A_ScreenWidth%,%newHeight%
+    WinMove, ahk_pid %1%,, 0, 0, %A_ScreenWidth%, %newHeight%
 }
 
 Log(message) {
     FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %currentState% | %message%`n, %2%log.log
     FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Instance %3% | Current state: %currentState% | %message%`n, log.log
+}
+
+Reload() {
+    if (instanceFreezing)
+        Unfreeze()
+    global lastLogLine := 0
+    global percentLoaded := 0
+    global currentWorldEntered := False
+    global currentState := STATE_INIT
+    SetTitle()
+    LastLogLine()
+}
+
+Close() {
+    ExitApp
 }
 
 return ; end the auto-execute section so the labels don't get executed when the script opens (thanks ahk)
@@ -274,17 +349,18 @@ ManageState:
             currentState := STATE_PREVIEWING
             Sleep, 50
             ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %1%
-            SetTimer, UpdatePreview, -2000
+            if (!multiMode)
+                SetTimer, UpdatePreview, -2000
             SetTimer, ManageState, 250
             return
 
         } else if ((currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(log, "Saving chunks for") && InStr(log, "/minecraft:the_end")) {
             WinGet, activePID, PID, A
             pid = %1%
+            ;Log(log)
             if (activePID != pid) {
                 Sleep, beforePauseDelay
                 ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %1%
-                ;Log(log)
                 Log("World generated, paused")
                 currentState := STATE_READY
                 if (instanceFreezing) {
@@ -297,7 +373,7 @@ ManageState:
 
             } else {
                 Log("World generated, playing")
-                currentState := STATE_PLAYING
+                Play()
                 SetTimer, ManageState, Off
                 return
             }
@@ -317,7 +393,7 @@ UpdatePreview:
     }
 return
 
-ForceReset:
+CheckReset:
     newLastLogLine := 0
     Loop, Read, %2%logs/latest.log
     {
@@ -327,7 +403,10 @@ ForceReset:
     if (!InStr(log, "Initializing") && (lastLogLine == newLastLogLine || !InStr(log, "Stopping server"))) {
         currentState := STATE_INIT
         Reset(True)
-    }
+    } ;else { ; confirmed successful reset
+        ;if (screenshotWorlds)
+        ;    SaveScreenshot()
+    ;}
 return
 
 ; CheckPause:

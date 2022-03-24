@@ -1,14 +1,14 @@
-; v0.5.0-alpha
+; v0.5.1-alpha
 
-*RAlt::Suspend ; Pause all macros
-*^RAlt::Reboot()
-^RCtrl::UnfreezeAll()
+*RAlt::Suspend ; Pause all hotkeys
+^RAlt::Reboot()
+^-::SoftReboot()
 ;*I::SetTitles() ; Set titles if you are setting up obs
 
 #IfWinActive, Minecraft
 {
     *U::Reset()
-    *O::ResetPie()
+    *P::ResetPie()
 
     ; Inverted "mass-resetting" background reset hotkeys (reccommended for >4 instances)
     *NumpadAdd::ResetAll()
@@ -24,13 +24,20 @@
     *Numpad2::LockInstance(8)
     *Numpad3::LockInstance(9)
 
+    ; "Normal" background reset hotkeys (uncomment to use, and add more if you need them)
+
+    ;*Numpad1::BackgroundReset(1)
+    ;*Numpad2::BackgroundReset(2)
+    ;*Numpad3::BackgroundReset(3)
+    ;*Numpad4::BackgroundReset(4)
+
     ; Checking functions lol
     ; Uncomment (remove ;s) from the following lines if you want these hotkeys
-    ;*I::CheckNetherStructures()
-    ;*B::CheckBuriedTreasure()
-    ;*N::CheckStronghold()
-    ;*M::OpenToLAN()
-    ;*K::SetPortal()
+    ;*[::CheckNetherStructures()
+    ;*]::CheckBuriedTreasure()
+    ;*L::CheckStronghold()
+    ;*J::OpenToLAN()
+    ;*M::SetPortal()
 }
 
 #IfWinActive, Fullscreen Projector
@@ -39,7 +46,7 @@
     *R::Play(MousePosToInstNumber())
     *F::FocusReset(MousePosToInstNumber())
     *T::ResetAll()
-    +LButton::LockInstance(MousePosToInstNumber()) ; lock an instance so the above "blanket reset" functions don't reset it
+    +LButton::ToggleLock(MousePosToInstNumber()) ; lock an instance so the above "blanket reset" functions don't reset it
 
     ; Reset keys (1-9)
     *1::Reset(1)
@@ -73,4 +80,15 @@
     ^7::FocusReset(7)
     ^8::FocusReset(8)
     ^9::FocusReset(9)
+
+    ; Lock instance keys (Alt + 1-9)
+    !1::LockInstance(1)
+    !2::LockInstance(2)
+    !3::LockInstance(3)
+    !4::LockInstance(4)
+    !5::LockInstance(5)
+    !6::LockInstance(6)
+    !7::LockInstance(7)
+    !8::LockInstance(8)
+    !9::LockInstance(9)
 }

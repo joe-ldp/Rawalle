@@ -1,6 +1,99 @@
-; v0.5.0-alpha
+; v0.5.1-alpha
 
-RunHide(Command) {
+MousePosToInstNumber() {
+    MouseGetPos, mX, mY
+    return (Floor(mY / instHeight) * cols) + Floor(mX / instWidth) + 1
+}
+
+NextInstance() {
+    ErrorLevel := 1
+    while (ErrorLevel != 0) {
+        activeInstance := activeInstance + 1 > numInstances ? 1 : activeInstance + 1
+        Play(activeInstance)
+    }
+}
+
+ToWallOrNextInstance() {
+    minTime := A_TickCount
+    goToIdx := 0
+    for idx, lockTime in locked {
+        if (lockTime && lockTime < minTime) {
+            minTime := lockTime
+            goToIdx := idx
+        }
+    }
+    
+    if (goToIdx != 0) {
+        Play(goToIdx)
+    } else {
+        ToWall()
+    }
+}
+
+ToWall() {
+    WinActivate, Fullscreen Projector
+    isOnWall := True
+}
+
+global cmdNum := 1
+SendOBSCommand(cmd) {
+    idx = %3%
+    cmdDir := A_ScriptDir . "\scripts\pyCmds\"
+    cmdFile := cmdDir . "TWCMD" . cmdNum . ".txt"
+    cmdNum++
+    FileAppend, %cmd%, %cmdFile%
+}
+
+ResetAll() {
+    Loop, %numInstances%
+        if (!locked[A_Index])
+            Reset(A_Index)
+}
+
+FreezeAll() {
+    Loop, %numInstances%
+        Freeze(A_Index)
+}
+
+UnfreezeAll() {
+    Loop, %numInstances%
+        Unfreeze(A_Index)
+}
+
+FocusReset(focusInstance) {
+    Play(focusInstance)
+    Loop, %numInstances%
+        if (focusInstance != A_Index && !locked[A_Index])
+            Reset(A_Index)
+}
+
+BackgroundReset(idx) {
+    if (!locked[idx])
+        Reset(idx)
+}
+
+ToggleLock(idx) {
+    if (locked[idx])
+        UnlockInstance(idx)
+    else
+        LockInstance(idx)
+}
+
+LockInstance(idx, sound := True) {
+    locked[idx] := A_TickCount
+    SendOBSCommand("Lock," . idx . "," . 1)
+    if (lockSounds && sound)
+        SoundPlay, media\lock.wav
+}
+
+UnlockInstance(idx, sound := True) {
+    locked[idx] := 0
+    SendOBSCommand("Lock," . idx . "," . 0)
+    if (lockSounds && sound)
+        SoundPlay, media\lock.wav
+}
+
+RunHide(command) {
     dhw := A_DetectHiddenWindows
     DetectHiddenWindows, On
     Run, %ComSpec%,, Hide, cPid
@@ -8,13 +101,13 @@ RunHide(Command) {
     DetectHiddenWindows, %dhw%
     DllCall("AttachConsole", "UInt", cPid)
 
-    Shell := ComObjCreate("WScript.Shell")
-    Exec := Shell.Exec(Command)
-    Result := Exec.StdOut.ReadAll()
+    shell := ComObjCreate("WScript.Shell")
+    exec := shell.Exec(command)
+    result := exec.StdOut.ReadAll()
 
     DllCall("FreeConsole")
     Process, Close, %cPid%
-    return Result
+    return result
 }
 
 GetMcDir(pid) {
@@ -31,21 +124,6 @@ GetMcDir(pid) {
         }
         return StrReplace(SubStr(rawOut, strStart+20, strLen-28) . ".minecraft\", "/", "\")
     }
-}
-
-GetInstanceTotal() {
-    idx := 1
-    WinGet, all, list
-    Loop, %all%
-    {
-        WinGet, pid, PID, % "ahk_id " all%A_Index%
-        WinGetTitle, title, ahk_pid %pid%
-        if (InStr(title, "Minecraft*")) {
-            rawPIDs[idx] := pid
-            idx += 1
-        }
-    }
-    return rawPIDs.MaxIndex()
 }
 
 GetInstanceNumberFromMcDir(mcdir) {
@@ -67,34 +145,24 @@ SetAffinity(pid, mask) {
 }
 
 SetAffinities() {
-    activeIdx := GetActiveInstanceNum()
-    Loop, %instances%
-    {        
-        mask := (activeIdx > 0 && activeIdx != A_Index) ? lowBitMask : highBitMask
+    Loop, %numInstances% {        
+        mask := (activeInstance > 0 && activeInstance != A_Index) ? lowBitMask : highBitMask
         SetAffinity(MC_PIDs[A_Index], mask)
     }
 }
 
-GetActiveInstanceNum() {
-    WinGet, pid, PID, A
-    WinGetTitle, title, ahk_pid %pid%
-    if (InStr(title, " - ")) {
-        for i, tmppid in MC_PIDs {
-        if (tmppid == pid)
-            return i
+GetInstances() {
+    WinGet, allIDs, List
+    Loop, %allIDs% {
+        WinGet, pid, PID, % "ahk_id " allIDs%A_Index%
+        WinGetTitle, title, ahk_pid %pid%
+        if (InStr(title, "Minecraft*")) {
+            mcdir := GetMcDir(pid)
+            if (idx := GetInstanceNumberFromMcDir(mcdir)) == -1
+                Shutdown()
+            MC_PIDs[idx] := pid
+            McDirectories[idx] := mcdir
         }
     }
-    return -1
-}
-
-GetAllPIDs(ByRef McDirectories, ByRef MC_PIDs, ByRef instances) {
-    instances := GetInstanceTotal()
-    Loop, %instances%
-    {
-        mcdir := GetMcDir(rawPIDs[A_Index])
-        if (num := GetInstanceNumberFromMcDir(mcdir)) == -1
-            ExitApp
-        MC_PIDs[num] := rawPIDs[A_Index]
-        McDirectories[num] := mcdir
-    }
+    numInstances := MC_PIDs.MaxIndex()
 }
