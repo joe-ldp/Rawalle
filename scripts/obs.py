@@ -6,6 +6,7 @@
 # cmd[0]: "GetImg" loads screenshot of instance into program memory, uses inst_num from last played instance
 # cmd[0]: "SaveImg" saves current screenshot, cmd[1] specifies filename, cmd[2] specifies if run entered (1 = entered, 0 = did not)
 
+from datetime import datetime
 import shutil
 from obswebsocket import obsws, requests
 from os.path import exists
@@ -13,31 +14,6 @@ import os
 import csv
 import sys
 import urllib.request
-
-print(sys.argv)
-host = sys.argv[1]
-port = int(sys.argv[2])
-password = sys.argv[3]
-wall_scene = sys.argv[4]
-main_scene = sys.argv[5]
-instance_source_format = sys.argv[6]
-lock_layer_format = sys.argv[7]
-num_instances = int(sys.argv[8])
-inst_num = 0
-img_data = ""
-
-ws = obsws(host, port, password)
-ws.connect()
-scenes = ws.call(requests.GetSceneList())
-
-for i in range(num_instances):
-    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{i}", False, f"{main_scene}"))
-    ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{i}", False, f"{wall_scene}"))
-    
-try:
-    ws.call(requests.SetCurrentScene(f"{wall_scene}"))
-except:
-    print("No wall scene found, not switching")
 
 def get_cmd(path):
     cmdFiles = []
@@ -78,8 +54,16 @@ def execute_cmd(cmd):
                 render = True if int(cmd[2]) else False
                 ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{lock_num}", render, f"{wall_scene}"))
             case "GetImg":
-                global img_data
-                img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_source_format}{inst_num}", "png")).datain["img"]
+                start = datetime.now().timestamp()
+                while (datetime.now().timestamp() - start < 3):
+                    global img_data
+                    layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_source_format}{inst_num}", f"{main_scene}")).datain
+                    ratio = layer_info_data["width"] / layer_info_data["height"]
+                    if (abs((16/9) - ratio) > 0.15):
+                        print("Ratio " + str(ratio) + " exceeds allowed variance from 1.777..., instance is probably still wide, waiting")
+                        continue
+                    img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_source_format}{inst_num}", "png")).datain["img"]
+                    break
             case "SaveImg":
                 path = os.path.dirname(os.path.realpath(__file__)) + "\\..\\screenshots\\" + ("entered\\" if int(cmd[2]) else "unentered\\")
                 filename = cmd[1]
@@ -87,16 +71,45 @@ def execute_cmd(cmd):
                 with open(f"{path}{filename}.png", "wb") as f:
                     f.write(response.file.read())
 
-path = os.path.dirname(os.path.realpath(__file__)) + "\\"
-cmdsPath = path + "pyCmds"
-if (os.path.exists(cmdsPath)):
-    shutil.rmtree(cmdsPath)
-os.mkdir(cmdsPath)
-print(f"Listening to {cmdsPath}...")
-while(exists(path + "runPy.tmp")):
-    if (os.listdir(cmdsPath)):
-        cmd = get_cmd(cmdsPath)
-        print(cmd)
-        execute_cmd(cmd)
+print(sys.argv)
+host = sys.argv[1]
+port = int(sys.argv[2])
+password = sys.argv[3]
+wall_scene = sys.argv[4]
+main_scene = sys.argv[5]
+instance_source_format = sys.argv[6]
+lock_layer_format = sys.argv[7]
+num_instances = int(sys.argv[8])
+inst_num = 0
+img_data = ""
+
+ws = obsws(host, port, password)
+ws.connect()
+scenes = ws.call(requests.GetSceneList())
+
+for i in range(1, num_instances+1):
+    print(i)
+    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{i}", False, f"{main_scene}"))
+    ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{i}", False, f"{wall_scene}"))
+    
+try:
+    ws.call(requests.SetCurrentScene(f"{wall_scene}"))
+except:
+    print("No wall scene found, not switching")
+
+try:
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\"
+    cmdsPath = path + "pyCmds"
+    if (os.path.exists(cmdsPath)):
+        shutil.rmtree(cmdsPath)
+    os.mkdir(cmdsPath)
+    print(f"Listening to {cmdsPath}...")
+    while(exists(path + "runPy.tmp")):
+        if (os.listdir(cmdsPath)):
+            cmd = get_cmd(cmdsPath)
+            print(cmd)
+            execute_cmd(cmd)
+except Exception as e:
+    print(f"Error: {e}")
 
 ws.disconnect()

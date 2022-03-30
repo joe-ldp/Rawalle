@@ -32,6 +32,8 @@ ToWallOrNextInstance() {
 
 ToWall() {
     WinActivate, Fullscreen Projector
+    WinSet, AlwaysOnTop, On, Fullscreen Projector
+    WinSet, AlwaysOnTop, Off, Fullscreen Projector
     isOnWall := True
 }
 
@@ -80,15 +82,17 @@ ToggleLock(idx) {
 }
 
 LockInstance(idx, sound := True) {
+    if (!locked[idx])
+        SendOBSCommand("Lock," . idx . "," . 1)
     locked[idx] := A_TickCount
-    SendOBSCommand("Lock," . idx . "," . 1)
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
 }
 
 UnlockInstance(idx, sound := True) {
+    if (locked[idx])
+        SendOBSCommand("Lock," . idx . "," . 0)
     locked[idx] := 0
-    SendOBSCommand("Lock," . idx . "," . 0)
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
 }

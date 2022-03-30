@@ -40,14 +40,14 @@ global restartDelay := 200 ; Increase if saying missing instanceNumber in .minec
 global obsDelay := 50 ; increase if not changing scenes in obs (only relevant if not using websocket)
 ; OBS WebSocket settings
 global useObsWebsocket := True ; Allows for >9 instances, visual lock indicators, and world screenshotting
-global screenshotWorlds := True
 global host := "localhost"
 global port := 4444
 global password := "Multi"
 global wallScene := "The Wall"
 global mainScene := "Playing"
 global instanceSourceFormat := "mc "
-global lockIndicators := True
+global screenshotWorlds := False
+global lockIndicators := False
 global lockLayerFormat := "Lock " ; obviously not relevant if you're not using lock indicators
 
 ; Performance related settings

@@ -50,6 +50,11 @@ Loop, %numInstances% {
 }
 
 Run, scripts\obs.py "%host%" "%port%" "%password%" "%wallScene%" "%mainScene%" "%instanceSourceFormat%" "%lockLayerFormat%" "%numInstances%",, Hide
+While, ErrorLevel == 0 {
+    Run, scripts\obs.py "%host%" "%port%" "%password%" "%wallScene%" "%mainScene%" "%instanceSourceFormat%" "%lockLayerFormat%" "%numInstances%",, , OBS_PID
+    Sleep, 1500
+    Process, Exist, %OBS_PID%
+}
 
 if (multiMode) {
     NextInstance()
@@ -69,12 +74,14 @@ wmp.close
 Reset(idx := -1) {
     idx := idx == -1 ? activeInstance : idx
     pid := IM_PIDs[idx]
-    PostMessage, MSG_RESET,,,,ahk_pid %pid%
     UnlockInstance(idx, False)
+    PostMessage, MSG_RESET,,,,ahk_pid %pid%
 
     if (activeInstance == idx) {
         if (!multiMode) {
             activeInstance := 0
+            if (fullscreen)
+                Sleep, %fullscreenDelay%
             if (bypassWall)
                 ToWallOrNextInstance()
             else
@@ -89,7 +96,6 @@ Reset(idx := -1) {
 Play(idx) {
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
-    Sleep, 50
     if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
         LockInstance(idx, False)
         activeInstance := idx
@@ -131,12 +137,12 @@ Shutdown() {
     DetectHiddenWindows, On
     UnfreezeAll()
     for each, pid in IM_PIDs {
-        SendMessage, MSG_CLOSE,,,,ahk_pid %pid%,,1000 ; 0x0010
-        if (ErrorLevel != 0) {
-            cmd := Format("taskkill /f /pid {1}", pid)
-            RunHide(cmd)
+        if (WinExist("ahk_pid " . pid))
+            WinClose,,, 1
+        if (WinExist("ahk_pid " . pid)) {
+            Process, Close, %pid%
+            WinWaitClose, ahk_pid %pid%
         }
-        WinWaitClose, ahk_pid %pid%
     }
 }
 

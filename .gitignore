@@ -5,3 +5,7 @@ log.log
 *.png
 *.jpg
 *.tmp
+*.psd
+/scripts/__pyCache__
+/scripts/pyCmds
+/scripts/runPy.tmp

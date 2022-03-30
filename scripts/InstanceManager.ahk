@@ -45,25 +45,30 @@ SetTitle()
 GetSettings()
 LastLogLine()
 
-if (borderless)
-    WinSet, Style, -0xC40000, ahk_pid %1%
-else
-    WinSet, Style, +0xC40000, ahk_pid %1%
-
+; if (options.fullscreen) {
+;     fs := options["key_key.fullscreen"]
+;     ControlSend,, {Blind}{%fs%}, ahk_pid %1%
+;     Sleep, %fullscreenDelay%
+; }
 if (multiMode)
     wideResets := False
-
-if (wideResets)
+if (wideResets) {
     Widen()
-else
+} else {
     WinMaximize, ahk_pid %1%
+}
+if (borderless) {
+    WinSet, Style, -0xC40000, ahk_pid %1%
+} else {
+    WinSet, Style, +0xC40000, ahk_pid %1%
+}
 
 Reveal() {
-    ToolTip, %percentLoaded%
+    ToolTip, `%: %percentLoaded% state: %currentState%
 }
 
 Reset(force := False) {
-    if (currentState == STATE_RESETTING)  { ; || (currentState == STATE_PREVIEWING && percentLoaded >= 80)) {
+    if (currentState == STATE_RESETTING) {
         return
     } else {
         CurrentWorldEntered()
@@ -73,7 +78,7 @@ Reset(force := False) {
             if (useObsWebsocket && currentState == STATE_PLAYING) {
                 if (!multiMode)
                     SendOBSCommand("ToWall")
-                if (currentState == STATE_PLAYING)
+                if (screenshotWorlds && currentState == STATE_PLAYING)
                     SendOBSCommand("SaveImg," . A_NowUTC . "," . currentWorldEntered)
             }
             if (instanceFreezing && frozen)
@@ -89,10 +94,8 @@ Reset(force := False) {
                     lp := options.key_LeavePreview
                     ControlSend,, {Blind}{%lp%}, ahk_pid %1%
                 case STATE_PLAYING:
-                    if (fullscreen) {
+                    if (fullscreen)
                         ControlSend,, {Blind}{F11}, ahk_pid %1%
-                        Sleep, fullScreenDelay
-                    }
                     if (wideResets)
                         Widen()
                     ResetSettings()
@@ -104,8 +107,9 @@ Reset(force := False) {
             }
         } else {
             Log("Found failed reset. Forcing reset")
-            lp := options.key_LeavePreview
-            ControlSend,, {Blind}{%lp%}}/, ahk_pid %1%
+            lp := options["key_LeavePreview"]
+            ControlSend,, {Blind}{%lp%}, ahk_pid %1%
+            ControlSend,, {Blind}/, ahk_pid %1%
             Sleep, 120
             ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}/, ahk_pid %1%
             Sleep, 120
@@ -133,27 +137,24 @@ Switch() {
                 SendOBSCommand("GetImg")
         } else {
             Send, {Numpad%3% down}
-            Sleep, obsDelay
+            Sleep, %obsDelay%
             Send, {Numpad%3% up}
         }
-        if (currentState == STATE_READY || currentState == STATE_INIT)
-            Play()
 
-        ;WinSet, AlwaysOnTop, On, ahk_pid %1%
-        ;WinSet, AlwaysOnTop, Off, ahk_pid %1%
         WinActivate, ahk_pid %1%
-
         if (!multiMode)
             WinMinimize, Fullscreen Projector
         if (wideResets)
             WinMaximize, ahk_pid %1%
         if (fullscreen) {
             ControlSend,, {Blind}{F11}, ahk_pid %1%
-            Sleep, fullScreenDelay
+            Sleep, %fullScreenDelay%
         }
 
-        Sleep, 100
         Send, {LButton}
+        if (currentState == STATE_READY || currentState == STATE_INIT)
+            Play()
+
         return 0
     } else {
         return -1
@@ -204,7 +205,7 @@ Unfreeze() {
     If (hProcess) {
         DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
         DllCall("CloseHandle", "Int", hProcess)
-        Sleep, resumeDelay
+        Sleep, %resumeDelay%
     }
     Log("Unfreezing")
     frozen := False
@@ -249,20 +250,14 @@ SetTitle() {
 
 GetLogLines(offset := 16) {
     out := ""
-    pcntLoadedLine := ""
     Loop Read, %2%logs/latest.log
     {
         line := A_LoopReadLine
         if (A_Index > lastLogLine + offset)
             out := % out . line . "`n"
-        if (InStr(line, "%"))
-            pcntLoadedLine := line
+        RegExMatch(line, "[0-9]+%", percentLoaded)
     }
-    pos := InStr(pcntLoadedLine, "]")
-    pos := InStr(pcntLoadedLine, ":",, pos, 2)+1
-    percentLoaded := SubStr(SubStr(line, pos), 2, 3)
-    if (InStr(percentLoaded, "%"))
-        percentLoaded := SubStr(percentLoaded, 1, 2)
+    StringTrimRight, percentLoaded, percentLoaded, 1
     return out
 }
 
@@ -359,7 +354,7 @@ ManageState:
             pid = %1%
             ;Log(log)
             if (activePID != pid) {
-                Sleep, beforePauseDelay
+                Sleep, %beforePauseDelay%
                 ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %1%
                 Log("World generated, paused")
                 currentState := STATE_READY
