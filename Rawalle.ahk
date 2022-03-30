@@ -36,6 +36,12 @@ GetInstances()
 SetAffinities()
 DetectHiddenWindows, On
 FileAppend,, scripts/runPy.tmp
+enteredScreenshots := A_ScriptDir . "\screenshots\entered"
+unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"
+if (!FileExist(enteredScreenshots))
+    FileCreateDir, %enteredScreenshots%
+if (!FileExist(unenteredScreenshots))
+    FileCreateDir, %unenteredScreenshots%
 
 Loop, %numInstances% {
     McPID := MC_PIDs[A_Index]
