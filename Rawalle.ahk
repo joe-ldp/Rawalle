@@ -49,7 +49,7 @@ Loop, %numInstances% {
     }
 }
 
-Run, scripts\obs.py "%host%" "%port%" "%password%" "%wallScene%" "%mainScene%" "%instanceSourceFormat%" "%lockLayerFormat%" "%numInstances%",, Hide
+ErrorLevel := 0
 While, ErrorLevel == 0 {
     Run, scripts\obs.py "%host%" "%port%" "%password%" "%wallScene%" "%mainScene%" "%instanceSourceFormat%" "%lockLayerFormat%" "%numInstances%",, , OBS_PID
     Sleep, 1500
