@@ -1,5 +1,4 @@
-ATTEMPTS*
-TheWall*.zip
+*.zip
 *-Joe.*
 log.log
 *.tmp
@@ -8,4 +7,5 @@ log.log
 /scripts/pyCmds
 /scripts/runPy.tmp
 /screenshots/*
+/attempts/*
 /mods/*
