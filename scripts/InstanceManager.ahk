@@ -10,7 +10,7 @@ SetKeyDelay, 0
 SetWinDelay, 1
 
 #Include %A_ScriptDir%/messages.ahk
-#Include %A_ScriptDir%/../Settings-Joe.ahk
+#Include %A_ScriptDir%/../Settings.ahk
 
 global STATE_INIT       := 0
 global STATE_READY      := 1
