@@ -1,3 +1,4 @@
+# This readme is obviously hella out of date lol I'll rewrite it soon
 # Rawalle (Fork of [Specnr's MultiResetWall](https://github.com/Specnr/MultiResetWall))
 Support Specnr (original macro author)
 
