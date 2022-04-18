@@ -1,4 +1,4 @@
-; v0.5.1-alpha
+; v0.6.0-beta
 
 MousePosToInstNumber() {
     MouseGetPos, mX, mY
@@ -31,6 +31,13 @@ ToWallOrNextInstance() {
 }
 
 ToWall() {
+    if (useObsWebsocket) {
+        SendOBSCommand("ToWall")
+    } else {
+        Send, {F12 Down}
+        Sleep, %obsDelay%
+        Send, {F12 Up}
+    }
     WinActivate, Fullscreen Projector
     WinSet, AlwaysOnTop, On, Fullscreen Projector
     WinSet, AlwaysOnTop, Off, Fullscreen Projector
@@ -97,76 +104,17 @@ UnlockInstance(idx, sound := True) {
         SoundPlay, media\lock.wav
 }
 
-RunHide(command) {
-    dhw := A_DetectHiddenWindows
-    DetectHiddenWindows, On
-    Run, %ComSpec%,, Hide, cPid
-    WinWait, ahk_pid %cPid%
-    DetectHiddenWindows, %dhw%
-    DllCall("AttachConsole", "UInt", cPid)
-
-    shell := ComObjCreate("WScript.Shell")
-    exec := shell.Exec(command)
-    result := exec.StdOut.ReadAll()
-
-    DllCall("FreeConsole")
-    Process, Close, %cPid%
-    return result
-}
-
-GetMcDir(pid) {
-    command := Format("powershell.exe $x = Get-WmiObject Win32_Process -Filter \""ProcessId = {1}\""; $x.CommandLine", pid)
-    rawOut := RunHide(command)
-    if (InStr(rawOut, "--gameDir")) {
-        strStart := RegExMatch(rawOut, "P)--gameDir (?:""(.+?)""|([^\s]+))", strLen, 1)
-        return SubStr(rawOut, strStart+10, strLen-10) . "\"
-    } else {
-        strStart := RegExMatch(rawOut, "P)(?:-Djava\.library\.path=(.+?) )|(?:\""-Djava\.library.path=(.+?)\"")", strLen, 1)
-        if (SubStr(rawOut, strStart+20, 1) == "=") {
-            strLen -= 1
-            strStart += 1
-        }
-        return StrReplace(SubStr(rawOut, strStart+20, strLen-28) . ".minecraft\", "/", "\")
-    }
-}
-
-GetInstanceNumberFromMcDir(mcdir) {
-    numFile := mcdir . "instanceNumber.txt"
-    num := -1
-    if (mcdir == "" || mcdir == ".minecraft" || mcdir == ".minecraft\" || mcdir == ".minecraft/") ; Misread something
-        Reboot()
-    if (!FileExist(numFile))
-        MsgBox, Missing instanceNumber.txt in %mcdir%
+CountResets(attemptType) {
+    filename := A_ScriptDir . "\attempts\" . attemptType . ".txt"
+    FileRead, numResets, %filename%
+    if (ErrorLevel)
+        numResets := 0
     else
-        FileRead, num, %numFile%
-    return num
+        FileDelete, %filename%
+    numResets += 1
+    FileAppend, %numResets%, %filename%
 }
 
-SetAffinity(pid, mask) {
-    hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
-    DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
-    DllCall("CloseHandle", "Ptr", hProc)
-}
-
-SetAffinities() {
-    Loop, %numInstances% {        
-        mask := (activeInstance > 0 && activeInstance != A_Index) ? lowBitMask : highBitMask
-        SetAffinity(MC_PIDs[A_Index], mask)
-    }
-}
-
-GetInstances() {
-    WinGet, allIDs, List
-    Loop, %allIDs% {
-        WinGet, pid, PID, % "ahk_id " allIDs%A_Index%
-        WinGetTitle, title, ahk_pid %pid%
-        if (InStr(title, "Minecraft*")) {
-            mcdir := GetMcDir(pid)
-            if (idx := GetInstanceNumberFromMcDir(mcdir)) == -1
-                Shutdown()
-            MC_PIDs[idx] := pid
-            McDirectories[idx] := mcdir
-        }
-    }
-    numInstances := MC_PIDs.MaxIndex()
+Log(message) {
+    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Active instance: %activeInstance% | %message%`n, log.log
 }

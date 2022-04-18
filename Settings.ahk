@@ -1,21 +1,25 @@
-; v0.5.1-alpha
-
-; Don't use these 3 settings yet (they literally do nothing)
-;global numInstances := 12
-;global multiMCLocation := "C:\MultiMC"
-;global multiMCNameFormat := "1.16InstX" ; Edit this to match your instance name formats (CASE SENSITIVE, beware)
+; v0.6.0-beta
 
 ; General Settings
-global multiMode := False ; Change to True for regular multi instance mode
+global numInstances := 12
+global multiMCLocation := "C:\MultiMC"
+global multiMCNameFormat := "1.16Inst#" ; Edit this to match your instance name formats (CASE SENSITIVE, beware)
 
+global autoLaunchInstances := True ; Even if this is set to false, you must configure your MultiMC settings above
+global launchPrograms := ["C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Documents\Speedrunning\Ninjabrain-Bot-1.2.0.jar"]
+; If you don't want any programs auto launching (why not??) just set the above to []
+
+global syncMods := False
+global multiMode := False ; Change to True for regular multi instance mode
 global fullscreen := False ; Enable to use fullscreen (as in F11)
 global borderless := False ; Enable to use borderless windowed (like fullscreen, may have more input lag, but nicer otherwise)
 ; Fullscreen and borderless can both be set to True, it won't break anything, but there's little point in using both
-
-global countAttempts := True
+global disableTTS := False
+global countResets := True
 global coopResets := False ; Use forceport and some method of forwarding/sharing port 25565
 global autoBop := False ; Automatically deletes old worlds when you open the macro
 
+; Settings
 global renderDistance := 18
 global fov := 110 ; Normal = 70, Quake pro = 110
 global mouseSensitivity := 100
@@ -40,15 +44,19 @@ global restartDelay := 200 ; Increase if saying missing instanceNumber in .minec
 global obsDelay := 50 ; increase if not changing scenes in obs (only relevant if not using websocket)
 ; OBS WebSocket settings
 global useObsWebsocket := True ; Allows for >9 instances, visual lock indicators, and world screenshotting
+global screenshotWorlds := True
 global host := "localhost"
 global port := 4444
 global password := "Multi"
-global wallScene := "The Wall"
-global mainScene := "Playing"
+global lockIndicators := True
+global lockLayerFormat := "lock " ; obviously not relevant if you're not using lock indicators
 global instanceSourceFormat := "mc "
-global screenshotWorlds := False
-global lockIndicators := False
-global lockLayerFormat := "Lock " ; obviously not relevant if you're not using lock indicators
+global wallScene := "instance wall"
+; Normal "multiple scene" setup
+global instanceSceneFormat := "instance "
+; Single scene setup
+global singleSceneOBS := False
+global playingScene := "playing scene"
 
 ; Performance related settings
 ; Affinity
@@ -58,4 +66,5 @@ global instanceFreezing := False
 global resumeDelay := 50 ; Increase if instance isn't resetting (or have to press reset twice)
 global beforeFreezeDelay := 3000 ; increase if doesnt join world
 ; Settings changes
+global settingsDelay := 15 ; Increase if settings aren't changing
 global beforePauseDelay := 500 ; Basically the delay before dynamic FPS does its thing

@@ -8,6 +8,7 @@
 
 from datetime import datetime
 import shutil
+from numpy import single
 from obswebsocket import obsws, requests
 from os.path import exists
 import os
@@ -45,25 +46,31 @@ def execute_cmd(cmd):
                 global inst_num
                 old_inst_num = inst_num
                 inst_num = cmd[1]
-                ws.call(requests.SetSceneItemRender(f"{instance_source_format}{inst_num}", True, f"{main_scene}"))
-                if (inst_num != old_inst_num):
-                    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{old_inst_num}", False, f"{main_scene}"))
-                ws.call(requests.SetCurrentScene(f"{main_scene}"))
+                if (single_scene):
+                    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{inst_num}", True, f"{playing_scene}"))
+                    if (inst_num != old_inst_num):
+                        ws.call(requests.SetSceneItemRender(f"{instance_source_format}{old_inst_num}", False, f"{playing_scene}"))
+                    ws.call(requests.SetCurrentScene(f"{playing_scene}"))
+                else:
+                    ws.call(requests.SetCurrentScene(f"{instance_scene_format}{inst_num}"))
             case "Lock":
                 lock_num = cmd[1]
                 render = True if int(cmd[2]) else False
                 ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{lock_num}", render, f"{wall_scene}"))
             case "GetImg":
+                global img_data
                 start = datetime.now().timestamp()
                 while (datetime.now().timestamp() - start < 3):
-                    global img_data
-                    layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_source_format}{inst_num}", f"{main_scene}")).datain
+                    if (single_scene):
+                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_source_format}{inst_num}", f"{playing_scene}")).datain
+                    else:
+                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_source_format}{inst_num}", f"{instance_scene_format}{inst_num}")).datain
                     ratio = layer_info_data["width"] / layer_info_data["height"]
                     if (abs((16/9) - ratio) > 0.15):
                         print("Ratio " + str(ratio) + " exceeds allowed variance from 1.777..., instance is probably still wide, waiting")
-                        continue
-                    img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_source_format}{inst_num}", "png")).datain["img"]
-                    break
+                    else:
+                        break
+                img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_source_format}{inst_num}", "png")).datain["img"]
             case "SaveImg":
                 path = os.path.dirname(os.path.realpath(__file__)) + "\\..\\screenshots\\" + ("entered\\" if int(cmd[2]) else "unentered\\")
                 filename = cmd[1]
@@ -75,11 +82,13 @@ print(sys.argv)
 host = sys.argv[1]
 port = int(sys.argv[2])
 password = sys.argv[3]
-wall_scene = sys.argv[4]
-main_scene = sys.argv[5]
-instance_source_format = sys.argv[6]
-lock_layer_format = sys.argv[7]
-num_instances = int(sys.argv[8])
+lock_layer_format = sys.argv[4]
+wall_scene = sys.argv[5]
+instance_scene_format = sys.argv[6]
+single_scene = True if sys.argv[7] == "True" else False
+playing_scene = sys.argv[8]
+instance_source_format = sys.argv[9]
+num_instances = int(sys.argv[10])
 inst_num = 0
 img_data = ""
 
@@ -89,7 +98,7 @@ scenes = ws.call(requests.GetSceneList())
 
 for i in range(1, num_instances+1):
     print(i)
-    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{i}", False, f"{main_scene}"))
+    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{i}", False, f"{playing_scene}"))
     ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{i}", False, f"{wall_scene}"))
     
 try:
