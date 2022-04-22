@@ -154,7 +154,7 @@ Reveal(idx) {
 
 SetAffinities() {
     for idx, pid in MC_PIDs {
-        mask := (activeInstance == -1 || activeInstance == idx) ? highBitMask : lowBitMask
+        mask := (activeInstance == 0 || activeInstance == idx) ? highBitMask : lowBitMask
         hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
         DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
         DllCall("CloseHandle", "Ptr", hProc)
