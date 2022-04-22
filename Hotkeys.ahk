@@ -4,7 +4,7 @@
 ^RAlt::Reboot()
 ;*I::SetTitles() ; Set titles if you are setting up obs
 
-#IfWinActive, Minecraft
+#If WinActive("Minecraft") && WinActive("ahk_exe javaw.exe")
 {
     *U::Reset()
     *P::ResetPie()
