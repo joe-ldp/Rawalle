@@ -31,6 +31,8 @@ ToWallOrNextInstance() {
 }
 
 ToWall() {
+    WinMaximize, Fullscreen Projector
+    WinActivate, Fullscreen Projector
     if (useObsWebsocket) {
         SendOBSCommand("ToWall")
     } else {
@@ -38,15 +40,11 @@ ToWall() {
         Sleep, %obsDelay%
         Send, {F12 Up}
     }
-    WinActivate, Fullscreen Projector
-    WinSet, AlwaysOnTop, On, Fullscreen Projector
-    WinSet, AlwaysOnTop, Off, Fullscreen Projector
     isOnWall := True
 }
 
 global cmdNum := 1
 SendOBSCommand(cmd) {
-    idx = %3%
     cmdDir := A_ScriptDir . "\scripts\pyCmds\"
     cmdFile := cmdDir . "TWCMD" . cmdNum . ".txt"
     cmdNum++

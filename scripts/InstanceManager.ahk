@@ -104,8 +104,6 @@ Reset(force := False) {
         if (!force) {
             Log("Resetting")
             if (currentState == STATE_PLAYING) {
-                if (!multiMode)
-                    WinMaximize, Fullscreen Projector
                 if (useObsWebsocket && screenshotWorlds)
                     SendOBSCommand("SaveImg," . A_NowUTC . "," . currentWorldEntered)
             }
@@ -117,7 +115,6 @@ Reset(force := False) {
             if (fullscreen && options.fullscreen == "true") {
                 fs := options["key_key.fullscreen"]
                 ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
-                Sleep, %fullscreenDelay%
             }
             
             switch currentState
