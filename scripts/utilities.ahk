@@ -8,61 +8,60 @@ CheckNetherStructures() {
 CheckBastions() {
 	Send, /
 	Sleep, 60
-	Send, execute positioned 0 0 0 run locate bastion_remnant{Enter}
+	Send, {Text}execute positioned 0 0 0 run locate bastion_remnant
+	Send, {Enter}/
 	Sleep, 60
-	Send, /
+	Send, {Text}execute positioned -1 0 0 run locate bastion_remnant
+	Send, {Enter}/
 	Sleep, 60
-	Send, execute positioned -1 0 0 run locate bastion_remnant{Enter}
+	Send, {Text}execute positioned 0 0 -1 run locate bastion_remnant
+	Send, {Enter}/
 	Sleep, 60
-	Send, /
-	Sleep, 60
-	Send, execute positioned 0 0 -1 run locate bastion_remnant{Enter}
-	Sleep, 60
-	Send, /
-	Sleep, 60
-	Send, execute positioned -1 0 -1 run locate bastion_remnant{Enter}
+	Send, {Text}execute positioned -1 0 -1 run locate bastion_remnant
+	Send, {Enter}
 }
 
 CheckFortresses() {
 	Send, /
 	Sleep, 60
-	Send, execute positioned 0 0 0 run locate fortress{Enter}
+	Send, {Text}execute positioned 0 0 0 run locate fortress
+	Send, {Enter}/
 	Sleep, 60
-	Send, /
+	Send, {Text}execute positioned -1 0 0 run locate fortress
+	Send, {Enter}/
 	Sleep, 60
-	Send, execute positioned -1 0 0 run locate fortress{Enter}
+	Send, {Text}execute positioned 0 0 -1 run locate fortress
+	Send, {Enter}/
 	Sleep, 60
-	Send, /
-	Sleep, 60
-	Send, execute positioned 0 0 -1 run locate fortress{Enter}
-	Sleep, 60
-	Send, /
-	Sleep, 60
-	Send, execute positioned -1 0 -1 run locate fortress{Enter}
+	Send, {Text}execute positioned -1 0 -1 run locate fortress
+	Send, {Enter}
 }
 
 CheckBuriedTreasure() {
 	Send, /
 	Sleep, 60
-	Send, locate buried_treasure{Enter}
+	Send, {Text}locate buried_treasure
+	Send, {Enter}
 }
 
 CheckStronghold() {
 	Send, /
 	Sleep, 60
-	Send, locate stronghold{Enter}
+	Send, {Text}locate stronghold
+	Send, {Enter}
 }
 
 OpenToLAN() {
     Send, {Esc}
 	Sleep, 40
 	Send, {Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}/
-	Sleep, 100
+	Sleep, 60
 	SetKeyDelay, 0
-	Send, gamemode spectator{Enter}
-	Send, /
-	Sleep, 100
-	Send, gamerule doImmediateRespawn true{Enter}
+	Send, {Text}gamemode spectator
+	Send, {Enter}/
+	Sleep, 60
+	Send, {Text}gamerule doImmediateRespawn true
+	Send, {Enter}
 }
 
 SetPortal() {
