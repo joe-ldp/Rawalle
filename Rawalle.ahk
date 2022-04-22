@@ -66,11 +66,13 @@ Loop, %numInstances% {
         FileDelete, %openFile%
 }
 
-ErrorLevel := 0
-While, ErrorLevel == 0 {
-    Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%",, Hide, OBS_PID
-    Sleep, 2000
-    Process, Exist, %OBS_PID%
+if (useObsWebsocket) {
+    ErrorLevel := 0
+    While, ErrorLevel == 0 {
+        Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%",, Hide, OBS_PID
+        Sleep, 2000
+        Process, Exist, %OBS_PID%
+    }
 }
 
 checkIdx := 1
