@@ -42,8 +42,10 @@ if (!FileExist(unenteredScreenshots))
 for each, program in launchPrograms {
     SplitPath, program, filename, dir
     isOpen := False
-    for proc in ComObjGet("winmgmts:").ExecQuery(Format("Select * from Win32_Process where CommandLine like ""%{1}%""", filename))
+    for proc in ComObjGet("winmgmts:").ExecQuery(Format("Select * from Win32_Process where CommandLine like ""%{1}%""", filename)) {
         isOpen := True
+        break
+    } 
     if (!isOpen)
         Run, %filename%, %dir%
 }
