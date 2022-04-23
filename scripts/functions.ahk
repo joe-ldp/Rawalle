@@ -87,17 +87,21 @@ ToggleLock(idx) {
 }
 
 LockInstance(idx, sound := True) {
-    if (!locked[idx])
-        SendOBSCommand("Lock," . idx . "," . 1)
+    if (locked[idx])
+        return
+    SendOBSCommand("Lock," . idx . "," . 1)
     locked[idx] := A_TickCount
+    LogAction(idx, "lock")
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
 }
 
 UnlockInstance(idx, sound := True) {
-    if (locked[idx])
-        SendOBSCommand("Lock," . idx . "," . 0)
+    if (!locked[idx])
+        return
+    SendOBSCommand("Lock," . idx . "," . 0)
     locked[idx] := 0
+    LogAction(idx, "unlock")
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
 }
@@ -113,6 +117,6 @@ CountResets(attemptType) {
     FileAppend, %numResets%, %filename%
 }
 
-Log(message) {
-    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Active instance: %activeInstance% | %message%`n, log.log
+LogAction(idx, action) {
+    FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
 }

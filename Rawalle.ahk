@@ -112,6 +112,7 @@ Reset(idx := -1) {
     PostMessage, MSG_RESET,,,,ahk_pid %IM_PID%
     CountResets("Attempts")
     CountResets("Daily Attempts")
+    LogAction(idx, "reset")
 
     if (activeInstance == idx) {
         if (!multiMode) {
@@ -133,6 +134,7 @@ Play(idx) {
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
     if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
+        LogAction(idx, "play")
         LockInstance(idx, False)
         activeInstance := idx
         SetAffinities()
