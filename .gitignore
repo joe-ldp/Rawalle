@@ -1,8 +1,8 @@
 *.zip
 *-Joe.*
-log.log
 *.tmp
 *.psd
+actions.csv
 /scripts/__pyCache__
 /scripts/pyCmds
 /scripts/runPy.tmp
