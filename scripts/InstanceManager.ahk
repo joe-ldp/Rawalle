@@ -56,10 +56,21 @@ if (!pid := IsInstanceOpen()) {
     Run, %multiMCLocation%\MultiMC.exe -l "%instName%"
     while (!pid := IsInstanceOpen())
         Sleep, 500
-    WinActivate, ahk_pid %pid%
     FileAppend, %pid%, inst%idx%open.tmp
-    wait := 12000 + (idx * 1500)
-    Sleep, %wait%
+    WinActivate, ahk_pid %pid%
+    Sleep, 10000
+    logFile.Close()
+    logFile := FileOpen(mcDir . "logs/latest.log", "r")
+    ControlSend,, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+    currentState := STATE_RESETTING
+    ManageState()
+    ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+    Sleep, 50
+    ControlSend,, {Blind}{Shift down}{F3}{Shift up}, ahk_pid %pid%
+    Sleep, 1000
+	ControlSend,, {Blind}11900219003190041900519006190071900819009190019029014605602460560346056044605605460560, ahk_pid %pid%
+    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+    Sleep, 1000
 } else {
     FileAppend, %pid%, inst%idx%open.tmp
     logFileSize := logFile.Length()
