@@ -23,13 +23,14 @@ global idx := A_Args[1]
 global instName := StrReplace(multiMCNameFormat, "#", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
-global logFile := FileOpen(mcDir . "logs/latest.log", "r")
+global logFile := FileOpen(mcDir . "logs\latest.log", "r")
 global logFileSize := 0
-global failedResets := 0
 global percentLoaded := 0
 global options := []
 global frozen := False
 global currentState := STATE_INIT
+global lastResetUTC := 0
+global lastNewWorldUTC := 0
 
 I_Icon = ../media/IM.ico
 if (FileExist(I_Icon))
@@ -107,11 +108,12 @@ Reveal() {
     ToolTip, `%: %percentLoaded% state: %currentState%
 }
 
-Reset(force := False) {
-    if (currentState == STATE_RESETTING) {
+Reset(wParam := 0) {
+    if (currentState == STATE_RESETTING || (wParam > lastResetUTC && wParam < lastNewWorldUTC)) {
         return
     } else {
         Log("Resetting")
+        lastResetUTC := A_NowUTC
         percentLoaded := 0
         Process, Priority, %pid%, Normal
         GetSettings()
@@ -149,8 +151,10 @@ Reset(force := False) {
         
         currentState := STATE_RESETTING
         start := A_NowUTC
+        failedResets := 0
+        Sleep, 200
         Loop, {
-            Sleep, 20
+            Sleep, 50
             if (failedResets)
                 Sleep, 1000
             logFile.Position := logFileSize
@@ -158,6 +162,7 @@ Reset(force := False) {
             if((InStr(log, "Stopping server") && InStr(log, "Stopping worker threads")) || InStr(log, "Leaving world generation")) {
                 Log("Successful reset confirmed. Log:`n" . log)
                 logFileSize := logFile.Length()
+                lastNewWorldUTC := A_NowUTC
                 failedResets := 0
                 ManageState()
                 break
@@ -396,7 +401,7 @@ Exit() {
 
 ManageState() {
     Critical
-    while (!(currentState == STATE_PREVIEWING && resetMsg := DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
+    while (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
         logFile.Position := logFileSize
         log := logFile.Read()
         ;ToolTip, %resetMsg%`n%log%
