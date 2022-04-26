@@ -18,11 +18,12 @@ global STATE_PLAYING    := 2
 global STATE_RESETTING  := 3
 global STATE_PREVIEWING := 4
 
+global pid := 0
 global idx := A_Args[1]
 global instName := StrReplace(multiMCNameFormat, "#", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
-global pid := 0
+global logFile := FileOpen(mcDir . "logs/latest.log", "r")
 global logFileSize := 0
 global failedResets := 0
 global percentLoaded := 0
@@ -34,6 +35,8 @@ I_Icon = ../media/IM.ico
 if (FileExist(I_Icon))
     Menu, Tray, Icon, %I_Icon%
 Menu, Tray, Tip, Instance %idx% Manager
+
+OnExit("Exit")
 
 if (autoBop) {
     cmd := Format("python.exe " . A_ScriptDir . "\worldBopper9000.py {1}", mcDir)
@@ -59,6 +62,7 @@ if (!pid := IsInstanceOpen()) {
     Sleep, %wait%
 } else {
     FileAppend, %pid%, inst%idx%open.tmp
+    logFileSize := logFile.Length()
     ; if (options.fullscreen) {
     ;     fs := options["key_key.fullscreen"]
     ;     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
@@ -72,10 +76,6 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
 GetSettings()
-
-logFile := FileOpen(mcDir . "logs/latest.log", "r")
-logFileSize := logFile.Length()
-logFile.Close()
 
 if (multiMode)
     wideResets := False
@@ -136,7 +136,6 @@ Reset(force := False) {
                 ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
         }
         
-        logFile := FileOpen(mcDir . "logs/latest.log", "r")
         currentState := STATE_RESETTING
         start := A_NowUTC
         Loop, {
@@ -165,7 +164,6 @@ Reset(force := False) {
                 Log("??? Log:`n" . log)
             }
         }
-        logFile.Close()
     }
 }
 
@@ -310,7 +308,6 @@ GetSettings() {
 }
 
 GetLogLines() {
-    logFile := FileOpen(mcDir . "logs/latest.log", "r")
     logFile.Position := logFileSize
     log := logFile.Read()
     Loop, Parse, log, "`n"
@@ -319,7 +316,6 @@ GetLogLines() {
         if(RegExMatch(line, "(?P<Loaded>[0-9]+)(?:\%)", pcnt))
             percentLoaded := pcntLoaded
     }
-    logFile.Close()
     return log
 }
 
@@ -336,7 +332,8 @@ SendOBSCommand(cmd) {
 }
 
 CurrentWorldEntered() {
-    log := GetLogLines()
+    logFile.Position := logFileSize
+    log := logFile.Read()
     return InStr(log, "We Need To Go Deeper")
 }
 
@@ -382,9 +379,12 @@ Log(message) {
     FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %currentState% | %message%`n, %mcDir%log.log
 }
 
+Exit() {
+    logFile.Close()
+}
+
 ManageState() {
     Critical
-    logFile := FileOpen(mcDir . "logs/latest.log", "r")
     while (!(currentState == STATE_PREVIEWING && resetMsg := DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
         logFile.Position := logFileSize
         log := logFile.Read()
@@ -422,7 +422,6 @@ ManageState() {
             break
         }
     }
-    logFile.Close()
 }
 
 return ; end the auto-execute section so the labels don't get executed when the script opens (thanks ahk)
