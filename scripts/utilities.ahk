@@ -1,6 +1,4 @@
-﻿SetKeyDelay, 0
-
-CheckNetherStructures() {
+﻿CheckNetherStructures() {
 	CheckBastions()
 	CheckFortresses()
 }
