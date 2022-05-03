@@ -15,6 +15,7 @@ import os
 import csv
 import sys
 import urllib.request
+import time
 
 def get_cmd(path):
     cmdFiles = []
@@ -118,6 +119,7 @@ try:
             cmd = get_cmd(cmdsPath)
             print(cmd)
             execute_cmd(cmd)
+        time.sleep(0.2)
 except Exception as e:
     print(f"Error: {e}")
 
