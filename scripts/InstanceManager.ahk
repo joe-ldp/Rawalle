@@ -166,7 +166,7 @@ Switch() {
         Process, Priority, %pid%, High
 
         if (useObsWebsocket) {
-            SendOBSCommand(Format("Play,{1}", idx))
+            SendOBSCommand("Play," . idx)
             if (screenshotWorlds)
                 SendOBSCommand("GetImg")
         } else {
