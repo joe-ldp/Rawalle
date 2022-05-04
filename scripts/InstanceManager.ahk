@@ -321,15 +321,13 @@ ResetSettings() {
             SetKeyDelay, 1
         }
         ControlSend,, {Blind}{Tab 5}{Enter}{Shift down}P{Shift up}{Tab 4}, ahk_pid %pid%
+        SetKeyDelay, 0
         if (renderDistance != currentRenderDistance || currentState == STATE_PLAYING) {
-            SetKeyDelay, 0
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %renderPresses%}, ahk_pid %pid%
-            SetKeyDelay, 1
         }
         if (entityDistance != currentEntityDistance) {
             ControlSend,, {Blind}{Tab 13}, ahk_pid %pid%
-            SetKeyDelay, 0
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %entityPresses%}, ahk_pid %pid%
         }
