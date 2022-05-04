@@ -29,7 +29,7 @@ global logFileSize := 0
 global percentLoaded := 0
 global options := []
 global frozen := False
-global currentState := STATE_INIT
+global currentState := STATE_UNKNOWN
 global lastResetUTC := 0
 global lastNewWorldUTC := 0
 
