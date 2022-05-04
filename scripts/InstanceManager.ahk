@@ -12,6 +12,7 @@ SetWinDelay, 1
 #Include %A_ScriptDir%/messages.ahk
 #Include %A_ScriptDir%/../Settings.ahk
 
+global STATE_UNKNOWN    := -1
 global STATE_INIT       := 0
 global STATE_READY      := 1
 global STATE_PLAYING    := 2
@@ -58,20 +59,9 @@ if (!pid := IsInstanceOpen()) {
     while (!pid := IsInstanceOpen())
         Sleep, 500
     FileAppend, %pid%, inst%idx%open.tmp
-    WinActivate, ahk_pid %pid%
-    Sleep, 10000
+    Sleep, 15000
     logFile.Close()
-    logFile := FileOpen(mcDir . "logs/latest.log", "r")
-    ControlSend,, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-    currentState := STATE_RESETTING
-    ManageState()
-    ControlSend,, {Blind}{Esc}, ahk_pid %pid%
-    Sleep, 50
-    ControlSend,, {Blind}{Shift down}{F3}{Shift up}, ahk_pid %pid%
-    Sleep, 1000
-	ControlSend,, {Blind}11900219003190041900519006190071900819009190019029014605602460560346056044605605460560, ahk_pid %pid%
-    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-    Sleep, 1000
+    logFile := FileOpen(mcDir . "logs\latest.log", "r")
 } else {
     FileAppend, %pid%, inst%idx%open.tmp
     logFileSize := logFile.Length()
@@ -88,6 +78,9 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
 GetSettings()
+if(InStr(logFile.Read(), "recipes"))
+    currentState := STATE_INIT
+logFile.Position := 0
 
 if (multiMode)
     wideResets := False
@@ -108,27 +101,31 @@ Reveal() {
     ToolTip, `%: %percentLoaded% state: %currentState%
 }
 
-Reset(wParam := 0) {
+Reset(wParam) {
     if (currentState == STATE_RESETTING || (wParam > lastResetUTC && wParam < lastNewWorldUTC)) {
         return
+    } else if (currentState == STATE_INIT) {
+        ControlSend,, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+        currentState := STATE_RESETTING
+        ManageState()
+        Sleep, 1000
+        ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+        Sleep, 100
+        ControlSend,, {Blind}{Shift down}{F3}{Shift up}{LAlt 2}, ahk_pid %pid%
+        Sleep, 2000
+        ControlSend,, {Blind}11900219003190041900519006190071900819009190019029014605602460560346056044605605460560, ahk_pid %pid%
+        ;ControlSend,, {Blind}4113, ahk_pid %pid%
+        ControlSend,, {Blind}{F3 Down}{B}{Esc}{F3 Up}, ahk_pid %pid%
+        Sleep, 2000
     } else {
         Log("Resetting")
         lastResetUTC := A_NowUTC
         percentLoaded := 0
-        Process, Priority, %pid%, Normal
-        GetSettings()
-        if (currentState == STATE_PLAYING) {
-            if (useObsWebsocket && screenshotWorlds)
-                SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
-            if (fullscreen && options.fullscreen == "true") {
-                fs := options["key_key.fullscreen"]
-                ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
-            }
-        }
         if (instanceFreezing && frozen)
             Unfreeze()
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
+        GetSettings()
         
         switch currentState
         {
@@ -136,22 +133,25 @@ Reset(wParam := 0) {
                 ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
             case STATE_PREVIEWING:
                 lp := options["key_LeavePreview"]
-                ControlSend,, {Blind}{%lp%}{%lp%}{%lp%}{%lp%}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+                ControlSend,, {Blind}{%lp%}, ahk_pid %pid%
             case STATE_PLAYING:
+                Process, Priority, %pid%, Normal
+                if (useObsWebsocket && screenshotWorlds)
+                    SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
+                if (fullscreen && options.fullscreen == "true") {
+                    fs := options["key_key.fullscreen"]
+                    ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+                }
                 if (wideResets)
                     Widen()
                 Sleep, %settingsDelay%
                 ResetSettings()
                 ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-            case STATE_INIT:
-                ControlSend,, {Blind}/, ahk_pid %pid%
-                Sleep, 120
-                ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-        }
-        
+            case STATE_UNKNOWN:
                 lp := options["key_LeavePreview"]
                 ControlSend,, {Blind}{%lp%}/, ahk_pid %pid%
                 Sleep, 120
+                ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
         }
 
         currentState := STATE_RESETTING
@@ -186,7 +186,7 @@ Switch() {
         }
 
         Send, {LButton}
-        if (currentState == STATE_READY || currentState == STATE_INIT)
+        if (currentState == STATE_READY || currentState == STATE_UNKNOWN)
             Play()
 
         return 0
