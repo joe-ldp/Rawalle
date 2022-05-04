@@ -65,10 +65,6 @@ if (!pid := IsInstanceOpen()) {
 } else {
     FileAppend, %pid%, inst%idx%open.tmp
     logFileSize := logFile.Length()
-    ; if (options.fullscreen) {
-    ;     fs := options["key_key.fullscreen"]
-    ;     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
-    ; }
 }
 
 OnMessage(MSG_RESET, "Reset")
@@ -82,6 +78,10 @@ if(InStr(logFile.Read(), "recipes"))
     currentState := STATE_INIT
 logFile.Position := 0
 
+if (options.fullscreen == "true") {
+    fs := options["key_key.fullscreen"]
+    ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+}
 if (multiMode)
     wideResets := False
 if (wideResets) {
