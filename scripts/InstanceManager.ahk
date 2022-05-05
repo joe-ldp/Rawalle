@@ -74,7 +74,7 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
 GetSettings()
-if(InStr(logFile.Read(), "recipes"))
+if(!InStr(logFile.Read(), "recipes"))
     currentState := STATE_INIT
 logFile.Position := 0
 
