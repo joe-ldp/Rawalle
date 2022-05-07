@@ -360,18 +360,6 @@ GetSettings() {
     }
 }
 
-GetLogLines() {
-    logFile.Position := logFileSize
-    log := logFile.Read()
-    Loop, Parse, log, "`n"
-    {
-        line = %A_LoopField%
-        if(RegExMatch(line, "(?P<Loaded>[0-9]+)(?:\%)", pcnt))
-            percentLoaded := pcntLoaded
-    }
-    return log
-}
-
 SetTitle() {
     WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 }
