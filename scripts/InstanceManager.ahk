@@ -143,7 +143,6 @@ Reset(wParam) {
                 lp := options["key_LeavePreview"]
                 ControlSend,, {Blind}{%lp%}, ahk_pid %pid%
             case STATE_PLAYING:
-                Process, Priority, %pid%, Normal
                 if (useObsWebsocket && screenshotWorlds)
                     SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
                 if (fullscreen && options.fullscreen == "true") {
@@ -171,7 +170,6 @@ Switch() {
     if ((currentState != STATE_RESETTING && (multiMode || currentState != STATE_PREVIEWING))) { ; || (currentState == STATE_PREVIEWING && percentLoaded >= 70)) {
         Log("Switched to instance")
         Send, {Shift up}
-        Process, Priority, %pid%, High
 
         if (useObsWebsocket) {
             SendOBSCommand("Play," . idx)
