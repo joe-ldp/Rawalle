@@ -26,7 +26,6 @@ global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
 global logFile := FileOpen(mcDir . "logs\latest.log", "r")
 global logFileSize := 0
-global percentLoaded := 0
 global options := []
 global frozen := False
 global currentState := STATE_UNKNOWN
