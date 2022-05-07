@@ -55,11 +55,19 @@ if (!pid := IsInstanceOpen()) {
         }
         FileCopyDir, %centralModsDir%, %instModsDir%, 1
     }
+    mmcpack := instDir . "\mmc-pack.json"
+    FileGetTime, packModified, %mmcpack%, M
     Run, %multiMCLocation%\MultiMC.exe -l "%instName%"
     while (!pid := IsInstanceOpen())
         Sleep, 500
+    Loop, {
+        FileGetTime, packModifiedAgain, %mmcpack%, M
+        if (packModifiedAgain > packModified)
+            break
+        Sleep, 500
+    }
     FileAppend, %pid%, inst%idx%open.tmp
-    Sleep, 15000
+    Sleep, 12000
     logFile.Close()
     logFile := FileOpen(mcDir . "logs\latest.log", "r")
 } else {
