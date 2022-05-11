@@ -3,6 +3,7 @@
 ; v0.6.0-beta
 
 #NoEnv
+#WinActivateForce
 #SingleInstance, Off
 SetWorkingDir, %A_ScriptDir%
 
