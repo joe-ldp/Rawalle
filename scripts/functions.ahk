@@ -127,10 +127,11 @@ MousePosToInstNumber() {
 }
 
 NextInstance() {
-    ErrorLevel := 1
-    while (ErrorLevel != 0) {
+    Loop, {
         activeInstance := activeInstance + 1 > numInstances ? 1 : activeInstance + 1
         Play(activeInstance)
+        if (ErrorLevel == 0)
+            break
     }
 }
 
