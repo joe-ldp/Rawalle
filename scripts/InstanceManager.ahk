@@ -25,12 +25,13 @@ global instName := StrReplace(multiMCNameFormat, "#", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
 global logFile := FileOpen(mcDir . "logs\latest.log", "r")
-global logFileSize := 0
+global newWorldPos := logFile.Length()
 global options := []
 global frozen := False
 global currentState := STATE_UNKNOWN
-global lastResetUTC := 0
-global lastNewWorldUTC := 0
+global lastReset := 0
+global lastNewWorld := 0
+global resetValidated := False
 
 I_Icon = ../media/IM.ico
 if (FileExist(I_Icon))
@@ -71,7 +72,7 @@ if (!pid := IsInstanceOpen()) {
     logFile := FileOpen(mcDir . "logs\latest.log", "r")
 } else {
     FileAppend, %pid%, inst%idx%open.tmp
-    logFileSize := logFile.Length()
+    newWorldPos := logFile.Length()
 }
 
 OnMessage(MSG_RESET, "Reset")
@@ -109,38 +110,39 @@ Reveal() {
 }
 
 Reset(wParam) {
-    if (currentState == STATE_RESETTING || (wParam > lastResetUTC && wParam < lastNewWorldUTC)) {
+    if (currentState == STATE_RESETTING || (wParam > lastReset && wParam < lastNewWorld)) {
         return
     } else if (currentState == STATE_INIT) {
         ControlSend,, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-        currentState := STATE_RESETTING
-        ManageState()
-        Sleep, 1000
-        ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+        while (!InStr(logFile.ReadLine(), "the_end", -7)) {
+            Sleep, 100
+        }
         Sleep, 100
         ControlSend,, {Blind}{Shift down}{F3}{Shift up}{LAlt 2}, ahk_pid %pid%
         Sleep, 2000
         ControlSend,, {Blind}11900219003190041900519006190071900819009190019029014605602460560346056044605605460560, ahk_pid %pid%
         ;ControlSend,, {Blind}4113, ahk_pid %pid%
         ControlSend,, {Blind}{F3 Down}{B}{Esc}{F3 Up}, ahk_pid %pid%
-        Sleep, 2000
+        currentState := STATE_READY
     } else {
         Log("Resetting")
-        lastResetUTC := A_NowUTC
+        lastReset := A_NowUTC
         percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         GetSettings()
-        
+
         switch currentState
         {
+            case STATE_UNKNOWN:
+                lp := options["key_LeavePreview"]
+                ControlSend,, {Blind}{%lp%}/, ahk_pid %pid%
+                Sleep, 120
+                ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
             case STATE_READY:
                 ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
-            case STATE_PREVIEWING:
-                lp := options["key_LeavePreview"]
-                ControlSend,, {Blind}{%lp%}, ahk_pid %pid%
             case STATE_PLAYING:
                 if (useObsWebsocket && screenshotWorlds)
                     SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
@@ -153,15 +155,17 @@ Reset(wParam) {
                 Sleep, %settingsDelay%
                 ResetSettings()
                 ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-            case STATE_UNKNOWN:
+            case STATE_PREVIEWING:
                 lp := options["key_LeavePreview"]
-                ControlSend,, {Blind}{%lp%}/, ahk_pid %pid%
-                Sleep, 120
-                ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+                SetKeyDelay, 1
+                ControlSend,, {Blind}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}, ahk_pid %pid%
+                SetKeyDelay, 0
         }
 
         currentState := STATE_RESETTING
-        ManageState()
+        newWorldPos := logFile.Length()
+        SetTimer, CheckReset, -1200
+        SetTimer, ManageState, -0
     }
 }
 
@@ -222,59 +226,12 @@ Play() {
     currentState := STATE_PLAYING
 }
 
-ManageState() {
-    Critical
-    start := A_NowUTC
-    while (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
-        if (lastNewWorldUTC < lastResetUTC) {
-            logFile.Position := logFileSize
-            log := logFile.Read()
-            if((InStr(log, "Stopping server") && InStr(log, "Stopping worker threads")) || InStr(log, "Leaving world generation")) {
-                Log("Successful reset confirmed. Log:`n" . log)
-                logFileSize := logFile.Length()
-                lastNewWorldUTC := A_NowUTC
-            } else if (A_NowUTC - start > 1) { ; instance didn't reset
-                Log("Found failed reset. Forcing reset. Log:`n" . log)
-                if (SubStr(lastResetUTC, 8, 2) == "00") {
-                    logFile.Close()
-                    logFile := FileOpen(mcDir . "logs\latest.log", "r")
-                }
-                currentState := STATE_UNKNOWN
-                Reset(A_NowUTC)
-            }
-        } else if (Mod(A_TickCount, 20) == 0) {
-            logFile.Position := logFileSize
-            log := logFile.Read()
-            if (currentState == STATE_RESETTING && InStr(log, "Starting Preview")) {
-                Log("Found preview. Log:`n" . log)
-                logFileSize := logFile.Length()
-                currentState := STATE_PREVIEWING
-                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                if (!multiMode)
-                    SetTimer, UpdatePreview, -2000
-                
-            } else if ((currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(log, "/minecraft:the_end") && (InStr(log, "advancements"))) {
-                logFileSize := logFile.Length()
-                WinGet, activePID, PID, A
-                if (activePID != pid) {
-                    Log("World generated, pausing. Log:`n" . log)
-                    Sleep, %beforePauseDelay%
-                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    currentState := STATE_READY
-                    if (instanceFreezing) {
-                        Frz := Func("Freeze").Bind()
-                        bfd := 0 - beforeFreezeDelay
-                        SetTimer, %Frz%, %bfd%
-                    }
-
-                } else {
-                    Log("World generated, playing. Log:`n" . log)
-                    Play()
-                }
-                break
-            }
-        }
-    }
+ValidateReset() {
+    if (!resetValidated)
+        Log("Successful reset confirmed. Log:`n")
+    lastNewWorld := A_NowUTC
+    resetValidated := True
+    return logFile.Length()
 }
 
 Freeze() {
@@ -372,8 +329,9 @@ SendOBSCommand(cmd) {
 }
 
 CurrentWorldEntered() {
-    logFile.Position := logFileSize
+    logFile.Position := newWorldPos
     log := logFile.Read()
+    logFile.Position := newWorldPos
     return InStr(log, "We Need To Go Deeper")
 }
 
@@ -425,6 +383,48 @@ Exit() {
 
 return ; end the auto-execute section so the labels don't get executed when the script opens (thanks ahk)
 
+ManageState:
+    Log("Managing state...")
+    resetValidated := False
+    start := A_NowUTC
+    while (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
+        logFile.Position := newWorldPos
+        log := logFile.Read()
+        if (currentState == STATE_RESETTING && InStr(log, "Starting Preview", -16)) {
+            Log("Found preview. Log:`n" . log)
+            newWorldPos := ValidateReset()
+            ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+            currentState := STATE_PREVIEWING
+            if (!multiMode)
+                SetTimer, UpdatePreview, -2000
+        } else if ((currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(log, "joined the game", -15) && InStr(log, "joined the game", -15) < InStr(log, "the_end", -7)) {
+            newWorldPos := ValidateReset()
+            WinGet, activePID, PID, A
+            if (activePID != pid) {
+                Log("World generated, pausing. Log:`n" . log)
+                Critical, On ; make sure thread isn't interrupted during these few lines
+                ;Sleep, %beforePauseDelay%
+                DllCall("Sleep", "UInt", beforePauseDelay)
+                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                Critical, Off
+                currentState := STATE_READY
+                if (instanceFreezing) {
+                    Frz := Func("Freeze").Bind()
+                    bfd := 0 - beforeFreezeDelay
+                    SetTimer, %Frz%, %bfd%
+                }
+            } else {
+                Log("World generated, playing. Log:`n" . log)
+                Play()
+            }
+            break
+        }
+        if (currentState == STATE_PREVIEWING)
+            Sleep, -1
+    }
+    Log("Managed state. Returning to waiting for messages")
+return
+
 UpdatePreview:
     if (currentState == STATE_PREVIEWING) {
         fp := options.key_FreezePreview
@@ -433,5 +433,25 @@ UpdatePreview:
         ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
         Sleep, 300
         ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
+    }
+return
+
+CheckReset:
+    if (!resetValidated) {
+        logFile.Position := newWorldPos
+        log := logFile.Read()
+        if(InStr(log, "Stopping worker threads", -23) || InStr(log, "Leaving world generation", -24)) { ; || InStr(log, "Preparing spawn area", -26)) {
+            newWorldPos := ValidateReset()
+        } else { ; the instance didn't reset
+            Log("Found failed reset. Forcing reset. Log:`n" . log)
+            if (A_Hour == 0) {
+                logFile.Close()
+                logFile := FileOpen(mcDir . "logs\latest.log", "r")
+            }
+            currentState := STATE_UNKNOWN
+            resetValidated := valid
+            Reset(A_NowUTC)
+        }
+        SetTimer, CheckReset, -1200
     }
 return
