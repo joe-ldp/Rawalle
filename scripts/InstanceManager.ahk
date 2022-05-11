@@ -152,7 +152,7 @@ Reset(wParam) {
                 }
                 if (wideResets)
                     Widen()
-                Sleep, %settingsDelay%
+                DllCall("Sleep", "UInt", settingsDelay)
                 ResetSettings()
                 ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
             case STATE_PREVIEWING:
