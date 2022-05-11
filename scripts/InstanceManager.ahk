@@ -449,7 +449,6 @@ CheckReset:
                 logFile := FileOpen(mcDir . "logs\latest.log", "r")
             }
             currentState := STATE_UNKNOWN
-            resetValidated := valid
             Reset(A_NowUTC)
         }
         SetTimer, CheckReset, -1200
