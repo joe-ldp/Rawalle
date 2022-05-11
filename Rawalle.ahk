@@ -105,7 +105,7 @@ if (!disableTTS) {
     wmp.close
 }
 
-Shutdown() {
+Shutdown(ExitReason, ExitCode) {
     FileDelete, scripts/runPy.tmp
     DetectHiddenWindows, On
     UnfreezeAll()
@@ -116,17 +116,21 @@ Shutdown() {
             Process, Close, %pid%
             WinWaitClose, ahk_pid %pid%
         }
-        openFile := A_ScriptDir . "\scripts\inst" . idx . "open.tmp"
-        if (FileExist(openFile))
+        if (FileExist(openFile := A_ScriptDir . "\scripts\inst" . idx . "open.tmp"))
             FileDelete, %openFile%
-        readyFile := A_ScriptDir . "\scripts\IM" . idx . "ready.tmp"
-        if (FileExist(readyFile))
+        if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . idx . "ready.tmp"))
             FileDelete, %readyFile%
+    }
+    if (closeInstances && ExitReason == "Menu") {
+        Sleep, %resumeDelay%
+        for each, pid in MC_PIDs {
+            Process, Close, %pid%
+        }
     }
 }
 
 Reboot() {
-    Shutdown()
+    Shutdown("Reload", 0)
     Reload
 }
 
