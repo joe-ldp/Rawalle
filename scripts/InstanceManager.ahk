@@ -39,6 +39,7 @@ if (FileExist(I_Icon))
     Menu, Tray, Icon, %I_Icon%
 Menu, Tray, Tip, Instance %idx% Manager
 
+Log("Instance Manager launched")
 OnExit("Exit")
 
 if (autoBop) {
@@ -47,6 +48,7 @@ if (autoBop) {
 }
 
 if (!pid := IsInstanceOpen()) {
+    Log("No Minecraft instance found, launching")
     centralModsDir := A_ScriptDir . "\..\mods\"
     instModsDir := mcDir . "mods\"
     if (syncMods && DesyncedMods(centralModsDir . "*", instModsDir . "*")) {
@@ -72,6 +74,7 @@ if (!pid := IsInstanceOpen()) {
     logFile.Close()
     logFile := FileOpen(mcDir . "logs\latest.log", "r")
 } else {
+    Log("Minecraft instance found")
     FileAppend, %pid%, inst%idx%open.tmp
     newWorldPos := logFile.Length()
 }
@@ -229,7 +232,7 @@ Play() {
 
 ValidateReset() {
     if (!resetValidated)
-        Log("Successful reset confirmed. Log:`n")
+        Log("Successful reset confirmed.")
     lastNewWorld := A_NowUTC
     resetValidated := True
     return logFile.Length()
