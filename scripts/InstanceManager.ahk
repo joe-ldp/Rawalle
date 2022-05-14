@@ -26,13 +26,15 @@ global instName := StrReplace(multiMCNameFormat, "#", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
 global logFile := FileOpen(mcDir . "logs\latest.log", "r")
-global newWorldPos := logFile.Length()
+global newWorldPos := 0
+global resetPos := 0
 global options := []
 global frozen := False
 global currentState := STATE_UNKNOWN
 global lastReset := 0
 global lastNewWorld := 0
 global resetValidated := False
+global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 
 I_Icon = ../media/IM.ico
 if (FileExist(I_Icon))
@@ -76,7 +78,7 @@ if (!pid := IsInstanceOpen()) {
 } else {
     Log("Minecraft instance found")
     FileAppend, %pid%, inst%idx%open.tmp
-    newWorldPos := logFile.Length()
+    newWorldPos := GetNumLogLines()
 }
 
 OnMessage(MSG_RESET, "Reset")
@@ -167,8 +169,9 @@ Reset(wParam) {
         }
 
         currentState := STATE_RESETTING
-        newWorldPos := logFile.Length()
-        SetTimer, CheckReset, -1200
+        resetValidated := False
+        newWorldPos := resetPos := GetNumLogLines()
+        SetTimer, CheckReset, -1250
         SetTimer, ManageState, -0
     }
 }
@@ -235,7 +238,14 @@ ValidateReset() {
         Log("Successful reset confirmed.")
     lastNewWorld := A_NowUTC
     resetValidated := True
-    return logFile.Length()
+    return GetNumLogLines()
+}
+
+GetNumLogLines() {
+    numLines := 0
+    Loop, Read, %mcDir%\logs\latest.log
+        numLines++
+    return numLines
 }
 
 Freeze() {
@@ -333,9 +343,12 @@ SendOBSCommand(cmd) {
 }
 
 CurrentWorldEntered() {
-    logFile.Position := newWorldPos
-    log := logFile.Read()
-    logFile.Position := newWorldPos
+    log := ""
+    Loop, Read, %mcDir%\logs\latest.log
+    {
+        if (A_Index > newWorldPos)
+            log := log . A_LoopReadLine . "\n"
+    }
     return InStr(log, "We Need To Go Deeper")
 }
 
@@ -388,45 +401,52 @@ Exit() {
 return ; end the auto-execute section so the labels don't get executed when the script opens (thanks ahk)
 
 ManageState:
-    Log("Managing state...")
-    resetValidated := False
-    start := A_NowUTC
-    while (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
-        logFile.Position := newWorldPos
-        log := logFile.Read()
-        if (currentState == STATE_RESETTING && InStr(log, "Starting Preview", -16)) {
-            Log("Found preview. Log:`n" . log)
-            newWorldPos := ValidateReset()
-            ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-            currentState := STATE_PREVIEWING
-            if (!multiMode)
-                SetTimer, UpdatePreview, -2000
-        } else if ((currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(log, "joined the game", -15) && InStr(log, "joined the game", -15) < InStr(log, "the_end", -7)) {
-            newWorldPos := ValidateReset()
-            WinGet, activePID, PID, A
-            if (activePID != pid) {
-                Log("World generated, pausing. Log:`n" . log)
-                Critical, On ; make sure thread isn't interrupted during these few lines
-                ;Sleep, %beforePauseDelay%
-                DllCall("Sleep", "UInt", beforePauseDelay)
-                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                Critical, Off
-                currentState := STATE_READY
-                if (instanceFreezing) {
-                    Frz := Func("Freeze").Bind()
-                    bfd := 0 - beforeFreezeDelay
-                    SetTimer, %Frz%, %bfd%
-                }
-            } else {
-                Log("World generated, playing. Log:`n" . log)
-                Play()
+    Critical, On
+    Loop, Read, %mcDir%\logs\latest.log
+    {
+        if (A_Index > (resetValidated ? newWorldPos : resetPos)) {
+            line = %A_LoopReadLine%
+            if (!resetValidated) {
+                for each, value in toValidateReset
+                    if (InStr(line, value))
+                        newWorldPos := ValidateReset()
             }
-            break
+            if (currentState == STATE_RESETTING && InStr(line, "Starting Preview", -16)) {
+                Log("Found preview. Log:`n" . line)
+                newWorldPos := ValidateReset()
+                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                currentState := STATE_PREVIEWING
+                if (!multiMode)
+                    SetTimer, UpdatePreview, -2000
+            }
+            if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "the_end", -7)) {
+                newWorldPos := ValidateReset()
+                WinGet, activePID, PID, A
+                if (activePID != pid) {
+                    Log("World generated, pausing. Log:`n" . line)
+                    DllCall("Sleep", "UInt", beforePauseDelay)
+                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    currentState := STATE_READY
+                    if (instanceFreezing) {
+                        Frz := Func("Freeze").Bind()
+                        bfd := 0 - beforeFreezeDelay
+                        SetTimer, %Frz%, %bfd%
+                    }
+                } else {
+                    Log("World generated, playing. Log:`n" . line)
+                    Play()
+                }
+                SetTimer, ManageState, Off
+                return
+            }
         }
-        if (currentState == STATE_PREVIEWING)
-            Sleep, -1
     }
-    Log("Managed state. Returning to waiting for messages")
+    if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
+        SetTimer, ManageState, Off
+    } else {
+        SetTimer, ManageState, -10
+    }
+    Critical, Off
 return
 
 UpdatePreview:
@@ -442,9 +462,13 @@ return
 
 CheckReset:
     if (!resetValidated) {
-        logFile.Position := newWorldPos
-        log := logFile.Read()
-        if(InStr(log, "Stopping worker threads", -23) || InStr(log, "Leaving world generation", -24)) { ; || InStr(log, "Preparing spawn area", -26)) {
+        log := ""
+        Loop, Read, %mcDir%\logs\latest.log
+        {
+            if (A_Index > resetPos)
+                log := log . A_LoopReadLine . "`n"
+        }
+        if (InStr(log, "Stopping worker threads", -23) || InStr(log, "Leaving world generation", -24)) { ; || InStr(log, "Preparing spawn area", -26)) {
             newWorldPos := ValidateReset()
         } else { ; the instance didn't reset
             Log("Found failed reset. Forcing reset. Log:`n" . log)
@@ -454,7 +478,7 @@ CheckReset:
             }
             currentState := STATE_UNKNOWN
             Reset(A_NowUTC)
+            SetTimer, CheckReset, -1250
         }
-        SetTimer, CheckReset, -1200
     }
 return
