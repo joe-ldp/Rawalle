@@ -116,6 +116,7 @@ Reveal() {
 }
 
 Reset(wParam) {
+    Critical, On
     if (currentState == STATE_RESETTING || (wParam > lastReset && wParam < lastNewWorld)) {
         return
     } else if (currentState == STATE_INIT) {
@@ -174,6 +175,7 @@ Reset(wParam) {
         SetTimer, CheckReset, -1250
         SetTimer, ManageState, -0
     }
+    Critical, Off
 }
 
 Switch() {
