@@ -112,10 +112,9 @@ Shutdown(ExitReason, ExitCode) {
     for idx, pid in IM_PIDs {
         if (WinExist("ahk_pid " . pid))
             WinClose,,, 1
-        if (WinExist("ahk_pid " . pid)) {
+        if (WinExist("ahk_pid " . pid))
             Process, Close, %pid%
-            WinWaitClose, ahk_pid %pid%
-        }
+        WinWaitClose, ahk_pid %pid%
         if (FileExist(openFile := A_ScriptDir . "\scripts\inst" . idx . "open.tmp"))
             FileDelete, %openFile%
         if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . idx . "ready.tmp"))
