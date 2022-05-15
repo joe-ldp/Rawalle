@@ -115,7 +115,7 @@ Reveal() {
     ToolTip, `%: %percentLoaded% state: %currentState%
 }
 
-Reset(wParam) {
+Reset(wParam, playSound := True) {
     Critical, On
     if (currentState == STATE_RESETTING || (wParam > lastReset && wParam < lastNewWorld)) {
         return
@@ -137,7 +137,7 @@ Reset(wParam) {
         percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
-        if (resetSounds)
+        if (resetSounds && playSound)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         GetSettings()
 
@@ -172,8 +172,7 @@ Reset(wParam) {
         currentState := STATE_RESETTING
         resetValidated := False
         newWorldPos := resetPos := GetNumLogLines()
-        SetTimer, CheckReset, -1250
-        SetTimer, ManageState, -0
+        SetTimer, ManageState, -200
     }
     Critical, Off
 }
@@ -444,27 +443,7 @@ ManageState:
             }
         }
     }
-    if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
-        SetTimer, ManageState, Off
-    } else {
-        SetTimer, ManageState, -10
-    }
-    Critical, Off
-return
-
-UpdatePreview:
-    if (currentState == STATE_PREVIEWING) {
-        fp := options.key_FreezePreview
-        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
-        Sleep, 1200
-        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
-        Sleep, 300
-        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
-    }
-return
-
-CheckReset:
-    if (!resetValidated) {
+    if (!resetValidated && (A_NowUTC - lastReset > 5)) {
         log := ""
         Loop, Read, %mcDir%\logs\latest.log
         {
@@ -480,8 +459,25 @@ CheckReset:
                 logFile := FileOpen(mcDir . "logs\latest.log", "r")
             }
             currentState := STATE_UNKNOWN
-            Reset(A_NowUTC)
-            SetTimer, CheckReset, -1250
+            Reset(A_NowUTC, playSound := False)
+            return
         }
+    }
+    if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
+        SetTimer, ManageState, Off
+    } else {
+        SetTimer, ManageState, -10
+    }
+    Critical, Off
+return
+
+UpdatePreview:
+    if (currentState == STATE_PREVIEWING) {
+        fp := options["key_FreezePreview"]
+        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
+        Sleep, 1200
+        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
+        Sleep, 300
+        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
     }
 return
