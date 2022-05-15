@@ -470,9 +470,6 @@ ManageState:
                 Reset(A_NowUTC, playSound := False)
                 return
             }
-            currentState := STATE_UNKNOWN
-            Reset(A_NowUTC, playSound := False)
-            return
         }
     }
     if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
