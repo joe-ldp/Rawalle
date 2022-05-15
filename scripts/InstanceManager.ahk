@@ -472,9 +472,7 @@ ManageState:
             }
         }
     }
-    if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
-        SetTimer, ManageState, Off
-    } else {
+    if (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
         SetTimer, ManageState, -10
     }
     Critical, Off
