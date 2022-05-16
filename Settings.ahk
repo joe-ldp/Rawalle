@@ -6,11 +6,12 @@ global multiMCLocation := "C:\MultiMC"
 global multiMCNameFormat := "1.16Inst#" ; Edit this to match your instance name formats (CASE SENSITIVE, beware)
 
 global autoLaunchInstances := True ; Even if this is set to false, you must configure your MultiMC settings above
+global autoCloseInstances := True ; Closes instances when you exit the macro via the taskbar
 global launchPrograms := ["C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:\Documents\Speedrunning\Ninjabrain-Bot-1.2.0.jar"]
 ; If you don't want any programs auto launching (why not??) just set the above to []
 
-global syncMods := False
-global multiMode := False ; Change to True for regular multi instance mode
+global syncMods := False ; Syncs mods from the macro's central mod folder to all your instances before opening them
+global multiMode := False ; Enable for regular multi instance mode
 global fullscreen := False ; Enable to use fullscreen (as in F11)
 global borderless := False ; Enable to use borderless windowed (like fullscreen, may have more input lag, but nicer otherwise)
 ; Fullscreen and borderless can both be set to True, it won't break anything, but there's little point in using both
