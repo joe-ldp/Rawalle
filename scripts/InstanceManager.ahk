@@ -133,7 +133,8 @@ Reset(wParam, playSound := True) {
         currentState := STATE_READY
     } else {
         Log("Resetting")
-        lastReset := A_NowUTC
+        if (resetValidated)
+            lastReset := A_NowUTC
         percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
