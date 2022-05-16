@@ -119,7 +119,7 @@ Reveal() {
     ToolTip, `%: %percentLoaded% state: %currentState%
 }
 
-Reset(wParam, playSound := True) {
+Reset(wParam) {
     Critical, On
     if (currentState == STATE_RESETTING || (wParam > lastReset && wParam < lastNewWorld)) {
         return
@@ -142,7 +142,7 @@ Reset(wParam, playSound := True) {
         percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
-        if (resetSounds && playSound)
+        if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         GetSettings()
 
@@ -471,7 +471,7 @@ ManageState:
                     logFile := FileOpen(mcDir . "logs\latest.log", "r")
                 }
                 currentState := STATE_UNKNOWN
-                Reset(A_NowUTC, playSound := False)
+                Reset(A_NowUTC)
                 return
             }
         }
