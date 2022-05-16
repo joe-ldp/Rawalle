@@ -141,7 +141,7 @@ Reset(wParam) {
         percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
-        if (resetSounds)
+        if (resetSounds && currentState != STATE_UNKNOWN)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         GetSettings()
 
@@ -166,6 +166,8 @@ Reset(wParam) {
                 DllCall("Sleep", "UInt", settingsDelay)
                 ResetSettings()
                 ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+                ; ControlSend,, {Blind}{Text}summon elder_guardian, ahk_pid %pid%
+                ; ControlSend,, {Blind}{Enter}42112, ahk_pid %pid%
             case STATE_PREVIEWING:
                 lp := options["key_LeavePreview"]
                 SetKeyDelay, 1
