@@ -88,8 +88,12 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
 GetSettings()
-if(!InStr(logFile.Read(), "recipes"))
+if(!InStr(logFile.Read(), "recipes")) {
     currentState := STATE_INIT
+    Log("State initialised to init")
+} else {
+    Log("State initalised to unknown")
+}
 logFile.Position := 0
 
 if (options.fullscreen == "true") {
