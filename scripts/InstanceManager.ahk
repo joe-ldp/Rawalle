@@ -137,8 +137,7 @@ Reset(wParam) {
         currentState := STATE_READY
     } else {
         Log("Resetting")
-        if (resetValidated)
-            lastReset := A_NowUTC
+        lastReset := A_NowUTC
         percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
