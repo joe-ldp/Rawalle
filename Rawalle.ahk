@@ -116,7 +116,7 @@ Shutdown(ExitReason, ExitCode) {
         if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . idx . "ready.tmp"))
             FileDelete, %readyFile%
     }
-    if (closeInstances && ExitReason == "Menu") {
+    if (autoCloseInstances && ExitReason == "Menu") {
         for each, pid in MC_PIDs {
             Process, Close, %pid%
         }
