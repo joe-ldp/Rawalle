@@ -420,6 +420,9 @@ ManageState:
                 newWorldPos := ValidateReset()
                 ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                 currentState := STATE_PREVIEWING
+                if (!DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))
+                    SetTimer, ManageState, -10
+                return
             }
             if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "the_end", -7)) {
                 newWorldPos := ValidateReset()
