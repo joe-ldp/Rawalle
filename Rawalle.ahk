@@ -56,7 +56,8 @@ Loop, %numInstances% {
     WinWait, ahk_pid %IM_PID%
     IM_PIDs[A_Index] := IM_PID
 
-    while (!FileExist(openFile := A_ScriptDir . "\scripts\inst" . A_Index . "open.tmp"))
+    openFile := A_ScriptDir . "\scripts\inst" . A_Index . "open.tmp"
+    while (!FileExist(openFile))
         Sleep, 100
     FileRead, MC_PID, %openFile%
     MC_PIDs[A_Index] := MC_PID
