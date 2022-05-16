@@ -117,7 +117,6 @@ Shutdown(ExitReason, ExitCode) {
             FileDelete, %readyFile%
     }
     if (closeInstances && ExitReason == "Menu") {
-        Sleep, %resumeDelay%
         for each, pid in MC_PIDs {
             Process, Close, %pid%
         }

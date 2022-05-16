@@ -106,6 +106,7 @@ FreezeAll() {
 UnfreezeAll() {
     Loop, %numInstances%
         Unfreeze(A_Index)
+    Sleep, %resumeDelay%
 }
 
 SetAffinities() {
