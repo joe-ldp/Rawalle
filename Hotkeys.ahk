@@ -8,28 +8,7 @@
 {
     *U::Reset()
     *P::ResetPie()
-
-    ; Inverted "mass-resetting" background reset hotkeys (reccommended for >4 instances)
-    *NumpadAdd::ResetAll()
-    *CapsLock::ResetAll() ; 2 hotkeys on opposite sides of the keyboard just for convenience
-
-    *Numpad7::LockInstance(1)
-    *Numpad8::LockInstance(2)
-    *Numpad9::LockInstance(3)
-    *Numpad4::LockInstance(4)
-    *Numpad5::LockInstance(5)
-    *Numpad6::LockInstance(6)
-    *Numpad1::LockInstance(7)
-    *Numpad2::LockInstance(8)
-    *Numpad3::LockInstance(9)
-
-    ; "Normal" background reset hotkeys (uncomment to use, and add more if you need them)
-
-    ;*Numpad1::BackgroundReset(1)
-    ;*Numpad2::BackgroundReset(2)
-    ;*Numpad3::BackgroundReset(3)
-    ;*Numpad4::BackgroundReset(4)
-
+    
     ; Checking functions lol
     ; Uncomment (remove ;s) from the following lines if you want these hotkeys
     ;*[::CheckNetherStructures()
