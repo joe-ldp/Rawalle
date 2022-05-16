@@ -26,15 +26,15 @@ global instName := StrReplace(multiMCNameFormat, "#", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
 global logFile := FileOpen(mcDir . "logs\latest.log", "r")
-global newWorldPos := 0
-global resetPos := 0
 global options := []
 global frozen := False
-global currentState := STATE_UNKNOWN
+global resetPos := 0
+global newWorldPos := 0
 global lastReset := 0
 global lastNewWorld := 0
 global resetValidated := False
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
+global currentState := STATE_UNKNOWN
 
 I_Icon = ../media/IM.ico
 if (FileExist(I_Icon))
