@@ -457,23 +457,14 @@ ManageState:
         if (InStr(log, "Stopping worker threads", -23) || InStr(log, "Leaving world generation", -24)) { ; || InStr(log, "Preparing spawn area", -26)) {
             newWorldPos := ValidateReset()
         } else { ; the instance didn't reset
-            if (A_NowUTC - lastReset > 30) {
-                WinGetTitle, title, ahk_pid %pid%
-                if (!InStr(title, "-")) {
-                    Log("Found crashed internal server (Stuck on saving world screen). Closing process")
-                    Process, Close, %pid%
-                }
-                return
-            } else {
-                Log("Found failed reset. Forcing reset. Log:`n" . log)
-                if (A_Hour == 0) {
-                    logFile.Close()
-                    logFile := FileOpen(mcDir . "logs\latest.log", "r")
-                }
-                currentState := STATE_UNKNOWN
-                Reset(A_NowUTC)
-                return
+            Log("Found failed reset. Forcing reset. Log:`n" . log)
+            if (A_Hour == 0) {
+                logFile.Close()
+                logFile := FileOpen(mcDir . "logs\latest.log", "r")
             }
+            currentState := STATE_UNKNOWN
+            Reset(A_NowUTC)
+            return
         }
     }
     if (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
