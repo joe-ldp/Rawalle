@@ -32,11 +32,9 @@ global locked := []
 OnExit("Shutdown")
 DetectHiddenWindows, On
 FileAppend,, scripts/runPy.tmp
-enteredScreenshots := A_ScriptDir . "\screenshots\entered"
-if (!FileExist(enteredScreenshots))
+if (!FileExist(enteredScreenshots := A_ScriptDir . "\screenshots\entered"))
     FileCreateDir, %enteredScreenshots%
-unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"
-if (!FileExist(unenteredScreenshots))
+if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
     FileCreateDir, %unenteredScreenshots%
 
 for each, program in launchPrograms {
@@ -51,16 +49,14 @@ for each, program in launchPrograms {
 }
 
 Loop, %numInstances% {
-    readyFile := A_ScriptDir . "\scripts\IM" . A_Index . "ready.tmp"
-    if (FileExist(readyFile))
+    if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . A_Index . "ready.tmp"))
         FileDelete, %readyFile%
     
     Run, scripts\InstanceManager.ahk %A_Index%, A_ScriptDir\scripts,, IM_PID
     WinWait, ahk_pid %IM_PID%
     IM_PIDs[A_Index] := IM_PID
 
-    openFile := A_ScriptDir . "\scripts\inst" . A_Index . "open.tmp"
-    while (!FileExist(openFile))
+    while (!FileExist(openFile := A_ScriptDir . "\scripts\inst" . A_Index . "open.tmp"))
         Sleep, 100
     FileRead, MC_PID, %openFile%
     MC_PIDs[A_Index] := MC_PID
@@ -80,8 +76,7 @@ if (useObsWebsocket) {
 
 checkIdx := 1
 while (checkIdx <= numInstances) {
-    readyFile := A_ScriptDir . "\scripts\IM" . checkIdx . "ready.tmp"
-    if (FileExist(readyFile)) {
+    if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . checkIdx . "ready.tmp")) {
         while (FileExist(readyFile))
             FileDelete, %readyFile%
         checkIdx++
