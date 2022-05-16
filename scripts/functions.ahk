@@ -74,7 +74,8 @@ ResetAll() {
 LockInstance(idx, sound := True) {
     if (locked[idx])
         return
-    SendOBSCommand("Lock," . idx . "," . 1)
+    if (useObsWebsocket && lockIndicators)
+        SendOBSCommand("Lock," . idx . "," . 1)
     locked[idx] := A_TickCount
     LogAction(idx, "lock")
     if (lockSounds && sound)
@@ -84,7 +85,8 @@ LockInstance(idx, sound := True) {
 UnlockInstance(idx, sound := True) {
     if (!locked[idx])
         return
-    SendOBSCommand("Lock," . idx . "," . 0)
+    if (useObsWebsocket && lockIndicators)
+        SendOBSCommand("Lock," . idx . "," . 0)
     locked[idx] := 0
     LogAction(idx, "unlock")
     if (lockSounds && sound)
