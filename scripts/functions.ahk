@@ -7,7 +7,6 @@ Reset(idx := -1) {
     PostMessage, MSG_RESET, A_NowUTC,,,ahk_pid %IM_PID%
     CountResets("Attempts")
     CountResets("Daily Attempts")
-    LogAction(idx, "reset")
 
     if (activeInstance == idx) {
         if (!multiMode) {
@@ -21,6 +20,9 @@ Reset(idx := -1) {
         } else {
             NextInstance()
         }
+        LogAction(idx, "exitworld")
+    } else {
+        LogAction(idx, "reset")
     }
     SetAffinities()
 }
