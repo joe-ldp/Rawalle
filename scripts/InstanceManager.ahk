@@ -191,6 +191,7 @@ Switch() {
             Send, {Numpad%idx% up}
         }
 
+        WinActivate, OBS
         WinActivate, ahk_pid %pid%
         if (!multiMode)
             WinMinimize, Fullscreen Projector
