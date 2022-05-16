@@ -443,7 +443,7 @@ ManageState:
             }
         }
     }
-    if (!resetValidated && (A_NowUTC - lastReset > 2)) {
+    if (!resetValidated && (A_TickCount - lastReset > 2000)) {
         log := ""
         Loop, Read, %mcDir%\logs\latest.log
         {
