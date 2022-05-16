@@ -69,7 +69,7 @@ if (useObsWebsocket) {
         Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%",, Hide, OBS_PID
         Sleep, 2000
         Process, Exist, %OBS_PID%
-        if (ErrorLevel == 0)
+        if (ErrorLevel != 0)
             break
     }
 }
