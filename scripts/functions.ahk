@@ -1,4 +1,4 @@
-; v0.6.0-beta
+; v1.0.0-beta
 
 Reset(idx := -1) {
     idx := idx == -1 ? activeInstance : idx

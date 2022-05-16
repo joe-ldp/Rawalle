@@ -1,3 +1,5 @@
+# v1.0.0-beta
+
 # cmd formatting:
 # cmd[0] specifies command, later args are for cmd args
 # cmd[0]: "ToWall" goes to wall scene

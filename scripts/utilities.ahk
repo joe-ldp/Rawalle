@@ -1,4 +1,6 @@
-﻿CheckNetherStructures() {
+﻿; v1.0.0-beta
+
+CheckNetherStructures() {
 	CheckBastions()
 	CheckFortresses()
 }

@@ -1,4 +1,4 @@
-; v0.6.0-beta
+; v1.0.0-beta
 
 *RAlt::Suspend ; Pause all hotkeys
 ^RAlt::Reboot()

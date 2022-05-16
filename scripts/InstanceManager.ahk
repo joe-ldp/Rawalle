@@ -1,6 +1,4 @@
-; Instance Manager for Ravalle's Multi Instance Macro
-; Author: Ravalle / Joe
-; v0.6.0-beta
+; v1.0.0-beta
 
 #NoEnv
 #WinActivateForce
