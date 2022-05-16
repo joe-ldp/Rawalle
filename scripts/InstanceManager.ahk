@@ -236,7 +236,6 @@ Play() {
 }
 
 ValidateReset() {
-    SetTimer, CheckReset, Off
     if (!resetValidated)
         Log("Successful reset confirmed.")
     lastNewWorld := A_NowUTC
