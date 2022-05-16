@@ -295,7 +295,7 @@ ResetSettings() {
     SetKeyDelay, 0
     if (desiredRd != options.renderDistance) {
         ControlSend,, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
-        ControlSend,, {Blind}{F3 down}{F %renderPresses%}{F3 up}, ahk_pid %pid%
+        ControlSend,, {Blind}{F3 down}{F %renderPresses%}{D}{F3 up}, ahk_pid %pid%
     }
     if (FOV != (options.fov * 40 + 70) || entityDistance != options.entityDistanceScaling) {
         ControlSend,, {Blind}{Esc}{Tab 6}{Enter}{Tab}, ahk_pid %pid%
