@@ -137,7 +137,7 @@ Reset(wParam) {
         currentState := STATE_READY
     } else {
         Log("Resetting")
-        lastReset := A_NowUTC
+        lastReset := A_TickCount
         percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
@@ -156,7 +156,7 @@ Reset(wParam) {
                 ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
             case STATE_PLAYING:
                 if (useObsWebsocket && screenshotWorlds)
-                    SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
+                    SendOBSCommand("SaveImg," . A_TickCount . "," . CurrentWorldEntered())
                 if (fullscreen && options.fullscreen == "true") {
                     fs := options["key_key.fullscreen"]
                     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
@@ -241,7 +241,7 @@ Play() {
 ValidateReset() {
     if (!resetValidated)
         Log("Successful reset confirmed.")
-    lastNewWorld := A_NowUTC
+    lastNewWorld := A_TickCount
     resetValidated := True
     return GetNumLogLines()
 }
@@ -403,7 +403,7 @@ Exit() {
 return ; end the auto-execute section so the labels don't get executed when the script opens (thanks ahk)
 
 ManageState:
-    Critical, On
+    Critical
     Loop, Read, %mcDir%\logs\latest.log
     {
         if (A_Index > (resetValidated ? newWorldPos : resetPos)) {
@@ -459,14 +459,13 @@ ManageState:
                 logFile := FileOpen(mcDir . "logs\latest.log", "r")
             }
             currentState := STATE_UNKNOWN
-            Reset(A_NowUTC)
+            Reset(A_TickCount)
             return
         }
     }
     if (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
         SetTimer, ManageState, -10
     }
-    Critical, Off
 return
 
 UpdatePreview:

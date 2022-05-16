@@ -4,7 +4,7 @@ Reset(idx := -1) {
     idx := idx == -1 ? activeInstance : idx
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
-    PostMessage, MSG_RESET, A_NowUTC,,,ahk_pid %IM_PID%
+    PostMessage, MSG_RESET, A_TickCount,,,ahk_pid %IM_PID%
     CountResets("Attempts")
     CountResets("Daily Attempts")
 
