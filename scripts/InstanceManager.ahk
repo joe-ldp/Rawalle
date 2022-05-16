@@ -418,8 +418,6 @@ ManageState:
                 newWorldPos := ValidateReset()
                 ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                 currentState := STATE_PREVIEWING
-                if (!multiMode)
-                    SetTimer, UpdatePreview, -2000
             }
             if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "the_end", -7)) {
                 newWorldPos := ValidateReset()
@@ -465,16 +463,5 @@ ManageState:
     }
     if (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
         SetTimer, ManageState, -10
-    }
-return
-
-UpdatePreview:
-    if (currentState == STATE_PREVIEWING) {
-        fp := options["key_FreezePreview"]
-        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
-        Sleep, 1200
-        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
-        Sleep, 300
-        ControlSend,, {Blind}{%fp%}, ahk_pid %pid%
     }
 return
