@@ -213,13 +213,14 @@ Switch() {
 }
 
 Play() {
-    Send, {Shift up}
     if (instanceFreezing)
         Unfreeze()
-    if (unpauseOnSwitch || coopResets)
+    if (currentState == STATE_READY && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
     if (performanceMethod == "S") {
-        ResetSettings()
+        renderPresses := renderDistance - 2
+        ControlSend,, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
+        ControlSend,, {Blind}{F3 down}{F %renderPresses%}{D}{F3 up}, ahk_pid %pid%
         if (!unpauseOnSwitch)
             ControlSend,, {Blind}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
     }
@@ -301,6 +302,7 @@ ResetSettings() {
         }
         if (entityDistance != currentEntityDistance) {
             ControlSend,, {Blind}{Tab 5}{Enter}{Shift down}P{Shift up}, ahk_pid %pid%
+            Sleep, 10
             ControlSend,, {Blind}{Tab 17}, ahk_pid %pid%
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %entityPresses%}, ahk_pid %pid%
