@@ -32,7 +32,7 @@ global resetPos := 0
 global newWorldPos := 0
 global lastReset := 0
 global lastNewWorld := 0
-global resetValidated := False
+global resetValidated := True
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 global currentState := STATE_UNKNOWN
 
