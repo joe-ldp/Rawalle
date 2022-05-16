@@ -154,7 +154,7 @@ Reset(wParam) {
                 ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
             case STATE_PLAYING:
                 if (useObsWebsocket && screenshotWorlds)
-                    SendOBSCommand("SaveImg," . A_TickCount . "," . CurrentWorldEntered())
+                    SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
                 if (fullscreen && options.fullscreen == "true") {
                     fs := options["key_key.fullscreen"]
                     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
