@@ -113,10 +113,6 @@ if (borderless) {
 
 FileAppend,, IM%idx%ready.tmp
 
-Reveal() {
-    ToolTip, `%: %percentLoaded% state: %currentState%
-}
-
 Reset(wParam) {
     Critical, On
     if (currentState == STATE_RESETTING || (wParam > lastReset && wParam < lastNewWorld)) {
@@ -136,7 +132,6 @@ Reset(wParam) {
     } else {
         Log("Resetting")
         lastReset := A_TickCount
-        percentLoaded := 0
         if (instanceFreezing && frozen)
             Unfreeze()
         if (resetSounds && currentState != STATE_UNKNOWN)
@@ -182,7 +177,7 @@ Reset(wParam) {
 }
 
 Switch() {
-    if ((currentState != STATE_RESETTING && (multiMode || currentState != STATE_PREVIEWING))) { ; || (currentState == STATE_PREVIEWING && percentLoaded >= 70)) {
+    if ((currentState != STATE_RESETTING && (multiMode || currentState != STATE_PREVIEWING))) {
         Log("Switched to instance")
         Send, {Shift up}
 
