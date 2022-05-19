@@ -373,20 +373,23 @@ IsInstanceOpen() {
 }
 
 DesyncedMods(dir1, dir2) {
-    centralMods := []
+    centralMods := instMods := []
     Loop, Files, %dir1%
     {
         centralMods[A_Index] := A_LoopFileName
     }
-    anyInstMods := False
     Loop, Files, %dir2%
     {
-        anyInstMods := True
-        if (A_LoopFileName != centralMods[A_Index])
-            return True
+        instMods[A_Index] := A_LoopFileName
     }
-    if (centralMods.Length > 0 && !anyInstMods)
+    if (centralMods.MaxIndex() != instMods.MaxIndex())
         return True
+    for each, ctrlMod in centralMods {
+        for each, instMod in instMods {
+            if (ctrlMod != instMod)
+                return True
+        }
+    }
     return False
 }
 
