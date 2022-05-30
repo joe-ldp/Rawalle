@@ -345,12 +345,12 @@ GetSettings() {
             if (InStr(value, "left.")) {
                 split := StrSplit(value, "left.")
                 StringLower, value, % split[2]
-                value := "l" . value
+                value := "L" . value
             }
             if (InStr(value, "right.")) {
                 split := StrSplit(value, "right.")
                 StringLower, value, % split[2]
-                value := "r" . value
+                value := "R" . value
             }
             options[key] := value
         }
