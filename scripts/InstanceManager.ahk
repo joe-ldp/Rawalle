@@ -420,9 +420,6 @@ ManageState:
                 newWorldPos := ValidateReset()
                 ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                 currentState := STATE_PREVIEWING
-                if (!DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))
-                    SetTimer, ManageState, -10
-                return
             }
             if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "the_end", -7)) {
                 newWorldPos := ValidateReset()
@@ -441,7 +438,6 @@ ManageState:
                     Log("World generated, playing. Log:`n" . line)
                     Play()
                 }
-                SetTimer, ManageState, Off
                 return
             }
         }
@@ -463,6 +459,6 @@ ManageState:
         }
     }
     if (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
-        SetTimer, ManageState, -10
+        Goto, ManageState
     }
 return
