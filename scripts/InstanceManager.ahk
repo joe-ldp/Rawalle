@@ -303,9 +303,8 @@ ResetSettings() {
             ControlSend,, {Blind}{Left %fovPresses%}, ahk_pid %pid%
         }
         if (entityDistance != options.entityDistanceScaling) {
-            ControlSend,, {Blind}{Tab 5}{Enter}{Shift down}P{Shift up}, ahk_pid %pid%
-            Sleep, 10
-            ControlSend,, {Blind}{Tab 17}, ahk_pid %pid%
+            ControlSend,, {Blind}{Tab 5}{Enter}{Tab 17}, ahk_pid %pid%
+            SetKeyDelay, 0
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %entityPresses%}, ahk_pid %pid%
         }
