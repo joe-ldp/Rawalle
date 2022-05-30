@@ -23,7 +23,6 @@ global idx := A_Args[1]
 global instName := StrReplace(multiMCNameFormat, "#", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
-global logFile := FileOpen(mcDir . "logs\latest.log", "r")
 global options := []
 global frozen := False
 global resetPos := 0
@@ -71,8 +70,6 @@ if (!pid := IsInstanceOpen()) {
     }
     FileAppend, %pid%, inst%idx%open.tmp
     Sleep, 12000
-    logFile.Close()
-    logFile := FileOpen(mcDir . "logs\latest.log", "r")
 } else {
     Log("Minecraft instance found")
     FileAppend, %pid%, inst%idx%open.tmp
@@ -86,13 +83,15 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
 GetSettings()
-if(!InStr(logFile.Read(), "recipes")) {
+log := ""
+Loop, Read, %mcDir%\logs\latest.log
+    log := log . A_LoopReadLine
+if(!InStr(log, "recipes")) {
     currentState := STATE_INIT
     Log("State initialised to init")
 } else {
     Log("State initalised to unknown")
 }
-logFile.Position := 0
 
 if (options.fullscreen == "true") {
     fs := options["key_key.fullscreen"]
@@ -119,7 +118,10 @@ Reset(wParam) {
         return
     } else if (currentState == STATE_INIT) {
         ControlSend,, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-        while (!InStr(logFile.ReadLine(), "the_end", -7)) {
+        Loop, {
+            Loop, Read, %mcDir%\logs\latest.log
+                if (InStr(A_LoopReadLine, "the_end", -7))
+                    break
             Sleep, 100
         }
         Sleep, 100
@@ -456,10 +458,6 @@ ManageState:
             newWorldPos := ValidateReset()
         } else { ; the instance didn't reset
             Log("Found failed reset. Forcing reset. Log:`n" . log)
-            if (A_Hour == 0) {
-                logFile.Close()
-                logFile := FileOpen(mcDir . "logs\latest.log", "r")
-            }
             currentState := STATE_UNKNOWN
             Reset(A_TickCount)
             return
