@@ -193,8 +193,8 @@ Switch() {
             Send, {Numpad%idx% up}
         }
 
-        WinActivate, OBS
-        WinActivate, ahk_pid %pid%
+        WinSet, AlwaysOnTop, On, ahk_pid %pid%
+        WinSet, AlwaysOnTop, Off, ahk_pid %pid%
         if (!multiMode)
             WinMinimize, Fullscreen Projector
         if (wideResets)
