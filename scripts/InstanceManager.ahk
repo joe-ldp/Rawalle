@@ -181,7 +181,6 @@ Reset(wParam) {
 Switch() {
     if ((currentState != STATE_RESETTING && (multiMode || currentState != STATE_PREVIEWING))) {
         Log("Switched to instance")
-        Send, {Shift up}
 
         if (useObsWebsocket) {
             SendOBSCommand("Play," . idx)
