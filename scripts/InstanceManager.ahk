@@ -24,7 +24,7 @@ global idx := A_Args[1]
 global instName := StrReplace(multiMCNameFormat, "#", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
-global options := []
+global settings := []
 global frozen := False
 global resetPos := 0
 global newWorldPos := 0
@@ -83,6 +83,7 @@ OnMessage(MSG_SETTITLE, "SetTitle")
 OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
+GetControls()
 GetSettings()
 Loop, Read, %mcDir%\logs\latest.log
 {
@@ -97,8 +98,8 @@ if (currentState != STATE_UNKNOWN) {
     Log("State initialised to init")
 }
 
-if (options.fullscreen == "true") {
-    fs := options["key_key.fullscreen"]
+if (settings.fullscreen == "true") {
+    fs := settings["key_key.fullscreen"]
     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
 }
 if (multiMode)
@@ -147,7 +148,7 @@ Reset(wParam) {
         switch currentState
         {
             case STATE_UNKNOWN:
-                lp := options["key_LeavePreview"]
+                lp := settings["key_LeavePreview"]
                 ControlSend,, {Blind}{%lp%}/, ahk_pid %pid%
                 Sleep, 120
                 ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
@@ -156,8 +157,8 @@ Reset(wParam) {
             case STATE_PLAYING:
                 if (useObsWebsocket && screenshotWorlds)
                     SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
-                if (fullscreen && options.fullscreen == "true") {
-                    fs := options["key_key.fullscreen"]
+                if (fullscreen && settings.fullscreen == "true") {
+                    fs := settings["key_key.fullscreen"]
                     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
                 }
                 if (wideResets)
@@ -168,7 +169,7 @@ Reset(wParam) {
                 ; ControlSend,, {Blind}{Text}summon elder_guardian, ahk_pid %pid%
                 ; ControlSend,, {Blind}{Enter}42112, ahk_pid %pid%
             case STATE_PREVIEWING:
-                lp := options["key_LeavePreview"]
+                lp := settings["key_LeavePreview"]
                 SetKeyDelay, 1
                 ControlSend,, {Blind}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}, ahk_pid %pid%
                 SetKeyDelay, 0
@@ -295,17 +296,17 @@ ResetSettings() {
     renderPresses := desiredRd - 2
     entityPresses := (5 - entityDistance) * 143 / 4.5
     SetKeyDelay, 0
-    if (desiredRd != options.renderDistance) {
+    if (desiredRd != settings.renderDistance) {
         ControlSend,, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
         ControlSend,, {Blind}{F3 down}{F %renderPresses%}{D}{F3 up}, ahk_pid %pid%
     }
-    if (FOV != (options.fov * 40 + 70) || entityDistance != options.entityDistanceScaling) {
+    if (FOV != (settings.fov * 40 + 70) || entityDistance != settings.entityDistanceScaling) {
         ControlSend,, {Blind}{Esc}{Tab 6}{Enter}{Tab}, ahk_pid %pid%
         if (FOV != currentFOV) {
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %fovPresses%}, ahk_pid %pid%
         }
-        if (entityDistance != options.entityDistanceScaling) {
+        if (entityDistance != settings.entityDistanceScaling) {
             ControlSend,, {Blind}{Tab 5}{Enter}{Tab 17}, ahk_pid %pid%
             SetKeyDelay, 0
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
@@ -319,43 +320,62 @@ GetSettings() {
     Loop, Read, %mcDir%/options.txt
     {
         line = %A_LoopReadLine%
-        kv := StrSplit(line, ":")
-        if (kv.MaxIndex() == 2) {
-            key = % kv[1]
-            value = % kv[2]
-            StringReplace, key, key, %A_Space%,, All
-            StringReplace, value, value, %A_Space%,, All
-            if (InStr(value, "key.keyboard.")) {
-                split := StrSplit(value, "key.keyboard.")
-                StringLower, value, % split[2]
+        if (!InStr(line, "key")) {
+            kv := StrSplit(line, ":")
+            if (kv.MaxIndex() == 2) {
+                key = % kv[1]
+                value = % kv[2]
+                StringReplace, key, key, %A_Space%,, All
+                StringReplace, value, value, %A_Space%,, All
+                settings[key] := value
             }
-            if (InStr(value, "key.mouse.")) {
-                split := StrSplit(value, "key.mouse.")
-                switch (split[2])
-                {
-                    case "left":
-                        value := "LButton"
-                    case "right":
-                        value := "RButton"
-                    case "middle":
-                        value := "MButton"
-                    case "4":
-                        value := "XButton1"
-                    case "5":
-                        value := "XButton2"
+        }
+    }
+}
+
+GetControls() {
+    Loop, Read, %mcDir%/options.txt
+    {
+        line = %A_LoopReadLine%
+        if (InStr(line, "key")) {
+            kv := StrSplit(line, ":")
+            if (kv.MaxIndex() == 2) {
+                key = % kv[1]
+                value = % kv[2]
+                StringReplace, key, key, %A_Space%,, All
+                StringReplace, value, value, %A_Space%,, All
+                if (InStr(value, "key.keyboard.")) {
+                    split := StrSplit(value, "key.keyboard.")
+                    StringLower, value, % split[2]
                 }
+                if (InStr(value, "key.mouse.")) {
+                    split := StrSplit(value, "key.mouse.")
+                    switch (split[2])
+                    {
+                        case "left":
+                            value := "LButton"
+                        case "right":
+                            value := "RButton"
+                        case "middle":
+                            value := "MButton"
+                        case "4":
+                            value := "XButton1"
+                        case "5":
+                            value := "XButton2"
+                    }
+                }
+                if (InStr(value, "left.")) {
+                    split := StrSplit(value, "left.")
+                    StringLower, value, % split[2]
+                    value := "L" . value
+                }
+                if (InStr(value, "right.")) {
+                    split := StrSplit(value, "right.")
+                    StringLower, value, % split[2]
+                    value := "R" . value
+                }
+                settings[key] := value
             }
-            if (InStr(value, "left.")) {
-                split := StrSplit(value, "left.")
-                StringLower, value, % split[2]
-                value := "L" . value
-            }
-            if (InStr(value, "right.")) {
-                split := StrSplit(value, "right.")
-                StringLower, value, % split[2]
-                value := "R" . value
-            }
-            options[key] := value
         }
     }
 }
