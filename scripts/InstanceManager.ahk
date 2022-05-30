@@ -32,7 +32,6 @@ global lastReset := 0
 global lastNewWorld := 0
 global resetValidated := True
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
-global currentState := STATE_UNKNOWN
 
 I_Icon = ../media/IM.ico
 if (FileExist(I_Icon))
