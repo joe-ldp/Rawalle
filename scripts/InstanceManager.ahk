@@ -216,7 +216,7 @@ Switch() {
 Play() {
     if (instanceFreezing)
         Unfreeze()
-    if (currentState == STATE_READY && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
+    if ((currentState == STATE_READY || currentState == STATE_UNKNOWN) && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
     if (performanceMethod == "S") {
         renderPresses := renderDistance - 2
