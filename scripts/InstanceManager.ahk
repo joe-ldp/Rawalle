@@ -324,7 +324,7 @@ GetSettings() {
             StringReplace, value, value, %A_Space%,, All
             if (InStr(value, "key.keyboard.")) {
                 split := StrSplit(value, "key.keyboard.")
-                StringUpper, value, % split[2]
+                StringLower, value, % split[2]
             }
             options[key] := value
         }
