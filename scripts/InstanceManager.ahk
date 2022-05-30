@@ -122,7 +122,7 @@ Reset(wParam) {
         Loop, {
             Loop, Read, %mcDir%\logs\latest.log
                 if (InStr(A_LoopReadLine, "the_end", -7))
-                    break
+                    break 2
             Sleep, 100
         }
         Sleep, 100
