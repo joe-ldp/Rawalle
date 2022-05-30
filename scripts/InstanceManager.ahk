@@ -76,11 +76,6 @@ if (!pid := IsInstanceOpen()) {
     newWorldPos := GetNumLogLines()
 }
 
-OnMessage(MSG_RESET, "Reset")
-OnMessage(MSG_SWITCH, "Switch")
-OnMessage(MSG_SETTITLE, "SetTitle")
-OnMessage(MSG_REVEAL, "Reveal")
-
 SetTitle()
 GetControls()
 GetSettings()
@@ -113,6 +108,11 @@ if (borderless) {
 } else {
     WinSet, Style, +0xC40000, ahk_pid %pid%
 }
+
+OnMessage(MSG_RESET, "Reset")
+OnMessage(MSG_SWITCH, "Switch")
+OnMessage(MSG_SETTITLE, "SetTitle")
+OnMessage(MSG_REVEAL, "Reveal")
 
 FileAppend,, IM%idx%ready.tmp
 
@@ -451,7 +451,7 @@ Exit() {
     logFile.Close()
 }
 
-return ; end the auto-execute section so the labels don't get executed when the script opens (thanks ahk)
+return ; end the auto-execute section
 
 ManageState:
     Critical
