@@ -129,7 +129,8 @@ Reset(wParam) {
             Sleep, 100
         }
         Sleep, 100
-        ControlSend,, {Blind}{Shift down}{F3}{Shift up}{LAlt 2}, ahk_pid %pid%
+        persp := settings["key_key.togglePerspective"]
+        ControlSend,, {Blind}{Shift down}{F3}{Shift up}{%persp%}, ahk_pid %pid%
         Sleep, 2000
         ControlSend,, {Blind}11900219003190041900519006190071900819009190019029014605602460560346056044605605460560, ahk_pid %pid%
         ;ControlSend,, {Blind}4113, ahk_pid %pid%
