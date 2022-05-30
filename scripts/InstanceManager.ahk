@@ -84,14 +84,17 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
 GetSettings()
-log := ""
 Loop, Read, %mcDir%\logs\latest.log
-    log := log . A_LoopReadLine
-if(!InStr(log, "recipes")) {
-    currentState := STATE_INIT
+{
+    if(InStr(A_LoopReadLine, "recipes")) {
+        global currentState := STATE_UNKNOWN
+        Log("State initalised to unknown")
+        break
+    }
+}
+if (currentState != STATE_UNKNOWN) {
+    global currentState := STATE_INIT
     Log("State initialised to init")
-} else {
-    Log("State initalised to unknown")
 }
 
 if (options.fullscreen == "true") {
