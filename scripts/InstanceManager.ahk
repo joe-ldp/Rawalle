@@ -326,6 +326,32 @@ GetSettings() {
                 split := StrSplit(value, "key.keyboard.")
                 StringLower, value, % split[2]
             }
+            if (InStr(value, "key.mouse.")) {
+                split := StrSplit(value, "key.mouse.")
+                switch (split[2])
+                {
+                    case "left":
+                        value := "LButton"
+                    case "right":
+                        value := "RButton"
+                    case "middle":
+                        value := "MButton"
+                    case "4":
+                        value := "XButton1"
+                    case "5":
+                        value := "XButton2"
+                }
+            }
+            if (InStr(value, "left.")) {
+                split := StrSplit(value, "left.")
+                StringLower, value, % split[2]
+                value := "l" . value
+            }
+            if (InStr(value, "right.")) {
+                split := StrSplit(value, "right.")
+                StringLower, value, % split[2]
+                value := "r" . value
+            }
             options[key] := value
         }
     }
