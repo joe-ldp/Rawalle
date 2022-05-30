@@ -1,5 +1,7 @@
 # v1.0.0-beta
 
+# Code taken and adapted from https://github.com/grahamlyons/delete-old-files
+
 import glob, sys, shutil, os
 from operator import itemgetter
 
