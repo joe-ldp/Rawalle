@@ -96,7 +96,7 @@ if (settings.fullscreen == "true") {
     fs := settings["key_key.fullscreen"]
     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
 }
-if (multiMode)
+if (mode == "Multi")
     wideResets := False
 if (wideResets) {
     Widen()
@@ -184,7 +184,7 @@ Reset(wParam) {
 }
 
 Switch() {
-    if ((currentState != STATE_RESETTING && (multiMode || currentState != STATE_PREVIEWING))) {
+    if ((currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING))) {
         Log("Switched to instance")
 
         if (useObsWebsocket) {
@@ -199,11 +199,11 @@ Switch() {
 
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
         WinSet, AlwaysOnTop, Off, ahk_pid %pid%
-        if (!multiMode)
+        if (mode == "Wall")
             WinMinimize, Fullscreen Projector
         if (wideResets)
             WinMaximize, ahk_pid %pid%
-        if (fullscreen && !multiMode) {
+        if (fullscreen && mode == "Wall") {
             ControlSend,, {Blind}{F11}, ahk_pid %pid%
             Sleep, %fullScreenDelay%
         }
@@ -221,7 +221,7 @@ Switch() {
 Play() {
     if (instanceFreezing)
         Unfreeze()
-    if (fullscreen && multiMode) {
+    if (fullscreen && mode == "Multi") {
         ControlSend,, {Blind}{F11}, ahk_pid %pid%
         Sleep, %fullScreenDelay%
     }

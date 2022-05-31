@@ -85,7 +85,7 @@ while (checkIdx <= numInstances) {
 }
 
 SetAffinities()
-if (multiMode) {
+if (mode == "Multi") {
     NextInstance()
     isOnWall := False
 } else {

@@ -11,7 +11,7 @@ global launchPrograms := ["C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:
 ; If you don't want any programs auto launching (why not??) just set the above to []
 
 global syncMods := False ; Syncs mods from the macro's central mod folder to all your instances before opening them
-global multiMode := False ; Enable for regular multi instance mode
+global mode := "Wall" ; Set to "Wall" for wall mode, "Multi" for multi mode
 global fullscreen := False ; Enable to use fullscreen (as in F11)
 global fullScreenDelay := 270 ; Increase if fullscreening issues
 global borderless := False ; Enable to use borderless windowed (like fullscreen, may have more input lag, but nicer otherwise)
