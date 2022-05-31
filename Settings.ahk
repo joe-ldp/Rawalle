@@ -13,6 +13,7 @@ global launchPrograms := ["C:\Program Files\obs-studio\bin\64bit\obs64.exe", "C:
 global syncMods := False ; Syncs mods from the macro's central mod folder to all your instances before opening them
 global multiMode := False ; Enable for regular multi instance mode
 global fullscreen := False ; Enable to use fullscreen (as in F11)
+global fullScreenDelay := 270 ; Increase if fullscreening issues
 global borderless := False ; Enable to use borderless windowed (like fullscreen, may have more input lag, but nicer otherwise)
 ; Fullscreen and borderless can both be set to True, it won't break anything, but there's little point in using both
 global disableTTS := False
@@ -38,9 +39,7 @@ global unpauseOnSwitch := True ; I personally recommend having this off if you u
 
 
 ; Advanced settings
-; General
-global fullScreenDelay := 270 ; Increase if fullscreening issues
-global restartDelay := 200 ; Increase if saying missing instanceNumber in .minecraft (and you ran setup)
+
 ; OBS settings
 global obsDelay := 50 ; increase if not changing scenes in obs (only relevant if not using websocket)
 ; OBS WebSocket settings
