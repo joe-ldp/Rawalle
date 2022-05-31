@@ -9,7 +9,7 @@ Reset(idx := -1) {
     CountResets("Daily Attempts")
 
     if (activeInstance == idx) {
-        if (!multiMode) {
+        if (mode == "Wall") {
             activeInstance := 0
             if (fullscreen)
                 Sleep, %fullscreenDelay%
