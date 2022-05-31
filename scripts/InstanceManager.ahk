@@ -203,7 +203,7 @@ Switch() {
             WinMinimize, Fullscreen Projector
         if (wideResets)
             WinMaximize, ahk_pid %pid%
-        if (fullscreen) {
+        if (fullscreen && !multiMode) {
             ControlSend,, {Blind}{F11}, ahk_pid %pid%
             Sleep, %fullScreenDelay%
         }
@@ -221,6 +221,10 @@ Switch() {
 Play() {
     if (instanceFreezing)
         Unfreeze()
+    if (fullscreen && multiMode) {
+        ControlSend,, {Blind}{F11}, ahk_pid %pid%
+        Sleep, %fullScreenDelay%
+    }
     if ((currentState == STATE_READY || currentState == STATE_UNKNOWN) && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
     if (performanceMethod == "S") {
