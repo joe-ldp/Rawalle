@@ -38,7 +38,15 @@ global bypassWall := False ; Switches directly to next locked instance when you 
 global unpauseOnSwitch := True ; I personally recommend having this off if you use bypassWall, but try with and without
 
 
-; Advanced settings
+; Performance related settings
+global affinityLevel := 0.55 ; 1 = OFF, the lower it is, the less your active instance lags but the slower background instances generate
+global performanceMethod := "S" ; S = Settings Changes, F = Instance Freezing, N = None
+; Settings changes
+global lowRender := 10
+global settingsDelay := 30 ; Increase if settings aren't changing
+; Instance freezing
+global resumeDelay := 50 ; Increase if instance isn't resetting (or have to press reset twice)
+global beforeFreezeDelay := 3000 ; increase if doesnt join world
 
 ; OBS settings
 global obsDelay := 50 ; increase if not changing scenes in obs (only relevant if not using websocket)
@@ -56,15 +64,4 @@ global wallScene := "instance wall"
 global instanceSceneFormat := "instance "
 ; Single scene setup
 global singleSceneOBS := False
-global playingScene := "playing scene"
-
-; Performance related settings
-; Affinity
-global affinityLevel := 0.65 ; 1 = OFF, the lower it is, the less your active instance lags but the slower background instances generate
-; Instance freezing
-global instanceFreezing := False
-global resumeDelay := 50 ; Increase if instance isn't resetting (or have to press reset twice)
-global beforeFreezeDelay := 3000 ; increase if doesnt join world
-; Settings changes
-global settingsDelay := 15 ; Increase if settings aren't changing
-global beforePauseDelay := 500 ; Basically the delay before dynamic FPS does its thing
+global beforePauseDelay := 500 ; Basically the delay before dynamic FPS does its thingglobal playingScene := "playing scene"
