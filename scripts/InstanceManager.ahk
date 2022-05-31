@@ -480,7 +480,6 @@ ManageState:
                 WinGet, activePID, PID, A
                 if (activePID != pid) {
                     Log("World generated, pausing. Log:`n" . line)
-                    DllCall("Sleep", "UInt", beforePauseDelay)
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     currentState := STATE_READY
                     if (instanceFreezing) {

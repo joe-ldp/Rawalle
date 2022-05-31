@@ -64,4 +64,4 @@ global wallScene := "instance wall"
 global instanceSceneFormat := "instance "
 ; Single scene setup
 global singleSceneOBS := False
-global beforePauseDelay := 500 ; Basically the delay before dynamic FPS does its thingglobal playingScene := "playing scene"
+global playingScene := "playing scene"
