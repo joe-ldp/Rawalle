@@ -139,7 +139,7 @@ Reset(wParam) {
     } else {
         Log("Resetting")
         lastReset := A_TickCount
-        if (instanceFreezing && frozen)
+        if (performanceMethod == "F" && frozen)
             Unfreeze()
         if (resetSounds && currentState != STATE_UNKNOWN)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
@@ -219,7 +219,7 @@ Switch() {
 }
 
 Play() {
-    if (instanceFreezing)
+    if (performanceMethod == "F")
         Unfreeze()
     if (fullscreen && mode == "Multi") {
         ControlSend,, {Blind}{F11}, ahk_pid %pid%
