@@ -34,6 +34,7 @@ Play(idx) {
         LogAction(idx, "play")
         LockInstance(idx, False)
         activeInstance := idx
+        isOnWall := False
         SetAffinities()
     }
 }
