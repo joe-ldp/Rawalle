@@ -93,7 +93,7 @@ if (mode == "Multi") {
     ToWall()
 }
 
-if (!disableTTS) {
+if (readySound) {
     file = %A_ScriptDir%/media/ready.wav
     Random, pos, 0, 7
     wmp := ComObjCreate("WMPlayer.OCX")

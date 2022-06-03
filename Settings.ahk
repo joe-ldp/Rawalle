@@ -16,10 +16,10 @@ global fullscreen := False ; Enable to use fullscreen (as in F11)
 global fullScreenDelay := 270 ; Increase if fullscreening issues
 global borderless := False ; Enable to use borderless windowed (like fullscreen, may have more input lag, but nicer otherwise)
 ; Fullscreen and borderless can both be set to True, it won't break anything, but there's little point in using both
-global disableTTS := False
+global readySound := True
 global countResets := True
 global coopResets := False ; Use forceport and some method of forwarding/sharing port 25565
-global autoBop := False ; Automatically deletes old worlds when you open the macro
+global autoBop := True ; Automatically deletes old worlds when you open the macro
 
 ; Settings
 global renderDistance := 18
