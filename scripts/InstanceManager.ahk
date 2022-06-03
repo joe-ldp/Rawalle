@@ -79,15 +79,12 @@ if (!pid := IsInstanceOpen()) {
 SetTitle()
 GetControls()
 GetSettings()
-Loop, Read, %mcDir%\logs\latest.log
-{
-    if(InStr(A_LoopReadLine, "recipes")) {
-        global currentState := STATE_UNKNOWN
-        Log("State initalised to unknown")
-        break
-    }
-}
-if (currentState != STATE_UNKNOWN) {
+
+FileRead, log, %mcDir%\logs\latest.log
+if(InStr(log, "recipes")) {
+    global currentState := STATE_UNKNOWN
+    Log("State initalised to unknown")
+} else {
     global currentState := STATE_INIT
     Log("State initialised to init")
 }
