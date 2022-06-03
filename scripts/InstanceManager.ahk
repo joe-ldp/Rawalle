@@ -180,7 +180,7 @@ Reset(wParam) {
         newWorldPos := resetPos := GetNumLogLines()
         SetTimer, ManageState, -200
     }
-    Critical, Off
+}
 
 ManageState() {
     Critical
