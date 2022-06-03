@@ -117,7 +117,7 @@ OnMessage(MSG_REVEAL, "Reveal")
 FileAppend,, IM%idx%ready.tmp
 
 Reset(wParam) {
-    Critical, On
+    Critical
     if (currentState == STATE_RESETTING || (wParam > lastReset && wParam < lastNewWorld)) {
         return
     } else if (currentState == STATE_INIT) {
@@ -181,6 +181,59 @@ Reset(wParam) {
         SetTimer, ManageState, -200
     }
     Critical, Off
+
+ManageState() {
+    Critical
+    while (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
+        if (currentState == STATE_RESETTING) {
+            while (DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 1)) {
+            } ; get rid of any extra messages
+        }
+        Loop, Read, %mcDir%\logs\latest.log
+        {
+            if (A_Index > (resetValidated ? newWorldPos : resetPos)) {
+                line = %A_LoopReadLine%
+                lineNum = %A_Index%
+                if (!resetValidated) {
+                    for each, value in toValidateReset
+                        if (InStr(line, value)) {
+                            newWorldPos := lineNum
+                            ValidateReset()
+                        }
+                }
+                if (currentState == STATE_RESETTING && InStr(line, "Starting Preview", -16)) {
+                    Log("Found preview. Log:`n" . line)
+                    newWorldPos := lineNum
+                    ValidateReset()
+                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    currentState := STATE_PREVIEWING
+                    ;continue 2
+                } else if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "the_end", -7)) {
+                    WinGet, activePID, PID, A
+                    if (activePID != pid) {
+                        Log("World generated, pausing. Log:`n" . line)
+                        ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                        currentState := STATE_READY
+                        if (performanceMethod == "F") {
+                            Frz := Func("Freeze").Bind()
+                            bfd := 0 - beforeFreezeDelay
+                            SetTimer, %Frz%, %bfd%
+                        }
+                    } else {
+                        Log("World generated, playing. Log:`n" . line)
+                        Play()
+                    }
+                    return
+                }
+            }
+        }
+        if (!resetValidated && (A_TickCount - lastReset > 2000)) {
+            Log("Found failed reset. Forcing reset")
+            currentState := STATE_UNKNOWN
+            Reset(A_TickCount)
+            return
+        }
+    }
 }
 
 Switch() {
@@ -248,6 +301,7 @@ Play() {
 ValidateReset() {
     if (!resetValidated)
         Log("Successful reset confirmed.")
+    Log("Successful reset confirmed.")
     lastNewWorld := A_TickCount
     resetValidated := True
     return GetNumLogLines()
@@ -460,58 +514,3 @@ return ; end the auto-execute section
 
 ManageState:
     Critical
-    Loop, Read, %mcDir%\logs\latest.log
-    {
-        if (A_Index > (resetValidated ? newWorldPos : resetPos)) {
-            line = %A_LoopReadLine%
-            if (!resetValidated) {
-                for each, value in toValidateReset
-                    if (InStr(line, value))
-                        newWorldPos := ValidateReset()
-            }
-            if (currentState == STATE_RESETTING && InStr(line, "Starting Preview", -16)) {
-                Log("Found preview. Log:`n" . line)
-                newWorldPos := ValidateReset()
-                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                currentState := STATE_PREVIEWING
-            }
-            if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "the_end", -7)) {
-                newWorldPos := ValidateReset()
-                WinGet, activePID, PID, A
-                if (activePID != pid) {
-                    Log("World generated, pausing. Log:`n" . line)
-                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    currentState := STATE_READY
-                    if (instanceFreezing) {
-                        Frz := Func("Freeze").Bind()
-                        bfd := 0 - beforeFreezeDelay
-                        SetTimer, %Frz%, %bfd%
-                    }
-                } else {
-                    Log("World generated, playing. Log:`n" . line)
-                    Play()
-                }
-                return
-            }
-        }
-    }
-    if (!resetValidated && (A_TickCount - lastReset > 2000)) {
-        log := ""
-        Loop, Read, %mcDir%\logs\latest.log
-        {
-            if (A_Index > resetPos)
-                log := log . A_LoopReadLine . "`n"
-        }
-        if (InStr(log, "Stopping worker threads", -23) || InStr(log, "Leaving world generation", -24)) { ; || InStr(log, "Preparing spawn area", -26)) {
-            newWorldPos := ValidateReset()
-        } else { ; the instance didn't reset
-            Log("Found failed reset. Forcing reset. Log:`n" . log)
-            currentState := STATE_UNKNOWN
-            Reset(A_TickCount)
-            return
-        }
-    }
-    if (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
-        Goto, ManageState
-    }
-return
