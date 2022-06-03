@@ -299,12 +299,9 @@ Play() {
 }
 
 ValidateReset() {
-    if (!resetValidated)
-        Log("Successful reset confirmed.")
     Log("Successful reset confirmed.")
     lastNewWorld := A_TickCount
     resetValidated := True
-    return GetNumLogLines()
 }
 
 GetNumLogLines() {
