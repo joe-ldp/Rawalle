@@ -509,5 +509,3 @@ Exit() {
 
 return ; end the auto-execute section
 
-ManageState:
-    Critical
