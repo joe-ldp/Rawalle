@@ -31,7 +31,8 @@ global locked := []
 
 OnExit("Shutdown")
 DetectHiddenWindows, On
-FileAppend,, scripts/runPy.tmp
+if (useObsWebsocket)
+    FileAppend,, scripts/runPy.tmp
 if (!FileExist(enteredScreenshots := A_ScriptDir . "\screenshots\entered"))
     FileCreateDir, %enteredScreenshots%
 if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
