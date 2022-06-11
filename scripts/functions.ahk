@@ -1,7 +1,7 @@
 ; v1.0.0-beta
 
 Reset(idx := -1) {
-    idx := idx == -1 ? activeInstance : idx
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
     PostMessage, MSG_RESET, A_TickCount,,,ahk_pid %IM_PID%
@@ -27,7 +27,8 @@ Reset(idx := -1) {
     SetAffinities()
 }
 
-Play(idx) {
+Play(idx := -1) {
+    idx := (idx == -1) ? MousePosToInstNumber() : idx
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
     if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
@@ -54,10 +55,11 @@ Reveal(idx) {
     PostMessage, MSG_REVEAL,,,,ahk_pid %pid%
 }
 
-FocusReset(focusInstance) {
-    Play(focusInstance)
+FocusReset(idx := -1) {
+    idx := (idx == -1) ? MousePosToInstNumber() : idx
+    Play(idx)
     Loop, %numInstances%
-        if (focusInstance != A_Index && !locked[A_Index])
+        if (idx != A_Index && !locked[A_Index])
             Reset(A_Index)
 }
 
@@ -72,7 +74,8 @@ ResetAll() {
             Reset(A_Index)
 }
 
-LockInstance(idx, sound := True) {
+LockInstance(idx := -1, sound := True) {
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (locked[idx])
         return
     if (useObsWebsocket && lockIndicators)
