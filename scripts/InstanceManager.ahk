@@ -1,6 +1,7 @@
 ; v1.0.0-beta
 
 #NoEnv
+#NoTrayIcon
 #WinActivateForce
 #SingleInstance, Off
 SetWorkingDir, %A_ScriptDir%
@@ -32,11 +33,6 @@ global lastReset := 0
 global lastNewWorld := 0
 global resetValidated := True
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
-
-I_Icon = ../media/IM.ico
-if (FileExist(I_Icon))
-    Menu, Tray, Icon, %I_Icon%
-Menu, Tray, Tip, Instance %idx% Manager
 
 Log("Instance Manager launched")
 OnExit("Exit")
@@ -503,6 +499,3 @@ Log(message) {
 Exit() {
     logFile.Close()
 }
-
-return ; end the auto-execute section
-

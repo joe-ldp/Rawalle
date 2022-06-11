@@ -66,6 +66,10 @@ Loop, %numInstances% {
         FileDelete, %openFile%
 }
 
+if (autoCloseInstances) {
+    Menu, Tray, Add, Exit and Close Instances, Shutdown, 0
+}
+
 if (useObsWebsocket) {
     Loop, {
         Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%",, Hide, OBS_PID
@@ -118,7 +122,7 @@ Shutdown(ExitReason, ExitCode) {
         if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . idx . "ready.tmp"))
             FileDelete, %readyFile%
     }
-    if (autoCloseInstances && ExitReason == "Menu") {
+    if (ExitReason == "Exit and Close Instances") {
         for each, pid in MC_PIDs {
             Process, Close, %pid%
         }
