@@ -250,8 +250,9 @@ Switch() {
         if (wideResets)
             WinMaximize, ahk_pid %pid%
         if (fullscreen && mode == "Wall") {
-            ControlSend,, {Blind}{F11}, ahk_pid %pid%
-            Sleep, %fullScreenDelay%
+            fs := settings["key_key.fullscreen"]
+            ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+            sleep, %fullscreenDelay%
         }
 
         Send, {LButton}
@@ -268,8 +269,9 @@ Play() {
     if (performanceMethod == "F")
         Unfreeze()
     if (fullscreen && mode == "Multi") {
-        ControlSend,, {Blind}{F11}, ahk_pid %pid%
-        Sleep, %fullScreenDelay%
+        fs := settings["key_key.fullscreen"]
+        ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+        sleep, %fullscreenDelay%
     }
     if ((currentState == STATE_READY || currentState == STATE_UNKNOWN) && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
