@@ -200,8 +200,8 @@ ManageState() {
                     ValidateReset()
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     currentState := STATE_PREVIEWING
-                    ;continue 2
-                } else if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "the_end", -7)) {
+                    continue 2
+                } else if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "advancements", -11)) {
                     WinGet, activePID, PID, A
                     if (activePID != pid) {
                         Log("World generated, pausing. Log:`n" . line)
