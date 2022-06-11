@@ -76,28 +76,30 @@ ResetAll() {
 
 LockInstance(idx := -1, sound := True) {
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    if (lockSounds && sound)
+        SoundPlay, media\lock.wav
     if (locked[idx])
         return
     if (useObsWebsocket && lockIndicators)
         SendOBSCommand("Lock," . idx . "," . 1)
     locked[idx] := A_TickCount
     LogAction(idx, "lock")
-    if (lockSounds && sound)
-        SoundPlay, media\lock.wav
 }
 
-UnlockInstance(idx, sound := True) {
+UnlockInstance(idx := 1, sound := True) {
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    if (lockSounds && sound)
+        SoundPlay, media\lock.wav
     if (!locked[idx])
         return
     if (useObsWebsocket && lockIndicators)
         SendOBSCommand("Lock," . idx . "," . 0)
     locked[idx] := 0
     LogAction(idx, "unlock")
-    if (lockSounds && sound)
-        SoundPlay, media\lock.wav
 }
 
-ToggleLock(idx) {
+ToggleLock(idx := 1) {
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (locked[idx])
         UnlockInstance(idx)
     else
