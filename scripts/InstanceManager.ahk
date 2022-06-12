@@ -109,9 +109,11 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 FileAppend,, IM%idx%ready.tmp
 
-Reset(wParam) {
+Reset(wParam := -1) {
     Critical
-    if (currentState == STATE_RESETTING || (wParam > lastReset && wParam < lastNewWorld)) {
+    msgTime := wParam == -1 ? A_TickCount : DllCall("GetMessageTime")
+    if (currentState == STATE_RESETTING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
+        Log("Discarding reset")
         return
     } else if (currentState == STATE_INIT) {
         ControlSend,, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
@@ -177,10 +179,14 @@ Reset(wParam) {
 
 ManageState() {
     Critical
-    while (!(currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0))) {
-        if (currentState == STATE_RESETTING) {
-            while (DllCall("PeekMessage", "UInt*", &msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 1)) {
-            } ; get rid of any extra messages
+    Loop, {
+        if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
+            DllCall("GetMessage", "UInt*", message, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET)
+            if (msgTime := DllCall("GetMessageTime") > lastNewWorld + 400) {
+                Log("Resetting from preview")
+                Reset(msgTime)
+                break
+            }
         }
         Loop, Read, %mcDir%\logs\latest.log
         {
