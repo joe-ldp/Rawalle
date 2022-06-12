@@ -78,8 +78,8 @@ GetSettings()
 
 FileRead, log, %mcDir%\logs\latest.log
 if(InStr(log, "recipes")) {
-    global currentState := STATE_UNKNOWN
-    Log("State initalised to unknown")
+    global currentState := STATE_READY
+    Log("State initalised to ready")
 } else {
     global currentState := STATE_INIT
     Log("State initialised to init")
@@ -230,7 +230,7 @@ ManageState() {
 }
 
 Switch() {
-    if ((currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING))) {
+    if (currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING)) {
         Log("Switched to instance")
 
         if (useObsWebsocket) {
@@ -256,8 +256,10 @@ Switch() {
         }
 
         Send, {LButton}
-        if (currentState == STATE_READY || currentState == STATE_UNKNOWN)
+        if (currentState == STATE_READY)
             Play()
+        else
+            currentState == STATE_UNKNOWN
 
         return 0
     } else {
@@ -273,7 +275,7 @@ Play() {
         ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
         sleep, %fullscreenDelay%
     }
-    if ((currentState == STATE_READY || currentState == STATE_UNKNOWN) && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
+    if (currentState == STATE_READY && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
     if (performanceMethod == "S") {
         renderPresses := renderDistance - 2
