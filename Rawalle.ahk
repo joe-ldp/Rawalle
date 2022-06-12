@@ -126,6 +126,7 @@ Shutdown(ExitReason, ExitCode) {
         for each, pid in MC_PIDs {
             Process, Close, %pid%
         }
+        ExitApp
     }
 }
 
