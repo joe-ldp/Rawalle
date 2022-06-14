@@ -209,7 +209,7 @@ ManageState() {
                     continue 2
                 } else if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "advancements", -11)) {
                     WinGet, activePID, PID, A
-                    if (activePID != pid) {
+                    if (activePID != pid || mode == "Wall") {
                         Log("World generated, pausing. Log:`n" . line)
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                         currentState := STATE_READY
