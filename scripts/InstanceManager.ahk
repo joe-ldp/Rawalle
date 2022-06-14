@@ -77,7 +77,7 @@ GetControls()
 GetSettings()
 
 FileRead, log, %mcDir%\logs\latest.log
-if(InStr(log, "recipes")) {
+if(InStr(log, "Server thread")) {
     global currentState := STATE_READY
     Log("State initalised to ready")
 } else {
