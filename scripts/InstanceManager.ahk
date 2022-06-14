@@ -292,7 +292,7 @@ Play() {
     }
     if (coopResets) {
         Sleep, 50
-        ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 5}{Enter}, ahk_pid %pid%
+        ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
         if (!unpauseOnSwitch)
             ControlSend,, {Blind}{Esc}, ahk_pid %pid%
     }
