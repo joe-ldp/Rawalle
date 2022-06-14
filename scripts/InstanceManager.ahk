@@ -11,7 +11,7 @@ SetKeyDelay, 0
 SetWinDelay, 1
 
 #Include %A_ScriptDir%/messages.ahk
-#Include %A_ScriptDir%/../Settings.ahk
+LoadSettings()
 
 global STATE_UNKNOWN    := -1
 global STATE_INIT       := 0
@@ -110,6 +110,7 @@ OnMessage(MSG_REVEAL, "Reveal")
 FileAppend,, IM%idx%ready.tmp
 
 Reset(wParam := -1) {
+    global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets, settingsDelay
     Critical
     msgTime := wParam == -1 ? A_TickCount : DllCall("GetMessageTime")
     if (currentState == STATE_RESETTING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
@@ -178,6 +179,7 @@ Reset(wParam := -1) {
 }
 
 ManageState() {
+    global mode, performanceMethod
     Critical
     Loop, {
         if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
@@ -236,6 +238,7 @@ ManageState() {
 }
 
 Switch() {
+    global useObsWebsocket, obsDelay, mode, fullscreen, fullscreenDelay
     if (currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING)) {
         Log("Switched to instance")
 
@@ -274,6 +277,7 @@ Switch() {
 }
 
 Play() {
+    global performanceMethod, fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, renderDistance
     if (performanceMethod == "F")
         Unfreeze()
     if (fullscreen && mode == "Multi") {
@@ -337,6 +341,7 @@ Freeze() {
 }
 
 Unfreeze() {
+    global resumeDelay
     hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
     If (hProcess) {
         DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
@@ -348,6 +353,7 @@ Unfreeze() {
 }
 
 ResetSettings() {
+    global performanceMethod, lowRender, renderDistance, entityDistance, FOV
     GetSettings()
     fovPresses := (110 - FOV) * 143 / 80
     desiredRd := performanceMethod == "S" && currentState == STATE_PLAYING ? lowRender : renderDistance
@@ -500,6 +506,38 @@ DesyncedMods(dir1, dir2) {
         }
     }
     return False
+}
+
+LoadSettings() {
+    global
+    local filename, file, sect, equalsPos, key, value
+    filename := A_ScriptDir . "\..\settings.ini"
+    FileRead, file, %filename%
+
+    Loop, Parse, file, `n`r, %A_Space%%A_Tab%
+    {
+        switch (SubStr(A_LoopField, 1, 1))
+        {
+            case "[":
+                sect := SubStr(A_LoopField, 2, -1)
+            case ";":
+                continue
+            default:
+                equalsPos := InStr(A_LoopField, "=")
+                if equalsPos {
+                    key := SubStr(A_LoopField, 1, equalsPos - 1)
+                    IniRead, value, %filename%, %sect%, %key%
+                    if (InStr(value, ",")) {
+                        value := StrReplace(value, """", "")
+                        %key% := []
+                        Loop, Parse, value, `,
+                            %key%.Push(A_LoopField)
+                    } else {
+                        %key% := value
+                    }
+                }
+        }
+    }
 }
 
 Log(message) {

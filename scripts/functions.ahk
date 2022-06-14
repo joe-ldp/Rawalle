@@ -1,6 +1,7 @@
 ; v1.0.0-beta
 
 Reset(idx := -1) {
+    global isOnWall, activeInstance, IM_PIDs, mode, bypasWall
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
@@ -28,6 +29,7 @@ Reset(idx := -1) {
 }
 
 Play(idx := -1) {
+    global IM_PIDs, activeInstance, isOnWall
     idx := (idx == -1) ? MousePosToInstNumber() : idx
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
@@ -41,21 +43,25 @@ Play(idx := -1) {
 }
 
 Freeze(idx) {
+    global IM_PIDs
     pid := IM_PIDs[idx]
     PostMessage, MSG_FREEZE,,,,ahk_pid %pid%
 }
 
 Unfreeze(idx) {
+    global IM_PIDs
     pid := IM_PIDs[idx]
     PostMessage, MSG_UNFREEZE,,,,ahk_pid %pid%
 }
 
 Reveal(idx) {
+    global IM_PIDs
     pid := IM_PIDs[idx]
     PostMessage, MSG_REVEAL,,,,ahk_pid %pid%
 }
 
 FocusReset(idx := -1) {
+    global numInstances, locked
     idx := (idx == -1) ? MousePosToInstNumber() : idx
     Play(idx)
     Loop, %numInstances%
@@ -64,17 +70,20 @@ FocusReset(idx := -1) {
 }
 
 BackgroundReset(idx) {
+    global locked
     if (!locked[idx])
         Reset(idx)
 }
 
 ResetAll() {
+    global numInstances, locked
     Loop, %numInstances%
         if (!locked[A_Index])
             Reset(A_Index)
 }
 
 LockInstance(idx := -1, sound := True) {
+    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
@@ -87,6 +96,7 @@ LockInstance(idx := -1, sound := True) {
 }
 
 UnlockInstance(idx := 1, sound := True) {
+    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
@@ -99,6 +109,7 @@ UnlockInstance(idx := 1, sound := True) {
 }
 
 ToggleLock(idx := 1) {
+    global isOnWall, activeInstance, locked
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (locked[idx])
         UnlockInstance(idx)
@@ -107,17 +118,20 @@ ToggleLock(idx := 1) {
 }
 
 FreezeAll() {
+    global numInstances
     Loop, %numInstances%
         Freeze(A_Index)
 }
 
 UnfreezeAll() {
+    global numInstances, resumeDelay
     Loop, %numInstances%
         Unfreeze(A_Index)
     Sleep, %resumeDelay%
 }
 
 SetAffinities() {
+    global MC_PIDs, activeInstance, highBitMask, lowBitMask
     for idx, pid in MC_PIDs {
         mask := (activeInstance == 0 || activeInstance == idx) ? highBitMask : lowBitMask
         hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
@@ -127,17 +141,20 @@ SetAffinities() {
 }
 
 SetTitles() {
+    global IM_PIDs
     for each, pid in IM_PIDs {
         PostMessage, MSG_SETTITLE,,,,ahk_pid %pid%
     }
 }
 
 MousePosToInstNumber() {
+    global cols, instHeight, instWidth
     MouseGetPos, mX, mY
     return (Floor(mY / instHeight) * cols) + Floor(mX / instWidth) + 1
 }
 
 NextInstance() {
+    global activeInstance, numInstances
     Loop, {
         activeInstance := activeInstance + 1 > numInstances ? 1 : activeInstance + 1
         Play(activeInstance)
@@ -149,6 +166,7 @@ NextInstance() {
 ToWall() {
     WinMaximize, Fullscreen Projector
     WinActivate, Fullscreen Projector
+    global useObsWebsocket, obsDelay, isOnWall
     if (useObsWebsocket) {
         SendOBSCommand("ToWall")
     } else {
@@ -160,8 +178,7 @@ ToWall() {
 }
 
 ToWallOrNextInstance() {
-    minTime := A_TickCount
-    goToIdx := 0
+    local minTime := A_TickCount, goToIdx := 0
     for idx, lockTime in locked {
         if (lockTime && lockTime < minTime) {
             minTime := lockTime
@@ -197,4 +214,36 @@ CountResets(attemptType) {
 
 LogAction(idx, action) {
     FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
+}
+
+LoadSettings() {
+    global
+    local filename, file, sect, equalsPos, key, value
+    filename := A_ScriptDir . "\settings.ini"
+    FileRead, file, %filename%
+
+    Loop, Parse, file, `n`r, %A_Space%%A_Tab%
+    {
+        switch (SubStr(A_LoopField, 1, 1))
+        {
+            case "[":
+                sect := SubStr(A_LoopField, 2, -1)
+            case ";":
+                continue
+            default:
+                equalsPos := InStr(A_LoopField, "=")
+                if equalsPos {
+                    key := SubStr(A_LoopField, 1, equalsPos - 1)
+                    IniRead, value, %filename%, %sect%, %key%
+                    if (InStr(value, ",")) {
+                        value := StrReplace(value, """", "")
+                        %key% := []
+                        Loop, Parse, value, `,
+                            %key%.Push(A_LoopField)
+                    } else {
+                        %key% := value
+                    }
+                }
+        }
+    }
 }

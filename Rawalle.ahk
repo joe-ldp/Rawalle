@@ -11,10 +11,11 @@ SetKeyDelay, 0
 SetWinDelay, 1
 SetTitleMatchMode, 2
 
-#Include %A_ScriptDir%\Settings.ahk
 #Include %A_ScriptDir%\scripts\messages.ahk
 #Include %A_ScriptDir%\scripts\functions.ahk
 #Include %A_ScriptDir%\scripts\utilities.ahk
+
+LoadSettings()
 
 global activeInstance := 0
 global MC_PIDs := []
@@ -108,6 +109,7 @@ if (readySound) {
 }
 
 Shutdown(ExitReason, ExitCode) {
+    global IM_PIDs, MC_PIDs
     FileDelete, scripts/runPy.tmp
     DetectHiddenWindows, On
     UnfreezeAll()
