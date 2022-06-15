@@ -375,7 +375,7 @@ ResetSettings() {
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %entityPresses%}, ahk_pid %pid%
         }
-        ControlSend,, {Blind}{Esc 2}, ahk_pid %pid%
+        ControlSend,, {Blind}{Esc 3}, ahk_pid %pid%
     }
 }
 
