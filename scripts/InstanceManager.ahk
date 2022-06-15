@@ -5,7 +5,6 @@
 #WinActivateForce
 #SingleInstance, Off
 SetWorkingDir, %A_ScriptDir%
-Process, Priority, % ahk_pid DllCall("GetCurrentProcessId"), AboveNormal
 
 SetKeyDelay, 0
 SetWinDelay, 1
