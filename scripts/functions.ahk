@@ -95,7 +95,7 @@ LockInstance(idx := -1, sound := True) {
     LogAction(idx, "lock")
 }
 
-UnlockInstance(idx := 1, sound := True) {
+UnlockInstance(idx := -1, sound := True) {
     global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (lockSounds && sound)
@@ -108,7 +108,7 @@ UnlockInstance(idx := 1, sound := True) {
     LogAction(idx, "unlock")
 }
 
-ToggleLock(idx := 1) {
+ToggleLock(idx := -1) {
     global isOnWall, activeInstance, locked
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (locked[idx])
