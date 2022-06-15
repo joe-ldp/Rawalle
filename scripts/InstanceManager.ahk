@@ -238,7 +238,7 @@ ManageState() {
 }
 
 Switch() {
-    global useObsWebsocket, obsDelay, mode, fullscreen, fullscreenDelay
+    global useObsWebsocket, screenshotWorlds, obsDelay, mode, fullscreen, fullscreenDelay
     if (currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING)) {
         Log("Switched to instance")
 
