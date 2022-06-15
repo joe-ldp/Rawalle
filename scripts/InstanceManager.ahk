@@ -320,12 +320,12 @@ GetNumLogLines() {
 
 Freeze() {
     if (currentState == STATE_READY && frozen == False) {
+        Log("Freezing")
         hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
-        If (hProcess) {
+        if (hProcess) {
             DllCall("ntdll.dll\NtSuspendProcess", "Int", hProcess)
             DllCall("CloseHandle", "Int", hProcess)
         }
-        Log("Freezing")
 
         ; hProcess := DllCall("OpenProcess", "UInt", 0x001F0FFF, "Int", 0, "Int", pid)
         ; DllCall("SetProcessWorkingSetSize", "UInt", hProcess, "Int", -1, "Int", -1)
@@ -342,13 +342,13 @@ Freeze() {
 
 Unfreeze() {
     global resumeDelay
+    Log("Unfreezing")
     hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
-    If (hProcess) {
+    if (hProcess) {
         DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
         DllCall("CloseHandle", "Int", hProcess)
         Sleep, %resumeDelay%
     }
-    Log("Unfreezing")
     frozen := False
 }
 
@@ -448,10 +448,9 @@ SetTitle() {
     WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 }
 
-global cmdNum := 1
 SendOBSCommand(cmd) {
-    cmdDir := A_ScriptDir . "\pyCmds\"
-    cmdFile := cmdDir . "IM" . idx . "CMD" . cmdNum . ".txt"
+    static cmdNum := 1
+    cmdFile := A_ScriptDir . "\pyCmds\IM" . idx . "CMD" . cmdNum . ".txt"
     cmdNum++
     FileAppend, %cmd%, %cmdFile%
 }

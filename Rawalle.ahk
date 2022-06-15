@@ -92,8 +92,8 @@ while (checkIdx <= numInstances) {
 
 SetAffinities()
 if (mode == "Multi") {
-    NextInstance()
     isOnWall := False
+    NextInstance()
 } else {
     ToWall()
 }

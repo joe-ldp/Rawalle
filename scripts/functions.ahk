@@ -193,10 +193,9 @@ ToWallOrNextInstance() {
     }
 }
 
-global cmdNum := 1
 SendOBSCommand(cmd) {
-    cmdDir := A_ScriptDir . "\scripts\pyCmds\"
-    cmdFile := cmdDir . "TWCMD" . cmdNum . ".txt"
+    static cmdNum := 1
+    cmdFile := A_ScriptDir . "\scripts\pyCmds\TWCMD" . cmdNum . ".txt"
     cmdNum++
     FileAppend, %cmd%, %cmdFile%
 }
