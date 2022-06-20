@@ -246,3 +246,39 @@ LoadSettings() {
         }
     }
 }
+
+LoadHotkeys() {
+    global numInstances
+    #If, WinActive("Minecraft") && WinActive("ahk_exe javaw.exe")
+    #If, WinActive("Fullscreen Projector")
+    #If
+    FileRead, file, %A_ScriptDir%\hotkeys.ini
+    Loop, Parse, file, `n`r, %A_Space%%A_Tab%
+    {
+        equalsPos := InStr(A_LoopField, "=")
+        if (InStr(A_LoopField, "WinActive")) {
+            Hotkey, If, % SubStr(A_LoopField, 2)
+        } else if (equalsPos && (InStr(A_LoopField, ";" != 1))) {
+            function := SubStr(A_LoopField, 1, equalsPos - 1)
+            keybind := StrReplace(SubStr(A_LoopField, equalsPos + 1), """", "")
+            if(!RegExMatch(keybind, "([<>]?[#^!+*])+"))
+                keybind := "*" . keybind
+            if (InStr(keybind, "idx")) {
+                Loop, %numInstances% {
+                    keybind := StrReplace(keybind, "idx", A_Index)
+                    fn := Func(function).Bind(A_Index)
+                    Hotkey, %keybind%, %fn%, UseErrorLevel
+                    if (ErrorLevel == 2) {
+                        MsgBox, I think you're using more than 9 instances or tried to assign an invalid hotkey! Check the readme on the Rawalle GitHub page for help.
+                        break
+                    } else if (ErrorLevel > 0) {
+                        MsgBox, Unhandled error code %ErrorLevel% when creating a hotkey. Contact Ravalle if you need help 😅
+                        break
+                    }
+                }
+            } else {
+                Hotkey, %keybind%, %function%, %A_Index%
+            }
+        }
+    }
+}

@@ -90,6 +90,8 @@ while (checkIdx <= numInstances) {
     }
 }
 
+LoadHotkeys()
+
 SetAffinities()
 if (mode == "Multi") {
     isOnWall := False
@@ -136,5 +138,3 @@ Reboot() {
     Shutdown("Reload", 0)
     Reload
 }
-
-#Include Hotkeys.ahk
