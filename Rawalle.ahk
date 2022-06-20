@@ -138,3 +138,5 @@ Reboot() {
     Shutdown("Reload", 0)
     Reload
 }
+
+#Include customHotkeys.ahk
