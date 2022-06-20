@@ -50,6 +50,16 @@ for each, program in launchPrograms {
         Run, %filename%, %dir%
 }
 
+if (useObsWebsocket) {
+    Loop, {
+        Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%",, Hide, OBS_PID
+        Sleep, 2000
+        Process, Exist, %OBS_PID%
+        if (ErrorLevel != 0)
+            break
+    }
+}
+
 Loop, %numInstances% {
     if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . A_Index . "ready.tmp"))
         FileDelete, %readyFile%
@@ -69,16 +79,6 @@ Loop, %numInstances% {
 
 if (autoCloseInstances) {
     Menu, Tray, Add, Exit and Close Instances, Shutdown, 0
-}
-
-if (useObsWebsocket) {
-    Loop, {
-        Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%",, Hide, OBS_PID
-        Sleep, 2000
-        Process, Exist, %OBS_PID%
-        if (ErrorLevel != 0)
-            break
-    }
 }
 
 checkIdx := 1

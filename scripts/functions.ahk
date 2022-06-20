@@ -225,10 +225,10 @@ LoadSettings() {
     {
         switch (SubStr(A_LoopField, 1, 1))
         {
-            case "[":
-                sect := SubStr(A_LoopField, 2, -1)
             case ";":
                 continue
+            case "[":
+                sect := SubStr(A_LoopField, 2, -1)
             default:
                 equalsPos := InStr(A_LoopField, "=")
                 if equalsPos {

@@ -34,7 +34,6 @@ global resetValidated := True
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 
 Log("Instance Manager launched")
-OnExit("Exit")
 
 if (autoBop) {
     cmd := Format("python.exe " . A_ScriptDir . "\worldBopper9000.py {1}", mcDir)
@@ -540,8 +539,4 @@ LoadSettings() {
 
 Log(message) {
     FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %currentState% | %message%`n, %mcDir%log.log
-}
-
-Exit() {
-    logFile.Close()
 }
