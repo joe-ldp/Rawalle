@@ -258,7 +258,7 @@ LoadHotkeys() {
         equalsPos := InStr(A_LoopField, "=")
         if (InStr(A_LoopField, "WinActive")) {
             Hotkey, If, % SubStr(A_LoopField, 2)
-        } else if (equalsPos && (InStr(A_LoopField, ";" != 1))) {
+        } else if (equalsPos && (InStr(A_LoopField, ";") != 1)) {
             function := SubStr(A_LoopField, 1, equalsPos - 1)
             keybind := StrReplace(SubStr(A_LoopField, equalsPos + 1), """", "")
             if(!RegExMatch(keybind, "([<>]?[#^!+*])+"))
