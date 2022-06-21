@@ -38,6 +38,8 @@ if (!FileExist(enteredScreenshots := A_ScriptDir . "\screenshots\entered"))
     FileCreateDir, %enteredScreenshots%
 if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
     FileCreateDir, %unenteredScreenshots%
+if (!FileExist(attemptsFolder := A_ScriptDir . "\attempts"))
+    FileCreateDir, %attemptsFolder%
 
 for each, program in launchPrograms {
     SplitPath, program, filename, dir
