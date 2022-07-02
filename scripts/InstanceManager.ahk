@@ -240,6 +240,8 @@ Switch() {
     if (currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING)) {
         Log("Switched to instance")
 
+        if (performanceMethod == "F")
+            Unfreeze()
         if (useObsWebsocket) {
             SendOBSCommand("Play," . idx)
             if (screenshotWorlds)
@@ -276,8 +278,6 @@ Switch() {
 
 Play() {
     global performanceMethod, fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, renderDistance
-    if (performanceMethod == "F")
-        Unfreeze()
     if (fullscreen && mode == "Multi") {
         fs := settings["key_key.fullscreen"]
         ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
