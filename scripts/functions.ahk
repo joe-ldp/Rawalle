@@ -6,8 +6,8 @@ Reset(idx := -1) {
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
     PostMessage, MSG_RESET, A_TickCount,,,ahk_pid %IM_PID%
-    CountResets("Attempts")
-    CountResets("Daily Attempts")
+    CountResets("Resets")
+    CountResets("Daily Resets")
 
     if (activeInstance == idx) {
         if (mode == "Wall") {
@@ -200,8 +200,8 @@ SendOBSCommand(cmd) {
     FileAppend, %cmd%, %cmdFile%
 }
 
-CountResets(attemptType) {
-    filename := A_ScriptDir . "\attempts\" . attemptType . ".txt"
+CountResets(resetType) {
+    filename := A_ScriptDir . "\resets\" . resetType . ".txt"
     FileRead, numResets, %filename%
     if (ErrorLevel)
         numResets := 0
