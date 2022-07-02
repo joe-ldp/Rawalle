@@ -42,18 +42,6 @@ Play(idx := -1) {
     }
 }
 
-Freeze(idx) {
-    global IM_PIDs
-    pid := IM_PIDs[idx]
-    PostMessage, MSG_FREEZE,,,,ahk_pid %pid%
-}
-
-Unfreeze(idx) {
-    global IM_PIDs
-    pid := IM_PIDs[idx]
-    PostMessage, MSG_UNFREEZE,,,,ahk_pid %pid%
-}
-
 Reveal(idx) {
     global IM_PIDs
     pid := IM_PIDs[idx]
@@ -117,17 +105,45 @@ ToggleLock(idx := -1) {
         LockInstance(idx)
 }
 
+Freeze(pid) {
+    hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
+    if (hProcess) {
+        DllCall("ntdll.dll\NtSuspendProcess", "Int", hProcess)
+        DllCall("CloseHandle", "Int", hProcess)
+    }
+
+    ; hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
+    ; DllCall("SetProcessWorkingSetSize", "UInt", hProcess, "Int", -1, "Int", -1)
+    ; DllCall("CloseHandle", "Int", hProcess)
+    ; Log("Freeing memory")
+
+    ; Freeing memory is disabled by default, as it doesn't achieve much except more unfreezing lag.
+    ; It can in theory let you run more than the max # of instances your ram can handle, but this macro doesn't support that anyway.
+    ; You can uncomment these lines to enable it if you want.
+}
+
+Unfreeze(pid) {
+    global resumeDelay
+    hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
+    if (hProcess) {
+        DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
+        DllCall("CloseHandle", "Int", hProcess)
+        Sleep, %resumeDelay%
+    }
+}
+
 FreezeAll() {
-    global numInstances
-    Loop, %numInstances%
-        Freeze(A_Index)
+    global MC_PIDs
+    for each, pid in MC_PIDs {
+        Freeze(pid)
+    }
 }
 
 UnfreezeAll() {
-    global numInstances, resumeDelay
-    Loop, %numInstances%
-        Unfreeze(A_Index)
-    Sleep, %resumeDelay%
+    global MC_PIDs
+    for each, pid in MC_PIDs {
+        Unfreeze(pid)
+    }
 }
 
 SetAffinities() {
