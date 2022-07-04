@@ -10,7 +10,6 @@
 
 from datetime import datetime
 import shutil
-from numpy import single
 from obswebsocket import obsws, requests
 from os.path import exists
 import os
@@ -42,38 +41,39 @@ def get_cmd(path):
 
 def execute_cmd(cmd):
     if (len(cmd) > 0):
+        global inst_num
+        instance_layer_name = instance_source_format.replace("*", str(inst_num))
         match cmd[0]:
             case "ToWall":
                 ws.call(requests.SetCurrentScene(f"{wall_scene}"))
             case "Play":
-                global inst_num
                 old_inst_num = inst_num
                 inst_num = cmd[1]
                 if (single_scene):
-                    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{inst_num}", True, f"{playing_scene}"))
+                    ws.call(requests.SetSceneItemRender(f"{instance_layer_name}", True, f"{playing_scene}"))
                     if (inst_num != old_inst_num):
-                        ws.call(requests.SetSceneItemRender(f"{instance_source_format}{old_inst_num}", False, f"{playing_scene}"))
+                        ws.call(requests.SetSceneItemRender(instance_source_format.replace("*", old_inst_num), False, f"{playing_scene}"))
                     ws.call(requests.SetCurrentScene(f"{playing_scene}"))
                 else:
-                    ws.call(requests.SetCurrentScene(f"{instance_scene_format}{inst_num}"))
+                    ws.call(requests.SetCurrentScene(instance_scene_format.replace("*", inst_num)))
             case "Lock":
                 lock_num = cmd[1]
                 render = True if int(cmd[2]) else False
-                ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{lock_num}", render, f"{wall_scene}"))
+                ws.call(requests.SetSceneItemRender(lock_layer_format.replace("*", lock_num), render, f"{wall_scene}"))
             case "GetImg":
                 global img_data
                 start = datetime.now().timestamp()
                 while (datetime.now().timestamp() - start < 3):
                     if (single_scene):
-                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_source_format}{inst_num}", f"{playing_scene}")).datain
+                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", f"{playing_scene}")).datain
                     else:
-                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_source_format}{inst_num}", f"{instance_scene_format}{inst_num}")).datain
+                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", instance_scene_format.replace("*", inst_num))).datain
                     ratio = layer_info_data["width"] / layer_info_data["height"]
                     if (abs((16/9) - ratio) > 0.15):
                         print("Ratio " + str(ratio) + " exceeds allowed variance from 1.777..., instance is probably still wide, waiting")
                     else:
                         break
-                img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_source_format}{inst_num}", "png")).datain["img"]
+                img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_layer_name}", "png")).datain["img"]
             case "SaveImg":
                 path = os.path.dirname(os.path.realpath(__file__)) + "\\..\\screenshots\\" + ("entered\\" if int(cmd[2]) else "unentered\\")
                 filename = cmd[1]
@@ -97,12 +97,16 @@ img_data = ""
 
 ws = obsws(host, port, password)
 ws.connect()
-scenes = ws.call(requests.GetSceneList())
 
 for i in range(1, num_instances+1):
-    print(i)
-    ws.call(requests.SetSceneItemRender(f"{instance_source_format}{i}", False, f"{playing_scene}"))
-    ws.call(requests.SetSceneItemRender(f"{lock_layer_format}{i}", False, f"{wall_scene}"))
+    print(f"Setting up instance {i}")
+    try:
+        source_layer_name = instance_source_format.replace("*", str(i))
+        ws.call(requests.SetSceneItemRender(f"{source_layer_name}", False, f"{playing_scene}"))
+        lock_layer_name = lock_layer_format.replace("*", str(i))
+        ws.call(requests.SetSceneItemRender(f"{lock_layer_name}", False, f"{wall_scene}"))
+    except:
+        print("Some setup didn't complete (it's probably ok, just not using some features).")
     
 try:
     ws.call(requests.SetCurrentScene(f"{wall_scene}"))
