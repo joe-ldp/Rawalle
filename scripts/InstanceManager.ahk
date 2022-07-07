@@ -515,20 +515,24 @@ LoadSettings() {
     {
         switch (SubStr(A_LoopField, 1, 1))
         {
-            case "[":
-                sect := SubStr(A_LoopField, 2, -1)
             case ";":
                 continue
+            case "[":
+                sect := SubStr(A_LoopField, 2, -1)
             default:
                 equalsPos := InStr(A_LoopField, "=")
                 if equalsPos {
                     key := SubStr(A_LoopField, 1, equalsPos - 1)
                     IniRead, value, %filename%, %sect%, %key%
-                    if (InStr(value, ",")) {
+                    if (InStr(key, "arr")) {
                         value := StrReplace(value, """", "")
                         %key% := []
-                        Loop, Parse, value, `,
-                            %key%.Push(A_LoopField)
+                        if (InStr(value, ",")) {
+                            Loop, Parse, value, `,
+                                %key%.Push(A_LoopField)
+                        } else {
+                            %key%.Push(value)
+                        }
                     } else {
                         %key% := value
                     }

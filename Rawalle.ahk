@@ -41,7 +41,7 @@ if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
 if (!FileExist(resetsFolder := A_ScriptDir . "\resets"))
     FileCreateDir, %resetsFolder%
 
-for each, program in launchPrograms {
+for each, program in arrLaunchPrograms {
     SplitPath, program, filename, dir
     isOpen := False
     for proc in ComObjGet("winmgmts:").ExecQuery(Format("Select * from Win32_Process where CommandLine like ""%{1}%""", filename)) {
