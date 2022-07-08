@@ -232,6 +232,7 @@ ManageState() {
             Reset(A_TickCount)
             return
         }
+        Sleep, 50
     }
 }
 
