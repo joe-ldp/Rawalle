@@ -107,9 +107,9 @@ WallLock(idx := -1) {
     global isOnWall, activeInstance, lockIndicators
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (lockIndicators)
-        LockInstance(idx)
-    else
         ToggleLock(idx)
+    else
+        LockInstance(idx)
 }
 
 Freeze(pid) {
