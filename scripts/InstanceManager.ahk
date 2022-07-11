@@ -229,7 +229,7 @@ ManageState() {
                 }
             }
         }
-        if (!resetValidated && (A_TickCount - lastReset > 2000)) {
+        if (!resetValidated && (A_TickCount - lastReset > 1200)) {
             Log("Found failed reset. Forcing reset")
             currentState := STATE_UNKNOWN
             Reset(A_TickCount)
