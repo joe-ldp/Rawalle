@@ -512,7 +512,7 @@ DesyncedMods(dir1, dir2) {
 LoadSettings() {
     global
     local filename, file, sect, equalsPos, key, value
-    filename := A_ScriptDir . "\..\settings-Joe.ini"
+    filename := A_ScriptDir . "\..\settings.ini"
     FileRead, file, %filename%
 
     Loop, Parse, file, `n`r, %A_Space%%A_Tab%
