@@ -294,9 +294,8 @@ LoadHotkeys() {
                 keybind := "*" . keybind
             if (InStr(keybind, "idx")) {
                 Loop, %numInstances% {
-                    keybind := StrReplace(keybind, "idx", A_Index)
                     fn := Func(function).Bind(A_Index)
-                    Hotkey, %keybind%, %fn%, UseErrorLevel
+                    Hotkey, % StrReplace(keybind, "idx", A_Index), %fn%, UseErrorLevel
                     if (ErrorLevel == 2) {
                         MsgBox, I think you're using more than 9 instances or tried to assign an invalid hotkey! Check the readme on the Rawalle GitHub page for help.
                         break
@@ -306,7 +305,9 @@ LoadHotkeys() {
                     }
                 }
             } else {
-                Hotkey, %keybind%, %function%, %A_Index%
+                Hotkey, %keybind%, %function%, %A_Index%, UseErrorLevel
+                if (ErrorLevel)
+                    MsgBox, Error code %ErrorLevel% when creating a hotkey. Check the readme on the Rawalle GitHub page for help.
             }
         }
     }
