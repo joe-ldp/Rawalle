@@ -1,6 +1,6 @@
 ; Ravalle's new Multi Instance & Wall Macro
 ; Author: Ravalle / Joe
-; v1.0.0-beta
+; v1.1.0
 
 #NoEnv
 #Persistent

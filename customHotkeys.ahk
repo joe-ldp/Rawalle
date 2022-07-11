@@ -1,3 +1,5 @@
+; v1.1.0
+
 #If WinActive("Minecraft") && WinActive("ahk_exe javaw.exe")
 {
     ; Add custom / extra hotkeys for in Minecraft here

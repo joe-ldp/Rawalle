@@ -1,4 +1,4 @@
-; v1.0.0-beta
+; v1.1.0
 
 global MSG_RESET    := 0x04E20
 global MSG_SWITCH   := 0x04E21
