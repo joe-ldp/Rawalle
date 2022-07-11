@@ -154,6 +154,11 @@ Reset(wParam := -1) {
                 if (fullscreen && settings.fullscreen == "true") {
                     fs := settings["key_key.fullscreen"]
                     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+                    sleep, %fullscreenDelay%
+                }
+                if (mode == "Wall") {
+                    WinMaximize, Fullscreen Projector
+                    WinActivate, Fullscreen Projector
                 }
                 if (wideResets)
                     Widen()
@@ -507,7 +512,7 @@ DesyncedMods(dir1, dir2) {
 LoadSettings() {
     global
     local filename, file, sect, equalsPos, key, value
-    filename := A_ScriptDir . "\..\settings.ini"
+    filename := A_ScriptDir . "\..\settings-Joe.ini"
     FileRead, file, %filename%
 
     Loop, Parse, file, `n`r, %A_Space%%A_Tab%
