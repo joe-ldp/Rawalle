@@ -12,8 +12,6 @@ Reset(idx := -1) {
     if (activeInstance == idx) {
         if (mode == "Wall") {
             activeInstance := 0
-            if (fullscreen)
-                Sleep, %fullscreenDelay%
             if (bypassWall)
                 ToWallOrNextInstance()
             else
@@ -189,8 +187,6 @@ NextInstance() {
 }
 
 ToWall() {
-    WinMaximize, Fullscreen Projector
-    WinActivate, Fullscreen Projector
     global useObsWebsocket, obsDelay, isOnWall
     if (useObsWebsocket) {
         SendOBSCommand("ToWall")

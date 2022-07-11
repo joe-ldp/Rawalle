@@ -106,6 +106,8 @@ if (mode == "Multi") {
     isOnWall := False
     NextInstance()
 } else {
+    WinMaximize, Fullscreen Projector
+    WinActivate, Fullscreen Projector
     ToWall()
 }
 
