@@ -105,6 +105,15 @@ ToggleLock(idx := -1) {
         LockInstance(idx)
 }
 
+WallLock(idx := -1) {
+    global isOnWall, activeInstance, lockIndicators
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    if (lockIndicators)
+        LockInstance(idx)
+    else
+        ToggleLock(idx)
+}
+
 Freeze(pid) {
     hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
     if (hProcess) {
