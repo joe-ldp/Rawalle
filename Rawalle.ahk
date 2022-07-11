@@ -15,6 +15,13 @@ SetTitleMatchMode, 2
 #Include %A_ScriptDir%\scripts\functions.ahk
 #Include %A_ScriptDir%\scripts\utilities.ahk
 
+IniRead, firstLaunch, settings.ini, Init, firstLaunch
+if (firstLaunch) {
+    MsgBox, 4,,Hey! It looks like this is your first time launching Rawalle.`nWould you like to configure your settings?
+    IfMsgBox Yes
+        RunWait, Rawalle Config.exe
+    IniWrite, 0, settings.ini, Init, firstLaunch
+}
 LoadSettings()
 
 global activeInstance := 0
