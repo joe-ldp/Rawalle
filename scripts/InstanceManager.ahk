@@ -21,7 +21,7 @@ global STATE_PREVIEWING := 4
 
 global pid := 0
 global idx := A_Args[1]
-global instName := StrReplace(multiMCNameFormat, "#", idx)
+global instName := StrReplace(multiMCNameFormat, "*", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
 global settings := []
