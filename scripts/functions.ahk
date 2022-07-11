@@ -290,6 +290,8 @@ LoadHotkeys() {
         } else if (equalsPos && (InStr(A_LoopField, ";") != 1)) {
             function := SubStr(A_LoopField, 1, equalsPos - 1)
             keybind := StrReplace(SubStr(A_LoopField, equalsPos + 1), """", "")
+            if (keybind == "null")
+                continue
             if(!RegExMatch(keybind, "([<>]?[#^!+*])+"))
                 keybind := "*" . keybind
             if (InStr(keybind, "idx")) {
