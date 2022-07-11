@@ -160,8 +160,6 @@ Reset(wParam := -1) {
                 DllCall("Sleep", "UInt", settingsDelay)
                 ResetSettings()
                 ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-                ; ControlSend,, {Blind}{Text}summon elder_guardian, ahk_pid %pid%
-                ; ControlSend,, {Blind}{Enter}42112, ahk_pid %pid%
             case STATE_PREVIEWING:
                 lp := settings["key_LeavePreview"]
                 SetKeyDelay, 1
