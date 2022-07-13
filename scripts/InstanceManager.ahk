@@ -143,9 +143,11 @@ Reset(wParam := -1) {
         {
             case STATE_UNKNOWN:
                 lp := settings["key_LeavePreview"]
+                cmd := settings["key_key.command"]
                 ControlSend,, {Blind}{%lp%}/, ahk_pid %pid%
                 Sleep, 120
                 ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+                ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
             case STATE_READY:
                 ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
             case STATE_PLAYING:
@@ -412,7 +414,13 @@ GetControls() {
                 StringReplace, value, value, %A_Space%,, All
                 if (InStr(value, "key.keyboard.")) {
                     split := StrSplit(value, "key.keyboard.")
-                    StringLower, value, % split[2]
+                    switch (split[2])
+                    {
+                        case "slash":
+                            value := "/"
+                        default:
+                            StringLower, value, % split[2]
+                    }
                 }
                 if (InStr(value, "key.mouse.")) {
                     split := StrSplit(value, "key.mouse.")
