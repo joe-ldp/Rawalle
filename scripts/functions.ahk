@@ -239,9 +239,7 @@ LogAction(idx, action) {
 LoadSettings() {
     global
     local filename, file, sect, equalsPos, key, value
-    filename := A_ScriptDir . "\settings.ini"
-    FileRead, file, %filename%
-
+    FileRead, file, %settingsFile%
     Loop, Parse, file, `n`r, %A_Space%%A_Tab%
     {
         switch (SubStr(A_LoopField, 1, 1))
@@ -254,7 +252,7 @@ LoadSettings() {
                 equalsPos := InStr(A_LoopField, "=")
                 if equalsPos {
                     key := SubStr(A_LoopField, 1, equalsPos - 1)
-                    IniRead, value, %filename%, %sect%, %key%
+                    IniRead, value, %settingsFile%, %sect%, %key%
                     if (InStr(key, "arr")) {
                         value := StrReplace(value, """", "")
                         %key% := []
