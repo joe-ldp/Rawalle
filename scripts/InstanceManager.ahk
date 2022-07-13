@@ -240,7 +240,7 @@ ManageState() {
 }
 
 Switch() {
-    global useObsWebsocket, screenshotWorlds, obsDelay, mode, fullscreen, fullscreenDelay, performanceMethod
+    global useObsWebsocket, screenshotWorlds, obsDelay, mode, fullscreen, fullscreenDelay, performanceMethod, wideResets
     if (currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING)) {
         Log("Switched to instance")
 
@@ -265,7 +265,7 @@ Switch() {
         if (fullscreen && mode == "Wall") {
             fs := settings["key_key.fullscreen"]
             ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
-            sleep, %fullscreenDelay%
+            Sleep, %fullscreenDelay%
         }
 
         Send, {LButton}
@@ -285,7 +285,7 @@ Play() {
     if (fullscreen && mode == "Multi") {
         fs := settings["key_key.fullscreen"]
         ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
-        sleep, %fullscreenDelay%
+        Sleep, %fullscreenDelay%
     }
     if (currentState == STATE_READY && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
