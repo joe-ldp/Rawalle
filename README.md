@@ -51,8 +51,6 @@ I'd advise messing with the default hotkeys for background resetting in customHo
 - Unpause on switch: Unpause or don't unpause when you play an instance
 - Auto-bop: Automatically deletes old worlds when you load up the macro. Intend to improve the safety of this feature in the future in regards to accidental activation.
 
-No longer actively moves worlds, it slows down the macro a lot. Use [this world moving macro](https://gist.github.com/Specnr/f7a5450d932a1277fdcd6c141ad7bf6a).
-
 ## OBS Websocket
 
 1) Download [Python](https://www.python.org/downloads/)
