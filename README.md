@@ -55,7 +55,7 @@ I'd advise messing with the default hotkeys for background resetting in customHo
 
 1) Download [Python](https://www.python.org/downloads/)
 2) Install [OBS websocket](https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/)
-3) Open up command prompt, and run this command in `pip install obs-websocket-py`
+3) Open command prompt, and run the following command: `pip install obs-websocket-py`
 4) You can use a password if you want. To set one, go to `Tools -> WebSockets Server Settings -> Enable Authentication` in OBS.
 
 ## Credit
