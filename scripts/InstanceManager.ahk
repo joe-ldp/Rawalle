@@ -248,16 +248,6 @@ Switch() {
 
         if (performanceMethod == "F")
             Unfreeze()
-        if (useObsWebsocket) {
-            SendOBSCommand("Play," . idx)
-            if (screenshotWorlds)
-                SendOBSCommand("GetImg")
-        } else {
-            Send, {Numpad%idx% down}
-            Sleep, %obsDelay%
-            Send, {Numpad%idx% up}
-        }
-
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
         WinSet, AlwaysOnTop, Off, ahk_pid %pid%
         if (mode == "Wall")
@@ -268,6 +258,16 @@ Switch() {
             fs := settings["key_key.fullscreen"]
             ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
             Sleep, %fullscreenDelay%
+        }
+
+        if (useObsWebsocket) {
+            SendOBSCommand("Play," . idx)
+            if (screenshotWorlds)
+                SendOBSCommand("GetImg")
+        } else {
+            Send, {Numpad%idx% down}
+            Sleep, %obsDelay%
+            Send, {Numpad%idx% up}
         }
 
         Send, {LButton}
