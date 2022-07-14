@@ -12,15 +12,17 @@ You can add new/custom keybinds by editing customHotkeys.ahk. Hopefully this wil
 
 ## Basic Usage
 
-To use the macro, run TheWall.ahk and wait for it to say ready. Start up OBS, then start up a [Fullscreen projector](https://youtu.be/9YqZ6Ogv3rk).
+To use the macro, run Rawalle.ahk and wait for it to say ready. Then open an OBS [Fullscreen Projector](https://youtu.be/9YqZ6Ogv3rk).
 
 On the Fullscreen Projector, you have a few hotkeys: 
 - T: Reset All - Resets all instances
+
 Mouse-based hotkeys:
 - E: Reset - Resets the instance which your mouse is hovering over
 - R: Play - Plays the instance which your mouse is hovering over
 - F: Focus Reset - Plays the instance which your mouse is hovering over, and resets the rest
 - Shift + Left Click: Lock instance so Reset All and Focus Reset skip over it
+
 Keyboard-based hotkeys:
 - (1-9): Resets the corresponding instance
 - Shift + (1-9): Plays the corresponding instance
@@ -65,4 +67,4 @@ No longer actively moves worlds, it slows down the macro a lot. Use [this world 
 - The collaborators listed on GitHub for minor enhancements (most of these are actually carried over from Specnr's macro and their code isn't here anymore lol)
 - jojoe77777 for making the original wall macro
 - Everyone I can't list who has contributed ideas
-- Everyone who's tried early/buggy versions and reported issues
+- Everyone who's tried early/buggy versions and reported issues (Mainly poni!!)
