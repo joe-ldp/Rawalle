@@ -154,9 +154,9 @@ UnfreezeAll() {
 }
 
 SetAffinities() {
-    global MC_PIDs, activeInstance, highBitMask, lowBitMask
+    global MC_PIDs, activeInstance, highBitMask, midBitMask, lowBitMask
     for idx, pid in MC_PIDs {
-        mask := (activeInstance == 0 || activeInstance == idx) ? highBitMask : lowBitMask
+        mask := activeInstance == idx ? highBitMask : activeInstance == 0 ? midBitMask : lowBitMask
         hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
         DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
         DllCall("CloseHandle", "Ptr", hProc)
