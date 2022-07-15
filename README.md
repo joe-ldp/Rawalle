@@ -49,7 +49,7 @@ I'd advise messing with the default hotkeys for background resetting in customHo
 - Coop resets: When enabled, the macro will open to lan (with cheats on) when you play an instance.
 - Bypass wall: When you reset, if there are any other instances currently locked you will get sent straight to that instance, bypassing the wall entirely. I only recommend this if you're background resetting.
 - Unpause on switch: Unpause or don't unpause when you play an instance
-- Auto-bop: Automatically deletes old worlds when you load up the macro. Intend to improve the safety of this feature in the future in regards to accidental activation.
+- Auto-bop: Automatically deletes old worlds when you load up the macro.
 
 ## OBS Websocket
 
@@ -57,6 +57,10 @@ I'd advise messing with the default hotkeys for background resetting in customHo
 2) Install [OBS websocket](https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/)
 3) Open command prompt, and run the following command: `pip install obs-websocket-py`
 4) You can use a password if you want. To set one, go to `Tools -> WebSockets Server Settings -> Enable Authentication` in OBS.
+
+## Tech Support
+
+[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ. If you still have unanswered questions, ping @Tech Support. 
 
 ## Credit
 
