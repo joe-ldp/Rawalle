@@ -138,7 +138,7 @@ Reset(wParam := -1) {
         if (resetSounds && currentState != STATE_UNKNOWN)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         GetSettings()
-
+        
         switch currentState
         {
             case STATE_UNKNOWN:
@@ -146,8 +146,10 @@ Reset(wParam := -1) {
                 cmd := settings["key_key.command"]
                 ControlSend,, {Blind}{%lp%}/, ahk_pid %pid%
                 Sleep, 120
-                ControlSend,, {Blind}{Esc 2}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
-                ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+                ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
+                ControlSend,, {Blind}{Esc 2}{Tab 8}{Enter}, ahk_pid %pid%
+                ControlSend,, {Blind}{Esc}{Tab 9}{Enter}, ahk_pid %pid%
+                ControlSend,, {Blind}{Esc}{Tab 8}{Enter}, ahk_pid %pid%
             case STATE_READY:
                 ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
             case STATE_PLAYING:
@@ -166,7 +168,12 @@ Reset(wParam := -1) {
                     Widen()
                 DllCall("Sleep", "UInt", settingsDelay)
                 ResetSettings()
-                ControlSend,, {Blind}{Esc}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+                WinGetTitle, mcTitle, ahk_pid %pid%
+                if (InStr(mcTitle, "LAN")) {
+                    ControlSend,, {Blind}{Esc}{Tab 8}{Enter}, ahk_pid %pid%
+                } else {
+                    ControlSend,, {Blind}{Esc}{Tab 9}{Enter}, ahk_pid %pid%
+                }
             case STATE_PREVIEWING:
                 lp := settings["key_LeavePreview"]
                 SetKeyDelay, 1
