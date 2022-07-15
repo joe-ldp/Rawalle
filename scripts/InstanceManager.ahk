@@ -483,11 +483,11 @@ CurrentWorldEntered() {
 }
 
 Widen() {
-    newHeight := Floor(A_ScreenHeight / 2.5)
-    yPos := (A_ScreenHeight/2) - (newHeight/2)
+    global widthMultiplier
+    newHeight := Floor(A_ScreenHeight / widthMultiplier)
+    yPos := (A_ScreenHeight / 2) - (newHeight / 2)
     WinMaximize, ahk_pid %pid%
     WinRestore, ahk_pid %pid%
-    Sleep, 200
     WinMove, ahk_pid %pid%,, 0, %yPos%, %A_ScreenWidth%, %newHeight%
 }
 
