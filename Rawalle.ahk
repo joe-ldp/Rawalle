@@ -61,13 +61,7 @@ for each, program in arrLaunchPrograms {
 }
 
 if (useObsWebsocket) {
-    Loop, {
-        Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%",, Hide, OBS_PID
-        Sleep, 2000
-        Process, Exist, %OBS_PID%
-        if (ErrorLevel != 0)
-            break
-    }
+    Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%" "%widthMultiplier%" "%A_ScreenHeight%",, Hide
 }
 
 Loop, %numInstances% {

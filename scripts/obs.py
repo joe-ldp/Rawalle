@@ -10,6 +10,7 @@
 
 from datetime import datetime
 import shutil
+from numpy import double
 from obswebsocket import obsws, requests
 from os.path import exists
 import os
@@ -68,10 +69,13 @@ def execute_cmd(cmd):
                         layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", f"{playing_scene}")).datain
                     else:
                         layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", instance_scene_format.replace("*", inst_num))).datain
-                    ratio = layer_info_data["width"] / layer_info_data["height"]
-                    if (abs((16/9) - ratio) > 0.15):
-                        print("Ratio " + str(ratio) + " exceeds allowed variance from 1.777..., instance is probably still wide, waiting")
+                    h = layer_info_data["sourceHeight"]
+                    wide_height = screen_height / 2.5
+                    print(layer_info_data)
+                    if (h <= wide_height):
+                        print(f"Found height {h}, instance is still wide, waiting")
                     else:
+                        print (f"Found height {h}, taking screenshot")
                         break
                 img_data = ws.call(requests.TakeSourceScreenshot(f"{instance_layer_name}", "png")).datain["img"]
             case "SaveImg":
@@ -92,6 +96,8 @@ single_scene = True if sys.argv[7] == "True" else False
 playing_scene = sys.argv[8]
 instance_source_format = sys.argv[9]
 num_instances = int(sys.argv[10])
+width_multiplier = float(sys.argv[11])
+screen_height = int(sys.argv[12])
 inst_num = 0
 img_data = ""
 
