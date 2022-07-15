@@ -295,13 +295,9 @@ Play() {
     }
     if (currentState == STATE_READY && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
-    if (performanceMethod == "S") {
-        renderPresses := renderDistance - 2
-        ControlSend,, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
-        ControlSend,, {Blind}{F3 down}{F %renderPresses%}{D}{F3 up}, ahk_pid %pid%
-        if (!unpauseOnSwitch)
-            ControlSend,, {Blind}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
-    }
+    ResetSettings()
+    if (performanceMethod == "S" && !unpauseOnSwitch)
+        ControlSend,, {Blind}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
     if (coopResets) {
         Sleep, 50
         ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
@@ -365,26 +361,26 @@ ResetSettings() {
     GetSettings()
     fovPresses := (110 - FOV) * 143 / 80
     desiredRd := performanceMethod == "S" && currentState == STATE_PLAYING ? lowRender : renderDistance
-    renderPresses := desiredRd - 2
+    renderPresses := (32 - desiredRd) * 143 / 30
     entityPresses := (5 - entityDistance) * 143 / 4.5
     SetKeyDelay, 0
-    if (desiredRd != settings.renderDistance) {
-        ControlSend,, {Blind}{Shift down}{F3 down}{F 32}{F3 up}{Shift up}, ahk_pid %pid%
-        ControlSend,, {Blind}{F3 down}{F %renderPresses%}{D}{F3 up}, ahk_pid %pid%
-    }
-    if (FOV != (settings.fov * 40 + 70) || entityDistance != settings.entityDistanceScaling) {
+    if (FOV != (settings.fov * 40 + 70) || desiredRd != settings.renderDistance || entityDistance != settings.entityDistanceScaling) {
         ControlSend,, {Blind}{Esc}{Tab 6}{Enter}{Tab}, ahk_pid %pid%
         if (FOV != currentFOV) {
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %fovPresses%}, ahk_pid %pid%
         }
-        if (entityDistance != settings.entityDistanceScaling) {
-            ControlSend,, {Blind}{Tab 5}{Enter}{Tab 17}, ahk_pid %pid%
-            SetKeyDelay, 0
+        ControlSend,, {Blind}{Tab 5}{Enter}{Tab 4}, ahk_pid %pid%
+        if (renderDistance != currentRenderDistance || currentState == STATE_PLAYING) {
+            ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
+            ControlSend,, {Blind}{Left %renderPresses%}, ahk_pid %pid%
+        }
+        if (entityDistance != currentEntityDistance) {
+            ControlSend,, {Blind}{Tab 13}, ahk_pid %pid%
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %entityPresses%}, ahk_pid %pid%
         }
-        ControlSend,, {Blind}{Esc 3}, ahk_pid %pid%
+        ControlSend,, {Blind}{Esc 2}, ahk_pid %pid%
     }
 }
 
