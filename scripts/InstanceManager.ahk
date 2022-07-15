@@ -387,12 +387,12 @@ ResetSettings() {
 GetSettings() {
     Loop, Read, %mcDir%/options.txt
     {
-        line = %A_LoopReadLine%
+        line := A_LoopReadLine
         if (!InStr(line, "key")) {
             kv := StrSplit(line, ":")
             if (kv.MaxIndex() == 2) {
-                key = % kv[1]
-                value = % kv[2]
+                key := kv[1]
+                value := kv[2]
                 StringReplace, key, key, %A_Space%,, All
                 StringReplace, value, value, %A_Space%,, All
                 settings[key] := value
