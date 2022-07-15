@@ -191,14 +191,11 @@ Reset(wParam := -1) {
 ManageState() {
     global mode, performanceMethod
     Critical
-    Loop, {
-        if (currentState == STATE_PREVIEWING && DllCall("PeekMessage", "UInt*", msg, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET, "UInt", 0)) {
-            DllCall("GetMessage", "UInt*", message, "UInt", 0, "UInt", MSG_RESET, "UInt", MSG_RESET)
-            if (msgTime := DllCall("GetMessageTime") > lastNewWorld + 400) {
-                Log("Resetting from preview")
-                Reset(msgTime)
-                break
-            }
+    while (currentState != STATE_READY) {
+        if (currentState == STATE_PREVIEWING) {
+            Critical, Off
+            Sleep, -1
+            Critical, On
         }
         Loop, Read, %mcDir%\logs\latest.log
         {
