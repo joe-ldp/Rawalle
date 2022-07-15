@@ -84,24 +84,27 @@ def execute_cmd(cmd):
                 with open(f"{path}{filename}.png", "wb") as f:
                     f.write(response.file.read())
 
-print(sys.argv)
-host = sys.argv[1]
-port = int(sys.argv[2])
-password = sys.argv[3]
-lock_layer_format = sys.argv[4]
-wall_scene = sys.argv[5]
-instance_scene_format = sys.argv[6]
-single_scene = True if sys.argv[7] == "True" else False
-playing_scene = sys.argv[8]
-instance_source_format = sys.argv[9]
-num_instances = int(sys.argv[10])
-width_multiplier = float(sys.argv[11])
-screen_height = int(sys.argv[12])
-inst_num = 0
-img_data = ""
+try:
+    print(sys.argv)
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    password = sys.argv[3]
+    lock_layer_format = sys.argv[4]
+    wall_scene = sys.argv[5]
+    instance_scene_format = sys.argv[6]
+    single_scene = True if sys.argv[7] == "True" else False
+    playing_scene = sys.argv[8]
+    instance_source_format = sys.argv[9]
+    num_instances = int(sys.argv[10])
+    width_multiplier = float(sys.argv[11])
+    screen_height = int(sys.argv[12])
+    inst_num = 0
+    img_data = ""
 
-ws = obsws(host, port, password)
-ws.connect()
+    ws = obsws(host, port, password)
+    ws.connect()
+except Exception as e:
+    print(e)
 
 for i in range(1, num_instances+1):
     print(f"Setting up instance {i}")
