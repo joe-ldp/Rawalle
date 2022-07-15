@@ -10,7 +10,6 @@
 
 from datetime import datetime
 import shutil
-from numpy import double
 from obswebsocket import obsws, requests
 from os.path import exists
 import os
