@@ -44,7 +44,7 @@ if (!pid := IsInstanceOpen()) {
     Log("No Minecraft instance found, launching")
     centralModsDir := A_ScriptDir . "\..\mods\"
     instModsDir := mcDir . "mods\"
-    if (syncMods && DesyncedMods(centralModsDir . "*", instModsDir . "*")) {
+    if (syncMods && DesyncedMods(centralModsDir . "*", instModsDir . "*") && FileExist(instModsDir)) {
         Loop, Files, %instModsDir%*
         {
             FileDelete, %A_LoopFileLongPath%
@@ -470,7 +470,8 @@ IsInstanceOpen() {
 }
 
 DesyncedMods(dir1, dir2) {
-    centralMods := instMods := []
+    centralMods := [""]
+    instMods := [""]
     Loop, Files, %dir1%
     {
         centralMods[A_Index] := A_LoopFileName
@@ -479,6 +480,8 @@ DesyncedMods(dir1, dir2) {
     {
         instMods[A_Index] := A_LoopFileName
     }
+    if (centralMods[1] == "")
+        return False
     if (centralMods.MaxIndex() != instMods.MaxIndex())
         return True
     for each, ctrlMod in centralMods {
