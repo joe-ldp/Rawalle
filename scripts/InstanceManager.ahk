@@ -12,7 +12,6 @@ SetWinDelay, 1
 #Include %A_ScriptDir%/messages.ahk
 LoadSettings()
 
-global STATE_UNKNOWN    := -1
 global STATE_INIT       := 0
 global STATE_READY      := 1
 global STATE_PLAYING    := 2
@@ -131,6 +130,13 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         ControlSend,, {Blind}{F3 Down}{B}{Esc}{F3 Up}, ahk_pid %pid%
         currentState := STATE_READY
     } else {
+        Log("Resetting")
+        lastReset := A_TickCount
+        if (performanceMethod == "F" && frozen)
+            Unfreeze()
+        if (resetSounds)
+            SoundPlay, %A_ScriptDir%\..\media\reset.wav
+
         if (currentState == STATE_PLAYING) {
             GetSettings()
             if (useObsWebsocket && screenshotWorlds)
@@ -149,13 +155,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             DllCall("Sleep", "UInt", settingsDelay)
             ResetSettings()
         }
-
-        Log("Resetting")
-        lastReset := A_TickCount
-        if (performanceMethod == "F" && frozen)
-            Unfreeze()
-        if (resetSounds && currentState != STATE_UNKNOWN)
-            SoundPlay, %A_ScriptDir%\..\media\reset.wav
 
         reset := settings["key_CreateNewWorld"]
         ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
@@ -250,8 +249,6 @@ Switch() {
         Send, {LButton}
         if (currentState == STATE_READY)
             Play()
-        else
-            currentState == STATE_UNKNOWN
 
         return 0
     } else {
@@ -382,7 +379,6 @@ GetControls() {
             kv := StrSplit(line, ":")
             if (kv.MaxIndex() == 2) {
                 key = % kv[1]
-                key := StrReplace(key, " ", "")
                 value = % kv[2]
                 StringReplace, key, key, %A_Space%,, All
                 StringReplace, value, value, %A_Space%,, All
