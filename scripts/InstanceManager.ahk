@@ -409,6 +409,7 @@ GetControls() {
             kv := StrSplit(line, ":")
             if (kv.MaxIndex() == 2) {
                 key = % kv[1]
+                key := StrReplace(key, " ", "")
                 value = % kv[2]
                 StringReplace, key, key, %A_Space%,, All
                 StringReplace, value, value, %A_Space%,, All
