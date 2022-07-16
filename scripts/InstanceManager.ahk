@@ -107,15 +107,15 @@ OnMessage(MSG_REVEAL, "Reveal")
 
 FileAppend,, IM%idx%ready.tmp
 
-Reset(wParam := -1) {
+Reset(msgTime) { ; msgTime is wParam from PostMessage
     global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets, settingsDelay
     Critical
-    msgTime := wParam == -1 ? A_TickCount : DllCall("GetMessageTime")
     if (currentState == STATE_RESETTING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
     } else if (currentState == STATE_INIT) {
-        ControlSend,, {Blind}{Shift down}{Tab}{Shift up}{Enter}, ahk_pid %pid%
+        reset := settings["key_CreateNewWorld"]
+        ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
         Loop, {
             Loop, Read, %mcDir%\logs\latest.log
                 if (InStr(A_LoopReadLine, "the_end", -7))
@@ -131,55 +131,34 @@ Reset(wParam := -1) {
         ControlSend,, {Blind}{F3 Down}{B}{Esc}{F3 Up}, ahk_pid %pid%
         currentState := STATE_READY
     } else {
+        if (currentState == STATE_PLAYING) {
+            GetSettings()
+            if (useObsWebsocket && screenshotWorlds)
+                SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
+            if (fullscreen && settings.fullscreen == "true") {
+                fs := settings["key_key.fullscreen"]
+                ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+                DllCall("Sleep", "UInt", fullscreenDelay)
+            }
+            if (wideResets)
+                Widen()
+            if (mode == "Wall") {
+                WinMaximize, Fullscreen Projector
+                WinActivate, Fullscreen Projector
+            }
+            DllCall("Sleep", "UInt", settingsDelay)
+            ResetSettings()
+        }
+
         Log("Resetting")
         lastReset := A_TickCount
         if (performanceMethod == "F" && frozen)
             Unfreeze()
         if (resetSounds && currentState != STATE_UNKNOWN)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
-        GetSettings()
-        
-        switch currentState
-        {
-            case STATE_UNKNOWN:
-                lp := settings["key_LeavePreview"]
-                cmd := settings["key_key.command"]
-                ControlSend,, {Blind}{%lp%}/, ahk_pid %pid%
-                Sleep, 120
-                ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
-                ControlSend,, {Blind}{Esc 2}{Tab 8}{Enter}, ahk_pid %pid%
-                ControlSend,, {Blind}{Esc}{Tab 9}{Enter}, ahk_pid %pid%
-                ControlSend,, {Blind}{Esc}{Tab 8}{Enter}, ahk_pid %pid%
-            case STATE_READY:
-                ControlSend,, {Blind}{Esc 2}{Tab 9}{Enter}, ahk_pid %pid%
-            case STATE_PLAYING:
-                if (useObsWebsocket && screenshotWorlds)
-                    SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
-                if (fullscreen && settings.fullscreen == "true") {
-                    fs := settings["key_key.fullscreen"]
-                    ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
-                    sleep, %fullscreenDelay%
-                }
-                if (mode == "Wall") {
-                    WinMaximize, Fullscreen Projector
-                    WinActivate, Fullscreen Projector
-                }
-                if (wideResets)
-                    Widen()
-                DllCall("Sleep", "UInt", settingsDelay)
-                ResetSettings()
-                WinGetTitle, mcTitle, ahk_pid %pid%
-                if (InStr(mcTitle, "LAN")) {
-                    ControlSend,, {Blind}{Esc}{Tab 8}{Enter}, ahk_pid %pid%
-                } else {
-                    ControlSend,, {Blind}{Esc}{Tab 9}{Enter}, ahk_pid %pid%
-                }
-            case STATE_PREVIEWING:
-                lp := settings["key_LeavePreview"]
-                SetKeyDelay, 1
-                ControlSend,, {Blind}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}{%lp%}, ahk_pid %pid%
-                SetKeyDelay, 0
-        }
+
+        reset := settings["key_CreateNewWorld"]
+        ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
 
         currentState := STATE_RESETTING
         resetValidated := False
@@ -234,12 +213,6 @@ ManageState() {
                     return
                 }
             }
-        }
-        if (!resetValidated && (A_TickCount - lastReset > 1200)) {
-            Log("Found failed reset. Forcing reset")
-            currentState := STATE_UNKNOWN
-            Reset(A_TickCount)
-            return
         }
         Sleep, 50
     }
