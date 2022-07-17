@@ -219,12 +219,6 @@ ManageState() {
                 }
             }
         }
-        if (!resetValidated && (A_TickCount - lastReset > 3000)) {
-            Log("Found failed reset. Forcing reset")
-            currentState := STATE_READY
-            Reset(A_TickCount)
-            return
-        }
         Sleep, 70
     }
 }
