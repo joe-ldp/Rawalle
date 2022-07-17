@@ -152,6 +152,9 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             if (mode == "Wall") {
                 WinMaximize, Fullscreen Projector
                 WinActivate, Fullscreen Projector
+                while (!WinActive("Fullscreen Projector")) {
+                }
+                Send, {RButton 2}
             }
             DllCall("Sleep", "UInt", settingsDelay)
             ResetSettings()
