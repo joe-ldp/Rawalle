@@ -337,7 +337,7 @@ Unfreeze() {
 }
 
 ResetSettings() {
-    global performanceMethod, lowRender, renderDistance, entityDistance, FOV
+    global performanceMethod, lowRender, renderDistance, entityDistance, FOV, settingsDelays
     GetSettings()
     fovPresses := (110 - FOV) * 143 / 80
     desiredRd := performanceMethod == "S" && currentState == STATE_PLAYING ? lowRender : renderDistance
@@ -345,12 +345,20 @@ ResetSettings() {
     entityPresses := (5 - entityDistance) * 143 / 4.5
     SetKeyDelay, 0
     if (FOV != (settings.fov * 40 + 70) || desiredRd != settings.renderDistance || entityDistance != settings.entityDistanceScaling) {
+        if (settingsDelays)
+            SetKeyDelay, 1
         ControlSend,, {Blind}{Esc}{Tab 6}{Enter}{Tab}, ahk_pid %pid%
+        if (settingsDelays)
+            SetKeyDelay, 0
         if (FOV != currentFOV) {
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %fovPresses%}, ahk_pid %pid%
         }
+        if (settingsDelays)
+            SetKeyDelay, 1
         ControlSend,, {Blind}{Tab 5}{Enter}{Tab 4}, ahk_pid %pid%
+        if (settingsDelays)
+            SetKeyDelay, 0
         if (renderDistance != currentRenderDistance || currentState == STATE_PLAYING) {
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %renderPresses%}, ahk_pid %pid%
@@ -360,7 +368,11 @@ ResetSettings() {
             ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
             ControlSend,, {Blind}{Left %entityPresses%}, ahk_pid %pid%
         }
+        if (settingsDelays)
+            SetKeyDelay, 1
         ControlSend,, {Blind}{Esc 2}, ahk_pid %pid%
+        if (settingsDelays)
+            SetKeyDelay, 0
     }
 }
 
