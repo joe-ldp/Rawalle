@@ -113,8 +113,9 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         Log("Discarding reset")
         return
     } else if (currentState == STATE_INIT) {
+        ControlClick, x-100 y-100, ahk_pid %pid%
         reset := settings["key_CreateNewWorld"]
-        ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
+        ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
         Loop, {
             Loop, Read, %mcDir%\logs\latest.log
                 if (InStr(A_LoopReadLine, "the_end", -7))
