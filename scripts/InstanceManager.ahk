@@ -229,7 +229,7 @@ Switch() {
         WinSet, AlwaysOnTop, Off, ahk_pid %pid%
         if (mode == "Wall")
             WinMinimize, Fullscreen Projector
-        if (wideResets && !fullscreen)
+        if (wideResets) ; && !fullscreen)
             WinMaximize, ahk_pid %pid%
         if (fullscreen && mode == "Wall") {
             fs := settings["key_key.fullscreen"]
