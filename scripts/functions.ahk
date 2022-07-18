@@ -1,7 +1,7 @@
 ; v1.1.0
 
 Reset(idx := -1) {
-    global isOnWall, activeInstance, IM_PIDs, mode, bypasWall
+    global isOnWall, activeInstance, IM_PIDs, mode, bypassWall
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
