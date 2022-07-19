@@ -215,12 +215,12 @@ Switch() {
 
         if (performanceMethod == "F")
             Unfreeze()
+        if (wideResets) ; && !fullscreen)
+            WinMaximize, ahk_pid %pid%
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
         WinSet, AlwaysOnTop, Off, ahk_pid %pid%
         if (mode == "Wall")
             WinMinimize, Fullscreen Projector
-        if (wideResets) ; && !fullscreen)
-            WinMaximize, ahk_pid %pid%
         if (fullscreen && mode == "Wall") {
             fs := settings["key_key.fullscreen"]
             ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
