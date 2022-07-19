@@ -149,6 +149,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             }
             if (wideResets)
                 Widen()
+            DllCall("Sleep", "UInt", settingsDelay)
+            ResetSettings()
             if (mode == "Wall") {
                 WinMaximize, Fullscreen Projector
                 WinActivate, Fullscreen Projector
@@ -156,8 +158,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
                 }
                 Send, {RButton 2}
             }
-            DllCall("Sleep", "UInt", settingsDelay)
-            ResetSettings()
         }
 
         reset := settings["key_CreateNewWorld"]
