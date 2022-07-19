@@ -109,7 +109,7 @@ if (mode == "Multi") {
 
 if (readySound) {
     file = %A_ScriptDir%/media/ready.wav
-    Random, pos, 0, 9
+    Random, pos, 0, 10
     wmp := ComObjCreate("WMPlayer.OCX")
     wmp.controls.currentPosition := pos
     wmp.url := file
