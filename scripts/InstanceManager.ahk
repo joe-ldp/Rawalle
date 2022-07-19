@@ -171,8 +171,8 @@ ManageState() {
     global mode, performanceMethod
     Critical
     FileRead, log, %mcDir%\logs\latest.log
-    static lastAdv := InStr(log, "advancements",, -12)
-    static lastPreview := InStr(log, "Starting Preview",, -16)
+    static lastAdv := lastAdv == "" ? InStr(log, "advancements",, -12) : lastAdv
+    static lastPreview := lastPreview == "" ? InStr(log, "Starting Preview",, -16) : lastPreview
 
     while (currentState != STATE_READY) {
         if (currentState == STATE_PREVIEWING)
