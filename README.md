@@ -69,4 +69,5 @@ I'd advise messing with the default hotkeys for background resetting in customHo
 - The collaborators listed on GitHub for minor enhancements (most of these are actually carried over from Specnr's macro and their code isn't here anymore lol)
 - jojoe77777 for making the original Wall macro (and general contribution to macros/tech)
 - Everyone I can't list who has contributed ideas
-- Everyone who's tried early/buggy versions and reported issues (Mainly poni!!)
+- Everyone who's tried early/buggy versions and reported issues (Especially poni and priffin!)
+- Everyone who's reported issues and been patient while I try to debug them
