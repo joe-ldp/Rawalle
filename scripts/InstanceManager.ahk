@@ -29,8 +29,6 @@ global resetPos := 0
 global newWorldPos := 0
 global lastReset := 0
 global lastNewWorld := 0
-global resetValidated := True
-global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 
 Log("Instance Manager launched")
 
@@ -66,7 +64,6 @@ if (!pid := IsInstanceOpen()) {
 } else {
     Log("Minecraft instance found")
     FileAppend, %pid%, inst%idx%open.tmp
-    newWorldPos := GetNumLogLines()
 }
 
 SetTitle()
@@ -166,8 +163,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         reset := settings["key_CreateNewWorld"]
         ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
         currentState := STATE_RESETTING
-        resetValidated := False
-        newWorldPos := resetPos := GetNumLogLines()
         SetTimer, ManageState, -200
     }
 }
@@ -175,51 +170,41 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 ManageState() {
     global mode, performanceMethod
     Critical
+    FileRead, log, %mcDir%\logs\latest.log
+    static lastAdv := InStr(log, "advancements",, -12)
+    static lastPreview := InStr(log, "Starting Preview",, -16)
+
     while (currentState != STATE_READY) {
-        if (currentState == STATE_PREVIEWING) {
-            Critical, Off
+        if (currentState == STATE_PREVIEWING)
             Sleep, -1
-            Critical, On
+        FileRead, log, %mcDir%\logs\latest.log
+        if ((previewPos := InStr(log, "Starting Preview",, -16)) > lastPreview) {
+            ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+            Log("Found preview at " . previewPos . ", last preview was at " . lastPreview)
+            lastNewWorld := A_TickCount
+            lastPreview := previewPos
+            currentState := STATE_PREVIEWING
+            continue
         }
-        Loop, Read, %mcDir%\logs\latest.log
-        {
-            if (A_Index > (resetValidated ? newWorldPos : resetPos)) {
-                line = %A_LoopReadLine%
-                lineNum = %A_Index%
-                if (!resetValidated) {
-                    for each, value in toValidateReset
-                        if (InStr(line, value)) {
-                            newWorldPos := lineNum
-                            ValidateReset()
-                        }
+        if ((advPos := InStr(log, "advancements",, -12)) > lastAdv) {
+            if (!lastPreview)
+                lastNewWorld := A_TickCount
+            WinGet, activePID, PID, A
+            if (mode == "Wall" || activePID != pid) {
+                Log("World generated, pausing. Found load at " . advPos ", last adv line was at " . lastAdv)
+                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                currentState := STATE_READY
+                if (performanceMethod == "F") {
+                    Frz := Func("Freeze").Bind()
+                    bfd := 0 - beforeFreezeDelay
+                    SetTimer, %Frz%, %bfd%
                 }
-                if (currentState == STATE_RESETTING && InStr(line, "Starting Preview", -16)) {
-                    Log("Found preview. Log:`n" . line)
-                    newWorldPos := lineNum
-                    ValidateReset()
-                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    currentState := STATE_PREVIEWING
-                    continue 2
-                } else if (resetValidated && (currentState == STATE_RESETTING || currentState == STATE_PREVIEWING) && InStr(line, "advancements", -11)) {
-                    WinGet, activePID, PID, A
-                    if (activePID != pid || mode == "Wall") {
-                        Log("World generated, pausing. Log:`n" . line)
-                        ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                        currentState := STATE_READY
-                        if (performanceMethod == "F") {
-                            Frz := Func("Freeze").Bind()
-                            bfd := 0 - beforeFreezeDelay
-                            SetTimer, %Frz%, %bfd%
-                        }
-                    } else {
-                        Log("World generated, playing. Log:`n" . line)
-                        Play()
-                    }
-                    return
-                }
+            } else {
+                Log("World generated, playing. Log:`n" . line)
+                Play()
             }
         }
-        Sleep, 70
+        Sleep, 50
     }
 }
 
