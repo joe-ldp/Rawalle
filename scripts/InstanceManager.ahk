@@ -29,6 +29,7 @@ global resetPos := 0
 global newWorldPos := 0
 global lastReset := 0
 global lastNewWorld := 0
+global lastPreview := InStr(log, "Starting Preview",, -16)
 
 Log("Instance Manager launched")
 
