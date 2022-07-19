@@ -29,6 +29,10 @@ Keyboard-based hotkeys:
 - Ctrl + (1-9): Plays the corresponding instance, and reset the rest
 - Alt + (1-9): Locks the corresponding instance so Reset All and Focus Reset skip over it
 
+## Tech Support
+
+[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ. If you still have unanswered questions, ping @Tech Support. 
+
 ## Background Resetting
 
 When in-game, you can reset other instances in the background. To do this, I'd advise:
@@ -57,10 +61,6 @@ I'd advise messing with the default hotkeys for background resetting in customHo
 2) Install [OBS websocket](https://obsproject.com/forum/resources/obs-websocket-remote-control-obs-studio-from-websockets.466/)
 3) Open command prompt, and run the following command: `pip install obs-websocket-py`
 4) You can use a password if you want. To set one, go to `Tools -> WebSockets Server Settings -> Enable Authentication` in OBS.
-
-## Tech Support
-
-[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ. If you still have unanswered questions, ping @Tech Support. 
 
 ## Credit
 
