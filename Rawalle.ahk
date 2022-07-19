@@ -50,17 +50,6 @@ if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
 if (!FileExist(resetsFolder := A_ScriptDir . "\resets"))
     FileCreateDir, %resetsFolder%
 
-for each, program in arrLaunchPrograms {
-    SplitPath, program, filename, dir
-    isOpen := False
-    for proc in ComObjGet("winmgmts:").ExecQuery(Format("Select * from Win32_Process where CommandLine like ""%{1}%""", filename)) {
-        isOpen := True
-        break
-    } 
-    if (!isOpen)
-        Run, %filename%, %dir%
-}
-
 if (useObsWebsocket) {
     Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%" "%widthMultiplier%" "%A_ScreenHeight%",, Hide
 }
@@ -84,6 +73,17 @@ Loop, %numInstances% {
 
 if (autoCloseInstances) {
     Menu, Tray, Add, Exit and Close Instances, Shutdown, 0
+}
+
+for each, program in arrLaunchPrograms {
+    SplitPath, program, filename, dir
+    isOpen := False
+    for proc in ComObjGet("winmgmts:").ExecQuery(Format("Select * from Win32_Process where CommandLine like ""%{1}%""", filename)) {
+        isOpen := True
+        break
+    } 
+    if (!isOpen)
+        Run, %filename%, %dir%
 }
 
 checkIdx := 1
