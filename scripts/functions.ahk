@@ -104,9 +104,9 @@ ToggleLock(idx := -1) {
 }
 
 WallLock(idx := -1) {
-    global isOnWall, activeInstance, lockIndicators
+    global isOnWall, activeInstance, lockIndicators, useObsWebsocket
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    if (lockIndicators)
+    if (useObsWebsocket && lockIndicators)
         ToggleLock(idx)
     else
         LockInstance(idx)
