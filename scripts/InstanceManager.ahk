@@ -243,7 +243,7 @@ Switch() {
 
         return 0
     } else {
-        return -1
+        return currentState
     }
 }
 
