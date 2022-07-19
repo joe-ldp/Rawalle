@@ -171,14 +171,18 @@ ManageState() {
     global mode, performanceMethod
     Critical
     FileRead, log, %mcDir%\logs\latest.log
-    static lastAdv := lastAdv == "" ? InStr(log, "advancements",, -12) : lastAdv
-    static lastPreview := lastPreview == "" ? InStr(log, "Starting Preview",, -16) : lastPreview
+    lastAdv := InStr(log, "advancements",, 0)
 
     while (currentState != STATE_READY) {
-        if (currentState == STATE_PREVIEWING)
+        if (currentState == STATE_PREVIEWING) {
+            Critical, Off
             Sleep, -1
+            Critical, On
+        }
+        
         FileRead, log, %mcDir%\logs\latest.log
-        if ((previewPos := InStr(log, "Starting Preview",, -16)) > lastPreview) {
+
+        if ((previewPos := InStr(log, "Starting Preview",, 0)) > lastPreview) {
             ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
             Log("Found preview at " . previewPos . ", last preview was at " . lastPreview)
             lastNewWorld := A_TickCount
@@ -186,12 +190,12 @@ ManageState() {
             currentState := STATE_PREVIEWING
             continue
         }
-        if ((advPos := InStr(log, "advancements",, -12)) > lastAdv) {
-            if (!lastPreview)
+        if ((advPos := InStr(log, "advancements",, 0)) > lastAdv) {
+            if (currentState != STATE_PREVIEWING)
                 lastNewWorld := A_TickCount
+            Log("World generated, pausing. Found load at " . advPos ", last adv was at " . lastAdv)
             WinGet, activePID, PID, A
             if (mode == "Wall" || activePID != pid) {
-                Log("World generated, pausing. Found load at " . advPos ", last adv line was at " . lastAdv)
                 ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                 currentState := STATE_READY
                 if (performanceMethod == "F") {
@@ -200,7 +204,6 @@ ManageState() {
                     SetTimer, %Frz%, %bfd%
                 }
             } else {
-                Log("World generated, playing. Log:`n" . line)
                 Play()
             }
         }
