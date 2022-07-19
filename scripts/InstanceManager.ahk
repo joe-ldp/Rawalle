@@ -165,9 +165,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 
         reset := settings["key_CreateNewWorld"]
         ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
-        ControlClick, x0 y0, ahk_pid %pid%
-        ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
-
         currentState := STATE_RESETTING
         resetValidated := False
         newWorldPos := resetPos := GetNumLogLines()
