@@ -16,7 +16,8 @@ global STATE_INIT       := 0
 global STATE_READY      := 1
 global STATE_PLAYING    := 2
 global STATE_RESETTING  := 3
-global STATE_PREVIEWING := 4
+global STATE_LOADING    := 4
+global STATE_PREVIEWING := 5
 
 global pid := 0
 global idx := A_Args[1]
@@ -29,7 +30,8 @@ global resetPos := 0
 global newWorldPos := 0
 global lastReset := 0
 global lastNewWorld := 0
-global lastPreview := InStr(log, "Starting Preview",, -16)
+global lastResetAt := GetNumLogLines()
+global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 
 Log("Instance Manager launched")
 
@@ -160,6 +162,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         reset := settings["key_CreateNewWorld"]
         ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
         currentState := STATE_RESETTING
+        lastResetAt := GetNumLogLines()
         SetTimer, ManageState, -200
     }
 }
@@ -167,8 +170,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 ManageState() {
     global mode, performanceMethod
     Critical
-    FileRead, log, %mcDir%\logs\latest.log
-    lastAdv := InStr(log, "advancements",, 0)
 
     while (currentState != STATE_READY) {
         if (currentState == STATE_PREVIEWING) {
@@ -176,32 +177,43 @@ ManageState() {
             Sleep, -1
             Critical, On
         }
-        
-        FileRead, log, %mcDir%\logs\latest.log
 
-        if ((previewPos := InStr(log, "Starting Preview",, 0)) > lastPreview) {
-            ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-            Log("Found preview at " . previewPos . ", last preview was at " . lastPreview)
-            lastNewWorld := A_TickCount
-            lastPreview := previewPos
-            currentState := STATE_PREVIEWING
-            continue
-        }
-        if ((advPos := InStr(log, "advancements",, 0)) > lastAdv) {
-            if (currentState != STATE_PREVIEWING)
-                lastNewWorld := A_TickCount
-            Log("World generated, pausing. Found load at " . advPos ", last adv was at " . lastAdv)
-            WinGet, activePID, PID, A
-            if (mode == "Wall" || activePID != pid) {
-                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                currentState := STATE_READY
-                if (performanceMethod == "F") {
-                    Frz := Func("Freeze").Bind()
-                    bfd := 0 - beforeFreezeDelay
-                    SetTimer, %Frz%, %bfd%
+        numLines := GetNumLogLines()
+        Loop, Read, %mcDir%\logs\latest.log
+        {
+            if (A_Index > lastResetAt && numLines - A_Index < 5) {
+                if (currentState == STATE_RESETTING) {
+                    for each, term in toValidateReset {
+                        if (InStr(A_LoopReadLine, term)) {
+                            currentState := STATE_LOADING
+                            break
+                        }
+                    }
                 }
-            } else {
-                Play()
+                if (currentState != STATE_PREVIEWING && InStr(A_LoopReadLine, "Starting Preview")) {
+                    Log("Found preview at " . A_Index)
+                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    lastNewWorld := A_TickCount
+                    currentState := STATE_PREVIEWING
+                    continue
+                }
+                if ((currentState == STATE_LOADING || currentState == STATE_PREVIEWING) && InStr(A_LoopReadLine, "advancements")) {
+                    if (currentState != STATE_PREVIEWING)
+                        lastNewWorld := A_TickCount
+                    Log("World generated, pausing. Found load at " . A_Index)
+                    WinGet, activePID, PID, A
+                    if (mode == "Wall" || activePID != pid) {
+                        currentState := STATE_READY
+                        ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                        if (performanceMethod == "F") {
+                            Frz := Func("Freeze").Bind()
+                            bfd := 0 - beforeFreezeDelay
+                            SetTimer, %Frz%, %bfd%
+                        }
+                    } else {
+                        Play()
+                    }
+                }
             }
         }
         Sleep, 50
