@@ -463,9 +463,8 @@ CurrentWorldEntered() {
 Widen() {
     global widthMultiplier
     newHeight := Floor(A_ScreenHeight / widthMultiplier)
-    yPos := (A_ScreenHeight / 2) - (newHeight / 2)
     WinRestore, ahk_pid %pid%
-    WinMove, ahk_pid %pid%,, 0, %yPos%, %A_ScreenWidth%, %newHeight%
+    WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %newHeight%
 }
 
 IsInstanceOpen() {
