@@ -83,7 +83,7 @@ if(InStr(log, "Server thread")) {
     Log("State initialised to init")
 }
 ControlClick, x0 y0, ahk_pid %pid%,, RIGHT
-ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+ControlSend,, {Blind}{Esc}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
 
 if (settings.fullscreen == "true") {
     fs := settings["key_key.fullscreen"]
