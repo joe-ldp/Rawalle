@@ -110,7 +110,7 @@ FileAppend,, IM%idx%ready.tmp
 Reset(msgTime) { ; msgTime is wParam from PostMessage
     global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets, settingsDelay
     Critical
-    if (currentState == STATE_RESETTING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
+    if (currentState == STATE_RESETTING || currentState == STATE_LOADING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
     } else if (currentState == STATE_INIT) {
