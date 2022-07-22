@@ -165,45 +165,36 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         reset := settings["key_CreateNewWorld"]
         ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
         currentState := STATE_RESETTING
-        lastResetAt := GetNumLogLines()
-        SetTimer, ManageState, -200
+        if (HasMod("worldpreview"))
+            SetTimer, ManageStateWP, -200
+        else
+            SetTimer, ManageStateNoWP, -200
     }
 }
 
-ManageState() {
+ManageStateNoWP() {
     global mode, performanceMethod
     Critical
 
     while (currentState != STATE_READY) {
-        if (currentState == STATE_PREVIEWING) {
-            Critical, Off
-            Sleep, -1
-            Critical, On
-        }
-
         numLines := GetNumLogLines()
         Loop, Read, %mcDir%\logs\latest.log
         {
-            if (A_Index > lastResetAt && numLines - A_Index < 5) {
+            lineNum := A_Index
+            line := A_LoopReadLine
+            if (lineNum > lastResetAt && numLines - lineNum < 5) {
                 if (currentState == STATE_RESETTING) {
                     for each, term in toValidateReset {
-                        if (InStr(A_LoopReadLine, term)) {
+                        if (InStr(line, term)) {
                             currentState := STATE_LOADING
+                            Log("Reset validated at line " . lineNum . ", used term " . term)
                             break
                         }
                     }
                 }
-                if (currentState != STATE_PREVIEWING && InStr(A_LoopReadLine, "Starting Preview")) {
-                    Log("Found preview at " . A_Index)
-                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    lastNewWorld := A_TickCount
-                    currentState := STATE_PREVIEWING
-                    continue
-                }
-                if ((currentState == STATE_LOADING || currentState == STATE_PREVIEWING) && InStr(A_LoopReadLine, "advancements")) {
-                    if (currentState != STATE_PREVIEWING)
-                        lastNewWorld := A_TickCount
-                    Log("World generated, pausing. Found load at " . A_Index)
+                if (currentState == STATE_LOADING && InStr(line, "advancements")) {
+                    Log("World generated, pausing. Found load at " . lineNum)
+                    lastResetAt := lineNum + 1
                     WinGet, activePID, PID, A
                     if (mode == "Wall" || activePID != pid) {
                         currentState := STATE_READY
@@ -220,6 +211,53 @@ ManageState() {
             }
         }
         Sleep, 50
+    }
+}
+
+ManageStateWP() {
+    global mode, performanceMethod
+    Critical
+
+    while (currentState != STATE_READY) {
+        if (currentState == STATE_PREVIEWING) {
+            Critical, Off
+            Sleep, -1
+            Critical, On
+        }
+
+        numLines := GetNumLogLines()
+        Loop, Read, %mcDir%\logs\latest.log
+        {
+            lineNum := A_Index
+            line := A_LoopReadLine
+            if (lineNum > lastResetAt && numLines - lineNum < 5) {
+                if (currentState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
+                    Log("Found preview at " . lineNum)
+                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    lastNewWorld := A_TickCount
+                    currentState := STATE_PREVIEWING
+                    continue
+                }
+                if (currentState == STATE_PREVIEWING && InStr(line, "advancements")) {
+                    if (currentState != STATE_PREVIEWING)
+                        lastNewWorld := A_TickCount
+                    Log("World generated, pausing. Found load at " . lineNum)
+                    lastResetAt := lineNum + 1
+                    WinGet, activePID, PID, A
+                    if (mode == "Wall" || activePID != pid) {
+                        currentState := STATE_READY
+                        ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                        if (performanceMethod == "F") {
+                            Frz := Func("Freeze").Bind()
+                            bfd := 0 - beforeFreezeDelay
+                            SetTimer, %Frz%, %bfd%
+                        }
+                    } else {
+                        Play()
+                    }
+                }
+            }
+        }
     }
 }
 
