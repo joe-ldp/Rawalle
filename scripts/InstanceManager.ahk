@@ -24,7 +24,7 @@ global idx := A_Args[1]
 global instName := StrReplace(multiMCNameFormat, "*", idx)
 global instDir := multiMCLocation . "\instances\" . instName
 global mcDir := instDir . "\.minecraft\"
-global instanceMods := GetMods(mcDir)
+global instanceMods := []
 global settings := []
 global frozen := False
 global resetPos := 0
@@ -73,6 +73,7 @@ if (!pid := IsInstanceOpen()) {
 SetTitle()
 GetControls()
 GetSettings()
+GetMods()
 
 FileRead, log, %mcDir%\logs\latest.log
 if(InStr(log, "Server thread")) {
@@ -499,28 +500,25 @@ DesyncedMods(dir1, dir2) {
     return False
 }
 
-GetMods(mcDir) {
-    mods := []
+GetMods() {
     if (!RegExMatch(mcDir, "^.:(\\.*)*?\\MultiMC\\instances\\.*\\\.minecraft\\$")) {
         MsgBox, Invalid Minecraft Directory provided. The script will now exit.
         ExitApp
     }
-
     Loop, Files, %mcDir%mods\*
     {
         if (InStr(A_LoopFileName, "jar") && !InStr(A_LoopFileName, "disabled")) {
             rawName := StrSplit(A_LoopFileName, ".jar")[1]
             pattern := "(?P<Name>.*?)(?:-|\+)v?(?=\d)((?:[\dx]+[.+]?){2,}).*?(?:-|\+)v?(?=\d)((?:[\dx]+[.+]?){2,})"
             RegExMatch(rawName, pattern, mod)
-            mods.Push(modName)
+            instanceMods[A_Index] := modName
         }
     }
-    return mods
 }
 
 HasMod(modName) {
     for each, mod in instanceMods {
-        if (InStr(mod[1], modName))
+        if (InStr(mod, modName))
             return True
     }
     return False
