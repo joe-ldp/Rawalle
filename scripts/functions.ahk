@@ -58,8 +58,8 @@ FocusReset(idx := -1) {
 }
 
 BackgroundReset(idx) {
-    global locked
-    if (!locked[idx])
+    global activeInstance
+    if (idx != activeInstance)
         Reset(idx)
 }
 
