@@ -73,7 +73,6 @@ ControlSend,, {Blind}{Esc}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
 
 GetControls()
 GetSettings()
-SetTitle()
 GetMods()
 
 FileRead, log, %mcDir%\logs\latest.log
@@ -107,6 +106,7 @@ OnMessage(MSG_SWITCH, "Switch")
 OnMessage(MSG_SETTITLE, "SetTitle")
 OnMessage(MSG_REVEAL, "Reveal")
 
+SetTitle()
 FileAppend,, IM%idx%ready.tmp
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
