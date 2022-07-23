@@ -50,6 +50,7 @@ if (!pid := IsInstanceOpen()) {
         }
         FileCopyDir, %centralModsDir%, %instModsDir%, 1
     }
+    SyncConfig()
     mmcpack := instDir . "\mmc-pack.json"
     FileGetTime, packModified, %mmcpack%, M
     Run, %multiMCLocation%\MultiMC.exe -l "%instName%"
@@ -488,6 +489,13 @@ HasMod(modName) {
             return True
     }
     return False
+}
+
+SyncConfig() {
+    global multiMCLocation, multiMCNameFormat
+    mainConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", 1))
+    thisConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", idx))
+    FileCopy, %mainConfig%\*.*, %thisConfig%\*.*, 1
 }
 
 LoadSettings() {
