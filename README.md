@@ -1,5 +1,9 @@
 # Rawalle
 
+## Tech Support
+
+[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ. If you still have unanswered questions, ping @Tech Support. 
+
 ## Setup
 
 This macro doesn't need much setup outside of the config exe. All you need to do is make sure you're using MultiMC (the macro does not support vanilla launcher!) and make sure your instances are named the same as their folders (i.e. Inst1 is located at /MultiMC/instances/Inst1). Then as long as your instance names follow a pattern (like Inst1, Inst2 etc) you're fine.
@@ -28,10 +32,6 @@ Keyboard-based hotkeys:
 - Shift + (1-9): Plays the corresponding instance
 - Ctrl + (1-9): Plays the corresponding instance, and reset the rest
 - Alt + (1-9): Locks the corresponding instance so Reset All and Focus Reset skip over it
-
-## Tech Support
-
-[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ. If you still have unanswered questions, ping @Tech Support. 
 
 ## Background Resetting
 
