@@ -290,7 +290,7 @@ Switch() {
             Send, {Numpad%idx% up}
         }
 
-        Send, {LButton}
+        Send, {RButton}
         if (currentState == STATE_READY)
             Play()
 
