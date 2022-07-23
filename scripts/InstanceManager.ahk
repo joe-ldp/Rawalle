@@ -482,7 +482,7 @@ CurrentWorldEntered() {
     log := ""
     Loop, Read, %mcDir%\logs\latest.log
     {
-        if (A_Index > newWorldPos)
+        if (A_Index > lastResetAt)
             log := log . A_LoopReadLine . "\n"
     }
     return InStr(log, "We Need To Go Deeper")
