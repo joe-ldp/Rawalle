@@ -539,7 +539,7 @@ DesyncedMods(dir1, dir2) {
 }
 
 GetMods() {
-    if (!RegExMatch(mcDir, "^.:(\\.*)*?\\MultiMC\\instances\\.*\\\.minecraft\\$")) {
+    if (!RegExMatch(mcDir, "^.:.*MultiMC\\instances\\.*\\\.minecraft\\$")) {
         MsgBox, Invalid Minecraft Directory provided. The script will now exit.
         ExitApp
     }
