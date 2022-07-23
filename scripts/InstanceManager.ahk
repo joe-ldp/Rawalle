@@ -12,12 +12,12 @@ SetWinDelay, 1
 #Include %A_ScriptDir%/messages.ahk
 LoadSettings()
 
-global STATE_INIT       := 0
 global STATE_READY      := 1
 global STATE_PLAYING    := 2
 global STATE_RESETTING  := 3
 global STATE_LOADING    := 4
 global STATE_PREVIEWING := 5
+global currentState := STATE_READY
 
 global pid := 0
 global idx := A_Args[1]
@@ -75,15 +75,6 @@ GetControls()
 GetSettings()
 GetMods()
 
-FileRead, log, %mcDir%\logs\latest.log
-if(InStr(log, "Server thread")) {
-    global currentState := STATE_READY
-    Log("State initalised to ready")
-} else {
-    global currentState := STATE_INIT
-    Log("State initialised to init")
-}
-
 if (settings.fullscreen == "true") {
     fs := settings["key_key.fullscreen"]
     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
@@ -115,25 +106,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
     if (currentState == STATE_RESETTING || currentState == STATE_LOADING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
-    } else if (currentState == STATE_INIT) {
-        if (resetSounds)
-            SoundPlay, %A_ScriptDir%\..\media\reset.wav
-        reset := settings["key_CreateNewWorld"]
-        ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
-        Loop, {
-            Loop, Read, %mcDir%\logs\latest.log
-                if (InStr(A_LoopReadLine, "the_end", -7))
-                    break 2
-            Sleep, 100
-        }
-        Sleep, 100
-        persp := settings["key_key.togglePerspective"]
-        ControlSend,, {Blind}{Shift down}{F3}{Shift up}{%persp%}, ahk_pid %pid%
-        Sleep, 2000
-        ControlSend,, {Blind}11900219003190041900519006190071900819009190019029014605602460560346056044605605460560, ahk_pid %pid%
-        ;ControlSend,, {Blind}4113, ahk_pid %pid%
-        ControlSend,, {Blind}{F3 Down}{B}{Esc}{F3 Up}, ahk_pid %pid%
-        currentState := STATE_READY
     } else {
         Log("Resetting")
         lastReset := A_TickCount
@@ -153,8 +125,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             }
             if (wideResets)
                 Widen()
-            DllCall("Sleep", "UInt", settingsDelay)
-            ResetSettings()
             if (mode == "Wall") {
                 WinMaximize, Fullscreen Projector
                 WinActivate, Fullscreen Projector
@@ -300,17 +270,14 @@ Switch() {
 }
 
 Play() {
-    global performanceMethod, fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, renderDistance
+    global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, renderDistance
     if (fullscreen && mode == "Multi") {
         fs := settings["key_key.fullscreen"]
         ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
         Sleep, %fullscreenDelay%
     }
-    if (currentState == STATE_READY && (unpauseOnSwitch || coopResets || performanceMethod == "S"))
+    if (currentState == STATE_READY && (unpauseOnSwitch || coopResets))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
-    ResetSettings()
-    if (performanceMethod == "S" && !unpauseOnSwitch)
-        ControlSend,, {Blind}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
     if (coopResets) {
         Sleep, 50
         ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
@@ -361,40 +328,6 @@ Unfreeze() {
         Sleep, %resumeDelay%
     }
     frozen := False
-}
-
-ResetSettings() {
-    global performanceMethod, lowRender, renderDistance, entityDistance, FOV, settingsDelay
-    GetSettings()
-    fovPresses := (110 - FOV) * 143 / 80
-    desiredRd := performanceMethod == "S" && currentState == STATE_PLAYING ? lowRender : renderDistance
-    renderPresses := (32 - desiredRd) * 143 / 30
-    entityPresses := (5 - entityDistance) * 143 / 4.5
-    SetKeyDelay, 0
-    if (FOV != (settings.fov * 40 + 70) || desiredRd != settings.renderDistance || entityDistance != settings.entityDistanceScaling) {
-        SetKeyDelay, % (settingsDelay/15)-1
-        ControlSend,, {Blind}{Esc}{Tab 6}{Enter}{Tab}, ahk_pid %pid%
-        SetKeyDelay, 0
-        if (FOV != currentFOV) {
-            ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
-            ControlSend,, {Blind}{Left %fovPresses%}, ahk_pid %pid%
-        }
-        SetKeyDelay, % (settingsDelay/15)-1
-        ControlSend,, {Blind}{Tab 5}{Enter}{Tab 4}, ahk_pid %pid%
-        SetKeyDelay, 0
-        if (renderDistance != currentRenderDistance || currentState == STATE_PLAYING) {
-            ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
-            ControlSend,, {Blind}{Left %renderPresses%}, ahk_pid %pid%
-        }
-        if (entityDistance != currentEntityDistance) {
-            ControlSend,, {Blind}{Tab 13}, ahk_pid %pid%
-            ControlSend,, {Blind}{Right 143}, ahk_pid %pid%
-            ControlSend,, {Blind}{Left %entityPresses%}, ahk_pid %pid%
-        }
-        SetKeyDelay, % (settingsDelay/15)-1
-        ControlSend,, {Blind}{Esc 2}, ahk_pid %pid%
-        SetKeyDelay, 0
-    }
 }
 
 GetSettings() {
