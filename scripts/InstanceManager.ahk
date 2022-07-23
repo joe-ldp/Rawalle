@@ -202,14 +202,12 @@ ManageStateWP() {
         {
             lineNum := A_Index
             line := A_LoopReadLine
-            if (currentState == STATE_RESETTING && numLines - lineNum < 1) {
-                if ( && InStr(line, "Starting Preview")) {
-                    Log("Found preview at " . lineNum)
-                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    lastNewWorld := A_TickCount
-                    currentState := STATE_PREVIEWING
-                    continue
-                }
+            if (currentState == STATE_RESETTING && lineNum > lastResetAt && numLines - lineNum < 3 && InStr(line, "Starting Preview")) {
+                Log("Found preview at " . lineNum)
+                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                lastNewWorld := A_TickCount
+                currentState := STATE_PREVIEWING
+                continue
             }
             if (currentState == STATE_PREVIEWING && numLines - lineNum < 5 && InStr(line, "advancements")) {
                 if (currentState != STATE_PREVIEWING)
