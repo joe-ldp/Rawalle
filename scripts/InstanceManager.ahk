@@ -70,9 +70,12 @@ if (!pid := IsInstanceOpen()) {
     FileAppend, %pid%, inst%idx%open.tmp
 }
 
-SetTitle()
+ControlClick, x0 y0, ahk_pid %pid%,, RIGHT
+ControlSend,, {Blind}{Esc}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
+
 GetControls()
 GetSettings()
+SetTitle()
 GetMods()
 
 FileRead, log, %mcDir%\logs\latest.log
