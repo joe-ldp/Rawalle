@@ -324,12 +324,6 @@ Play() {
     currentState := STATE_PLAYING
 }
 
-ValidateReset() {
-    Log("Successful reset confirmed.")
-    lastNewWorld := A_TickCount
-    resetValidated := True
-}
-
 GetNumLogLines() {
     numLines := 0
     Loop, Read, %mcDir%\logs\latest.log
