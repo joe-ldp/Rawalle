@@ -2,7 +2,7 @@
 
 ## Tech Support
 
-[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ. If you still have unanswered questions, ping @Tech Support. 
+[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ **AFTER** reading this page. If you still have unanswered questions, ping @Tech Support. 
 
 ## Setup
 
