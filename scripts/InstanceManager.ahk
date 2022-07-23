@@ -186,11 +186,14 @@ ManageStateNoWP() {
 ManageStateWP() {
     global mode, performanceMethod
     Critical
-
+    Log("Managing reset state...")
+    rememberThis := lastReset
     while (currentState != STATE_READY) {
         if (currentState == STATE_PREVIEWING) {
             Critical, Off
             Sleep, -1
+            if (rememberThis != lastReset)
+                return
             Critical, On
         }
 
