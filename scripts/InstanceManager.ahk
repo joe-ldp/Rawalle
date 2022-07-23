@@ -199,34 +199,35 @@ ManageStateWP() {
         {
             lineNum := A_Index
             line := A_LoopReadLine
-            if (lineNum > lastResetAt && numLines - lineNum < 5) {
-                if (currentState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
+            if (currentState == STATE_RESETTING && numLines - lineNum < 1) {
+                if ( && InStr(line, "Starting Preview")) {
                     Log("Found preview at " . lineNum)
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     lastNewWorld := A_TickCount
                     currentState := STATE_PREVIEWING
                     continue
                 }
-                if (currentState == STATE_PREVIEWING && InStr(line, "advancements")) {
-                    if (currentState != STATE_PREVIEWING)
-                        lastNewWorld := A_TickCount
-                    Log("World generated, pausing. Found load at " . lineNum)
-                    lastResetAt := lineNum + 1
-                    WinGet, activePID, PID, A
-                    if (mode == "Wall" || activePID != pid) {
-                        currentState := STATE_READY
-                        ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                        if (performanceMethod == "F") {
-                            Frz := Func("Freeze").Bind()
-                            bfd := 0 - beforeFreezeDelay
-                            SetTimer, %Frz%, %bfd%
-                        }
-                    } else {
-                        Play()
+            }
+            if (currentState == STATE_PREVIEWING && numLines - lineNum < 5 && InStr(line, "advancements")) {
+                if (currentState != STATE_PREVIEWING)
+                    lastNewWorld := A_TickCount
+                Log("World generated, pausing. Found load at " . lineNum)
+                lastResetAt := lineNum + 1
+                WinGet, activePID, PID, A
+                if (mode == "Wall" || activePID != pid) {
+                    currentState := STATE_READY
+                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    if (performanceMethod == "F") {
+                        Frz := Func("Freeze").Bind()
+                        bfd := 0 - beforeFreezeDelay
+                        SetTimer, %Frz%, %bfd%
                     }
+                } else {
+                    Play()
                 }
             }
         }
+        Sleep, 50
     }
 }
 
