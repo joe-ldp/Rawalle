@@ -171,7 +171,7 @@ Reboot() {
     Reload
 }
 
-#Include customHotkeys.ahk#Include customHotkeys-Joe.ahk
+#Include customHotkeys.ahk
 
 return
 
