@@ -52,7 +52,8 @@ if (!pid := IsInstanceOpen()) {
         }
         FileCopyDir, %centralModsDir%, %instModsDir%, 1
     }
-    SyncConfig()
+    if (syncConfigs)
+        SyncConfig()
     mmcpack := instDir . "\mmc-pack.json"
     FileGetTime, packModified, %mmcpack%, M
     Run, %multiMCLocation%\MultiMC.exe -l "%instName%"
