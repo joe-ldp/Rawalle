@@ -3,6 +3,7 @@
 *.tmp
 *.psd
 actions.csv
+versionCheck.ini
 /scripts/__pyCache__
 /scripts/pyCmds
 /scripts/runPy.tmp

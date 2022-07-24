@@ -16,6 +16,31 @@ SetTitleMatchMode, 2
 #Include %A_ScriptDir%\scripts\utilities.ahk
 global settingsFile := A_ScriptDir . "\settings.ini"
 
+currVersion := 1.10
+UrlDownloadToFile, https://raw.githubusercontent.com/joe-ldp/Rawalle/main/versionCheck.ini, versionCheck.ini
+IniRead, versionCheck, versionCheck.ini, Check, version
+IniRead, versionString, versionCheck.ini, Check, name
+IniRead, verCheckSkip, %settingsFile%, Init, verCheckSkip
+if (versionCheck > currVersion && verCheckSkip < versionCheck) {
+    global execute := false
+    Gui, New
+    Gui, Margin, 10, 10
+    Gui, Add, Text,, Hey! A new version of Rawalle is available (%versionString%). Would you like to download it?
+    Gui, Add, Button, w100 h25 gDownloadLatest, Exit && Download
+    Gui, Add, Button, x+10 w80 h25 gSkipVersion, Skip Version
+    Gui, Add, Button, x+10 w100 h25 gRemindLater, Remind me later
+    Gui, -SysMenu
+    Gui +AlwaysOnTop
+    Gui, Show
+    Loop, {
+        if (execute)
+            break
+        Sleep, 50
+    }
+    Gui, Destroy
+}
+FileDelete, versionCheck.ini
+
 IniRead, firstLaunch, %settingsFile%, Init, firstLaunch
 if (firstLaunch) {
     MsgBox, 4,,Hey! It looks like this is your first time launching Rawalle.`nWould you like to configure your settings?
@@ -146,4 +171,22 @@ Reboot() {
     Reload
 }
 
-#Include customHotkeys.ahk
+#Include customHotkeys.ahk#Include customHotkeys-Joe.ahk
+return
+
+DownloadLatest:
+    Run, https://github.com/joe-ldp/Rawalle/releases/latest
+    FileDelete, versionCheck.ini
+    ExitApp
+return
+
+SkipVersion:
+    IniRead, versionCheck, versionCheck.ini, Check, version
+    IniWrite, %versionCheck%, %settingsFile%, Init, verCheckSkip
+    execute := True
+return
+
+RemindLater:
+    execute := True
+return
+
