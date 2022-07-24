@@ -153,13 +153,14 @@ ManageState() {
         }
         Loop, Read, %mcDir%\logs\latest.log
         {
-            if (A_Index >= resetPos) {
+            if (A_Index >= (resetState == STATE_RESETTING ? resetPos : newWorldPos)) {
                 line := A_LoopReadLine
                 lineNum := A_Index
-                if (resetState == STATE_RESETTING) {
+                if (resetState == STATE_RESETTING && A_TickCount - lastReset > 2000) {
                     for each, value in toValidateReset {
                         if (InStr(line, value)) {
                             newWorldPos := lineNum
+                            break
                         }
                     }
                 }
@@ -189,7 +190,7 @@ ManageState() {
                 }
             }
         }
-        if (resetState == STATE_RESETTING && (A_TickCount - lastReset > 3000)) {
+        if (resetState == STATE_RESETTING && (A_TickCount - lastReset > 15000)) {
             Log("Found failed reset. Forcing reset")
             reset := settings["key_CreateNewWorld"]
             ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
