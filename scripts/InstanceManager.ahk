@@ -363,6 +363,8 @@ GetControls() {
                     value := "R" . value
                 }
                 settings[key] := value
+                if (key == "key_CreateNewWorld" && value == "")
+                    settings[key] := "f6"
             }
         }
     }
