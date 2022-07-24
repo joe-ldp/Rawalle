@@ -30,7 +30,7 @@ if (versionCheck > currVersion && verCheckSkip < versionCheck) {
     Gui, Add, Button, x+10 w80 h25 gSkipVersion, Skip Version
     Gui, Add, Button, x+10 w100 h25 gRemindLater, Remind me later
     Gui, -SysMenu
-    Gui +AlwaysOnTop
+    Gui, +AlwaysOnTop
     Gui, Show
     Loop, {
         if (execute)
