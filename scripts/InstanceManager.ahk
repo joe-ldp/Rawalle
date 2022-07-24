@@ -379,13 +379,8 @@ SendOBSCommand(cmd) {
 }
 
 CurrentWorldEntered() {
-    log := ""
-    Loop, Read, %mcDir%\logs\latest.log
-    {
-        if (A_Index > lastResetAt)
-            log := log . A_LoopReadLine . "\n"
-    }
-    return InStr(log, "We Need To Go Deeper")
+    FileRead, logContents, %mcDir%\logs\latest.log
+    return (InStr(logContents, "We Need To Go Deeper",, 0) > InStr(logContents, "spawn area",, 0))
 }
 
 Widen() {
