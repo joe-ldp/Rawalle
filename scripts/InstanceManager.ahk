@@ -12,12 +12,11 @@ SetWinDelay, 1
 #Include %A_ScriptDir%/messages.ahk
 LoadSettings()
 
-global STATE_READY      := 1
-global STATE_PLAYING    := 2
-global STATE_RESETTING  := 3
-global STATE_LOADING    := 4
-global STATE_PREVIEWING := 5
-global currentState := STATE_READY
+global STATE_RESETTING  := 1
+global STATE_LOADING    := 2
+global STATE_PREVIEWING := 3
+global STATE_READY      := 4
+global resetState := STATE_READY
 
 global pid := 0
 global idx := A_Args[1]
@@ -30,6 +29,9 @@ global frozen := False
 global lastReset := 0
 global lastNewWorld := 0
 global lastResetAt := GetNumLogLines()
+global resetPos := 0
+global newWorldPos := 0
+global resetValidated := False
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 
 Log("Instance Manager launched")
@@ -103,19 +105,17 @@ FileAppend,, IM%idx%ready.tmp
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
     global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets, settingsDelay
-    Critical
-    if (currentState == STATE_RESETTING || currentState == STATE_LOADING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
+    if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
     } else {
         Log("Resetting")
-        lastReset := A_TickCount
         if (performanceMethod == "F" && frozen)
             Unfreeze()
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
 
-        if (currentState == STATE_PLAYING) {
+        if (WinActive("ahk_pid " . pid)) {
             GetSettings()
             if (useObsWebsocket && screenshotWorlds)
                 SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered())
@@ -132,43 +132,51 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             }
         }
 
+        lastReset := A_TickCount
+        resetPos := GetNumLogLines()
+        resetValidated := False
         reset := settings["key_CreateNewWorld"]
-        ControlSend,, {Blind}{%reset%}{Enter}, ahk_pid %pid%
-        currentState := STATE_RESETTING
-        if (HasMod("worldpreview"))
-            SetTimer, ManageStateWP, -200
-        else
-            SetTimer, ManageStateNoWP, -200
+        ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
+        resetState := STATE_RESETTING
+        SetTimer, ManageState, -200
     }
 }
 
-ManageStateNoWP() {
+ManageState() {
     global mode, performanceMethod
     Critical
-
-    while (currentState != STATE_READY) {
-        numLines := GetNumLogLines()
+    while (resetState != STATE_READY) {
+        if (resetState == STATE_PREVIEWING) {
+            Critical, Off
+            Sleep, -1
+            Critical, On
+        }
         Loop, Read, %mcDir%\logs\latest.log
         {
-            lineNum := A_Index
-            line := A_LoopReadLine
-            if (lineNum > lastResetAt && numLines - lineNum < 5) {
-                if (currentState == STATE_RESETTING) {
-                    for each, term in toValidateReset {
-                        if (InStr(line, term)) {
-                            currentState := STATE_LOADING
-                            Log("Reset validated at line " . lineNum . ", used term " . term)
-                            break
+            if (A_Index >= resetPos) {
+                line := A_LoopReadLine
+                lineNum := A_Index
+                if (resetState == STATE_RESETTING) {
+                    for each, value in toValidateReset {
+                        if (InStr(line, value)) {
+                            newWorldPos := lineNum
                         }
                     }
                 }
-                if (currentState == STATE_LOADING && InStr(line, "advancements")) {
-                    Log("World generated, pausing. Found load at " . lineNum)
-                    lastResetAt := lineNum + 1
-                    WinGet, activePID, PID, A
-                    if (mode == "Wall" || activePID != pid) {
-                        currentState := STATE_READY
+                if (resetState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
+                    Log("Found preview at line " . lineNum . ":`n" . line)
+                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    newWorldPos := lineNum
+                    lastNewWorld := A_TickCount
+                    resetState := STATE_PREVIEWING
+                    continue 2
+                } else if (resetState == STATE_LOADING || resetState == STATE_PREVIEWING && InStr(line, "advancements")) {
+                    if (resetState != STATE_PREVIEWING)
+                        lastNewWorld := A_TickCount
+                    Log("Found load at line " . lineNum . " Log:`n" . line)
+                    if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                        resetState := STATE_READY
                         if (performanceMethod == "F") {
                             Frz := Func("Freeze").Bind()
                             bfd := 0 - beforeFreezeDelay
@@ -177,57 +185,14 @@ ManageStateNoWP() {
                     } else {
                         Play()
                     }
+                    return
                 }
             }
         }
-        Sleep, 50
-    }
-}
-
-ManageStateWP() {
-    global mode, performanceMethod
-    Critical
-    Log("Managing reset state...")
-    rememberThis := lastReset
-    while (currentState != STATE_READY) {
-        if (currentState == STATE_PREVIEWING) {
-            Critical, Off
-            Sleep, -1
-            if (rememberThis != lastReset)
-                return
-            Critical, On
-        }
-
-        numLines := GetNumLogLines()
-        Loop, Read, %mcDir%\logs\latest.log
-        {
-            lineNum := A_Index
-            line := A_LoopReadLine
-            if (currentState == STATE_RESETTING && lineNum > lastResetAt && numLines - lineNum < 3 && InStr(line, "Starting Preview")) {
-                Log("Found preview at " . lineNum)
-                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                lastNewWorld := A_TickCount
-                currentState := STATE_PREVIEWING
-                continue
-            }
-            if (currentState == STATE_PREVIEWING && numLines - lineNum < 5 && InStr(line, "advancements")) {
-                if (currentState != STATE_PREVIEWING)
-                    lastNewWorld := A_TickCount
-                Log("World generated, pausing. Found load at " . lineNum)
-                lastResetAt := lineNum + 1
-                WinGet, activePID, PID, A
-                if (mode == "Wall" || activePID != pid) {
-                    currentState := STATE_READY
-                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    if (performanceMethod == "F") {
-                        Frz := Func("Freeze").Bind()
-                        bfd := 0 - beforeFreezeDelay
-                        SetTimer, %Frz%, %bfd%
-                    }
-                } else {
-                    Play()
-                }
-            }
+        if (resetState == STATE_RESETTING && (A_TickCount - lastReset > 3000)) {
+            Log("Found failed reset. Forcing reset")
+            reset := settings["key_CreateNewWorld"]
+            ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
         }
         Sleep, 50
     }
@@ -235,7 +200,7 @@ ManageStateWP() {
 
 Switch() {
     global useObsWebsocket, screenshotWorlds, obsDelay, mode, fullscreen, fullscreenDelay, performanceMethod, wideResets
-    if (currentState != STATE_RESETTING && (mode == "Multi" || currentState != STATE_PREVIEWING)) {
+    if (resetState != STATE_RESETTING && (mode == "Multi" || resetState != STATE_PREVIEWING)) {
         Log("Switched to instance")
 
         if (performanceMethod == "F")
@@ -263,12 +228,12 @@ Switch() {
         }
 
         Send, {RButton}
-        if (currentState == STATE_READY)
+        if (resetState == STATE_READY)
             Play()
 
         return 0
     } else {
-        return currentState
+        return resetState
     }
 }
 
@@ -279,7 +244,7 @@ Play() {
         ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
         Sleep, %fullscreenDelay%
     }
-    if (currentState == STATE_READY && (unpauseOnSwitch || coopResets))
+    if (resetState == STATE_READY && (unpauseOnSwitch || coopResets))
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
     if (coopResets) {
         Sleep, 50
@@ -289,7 +254,6 @@ Play() {
     }
     
     Log("Playing")
-    currentState := STATE_PLAYING
 }
 
 GetNumLogLines() {
@@ -300,7 +264,7 @@ GetNumLogLines() {
 }
 
 Freeze() {
-    if (currentState == STATE_READY && frozen == False) {
+    if (resetState == STATE_READY && frozen == False) {
         Log("Freezing")
         hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
         if (hProcess) {
@@ -535,5 +499,5 @@ LoadSettings() {
 }
 
 Log(message) {
-    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %currentState% | %message%`n, %mcDir%log.log
+    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %resetState% | %message%`n, %mcDir%log.log
 }
