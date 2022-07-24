@@ -1,4 +1,4 @@
-# v1.1.1
+# v1.2.0
 
 # cmd formatting:
 # cmd[0] specifies command, later args are for cmd args

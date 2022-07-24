@@ -1,6 +1,6 @@
 ; Ravalle's new Multi Instance & Wall Macro
 ; Author: Ravalle / Joe
-; v1.1.1
+; v1.2.0
 
 #NoEnv
 #Persistent
@@ -16,7 +16,7 @@ SetTitleMatchMode, 2
 #Include %A_ScriptDir%\scripts\utilities.ahk
 global settingsFile := A_ScriptDir . "\settings.ini"
 
-currVersion := 1.11
+currVersion := 1.2
 UrlDownloadToFile, https://raw.githubusercontent.com/joe-ldp/Rawalle/main/versionCheck.ini, versionCheck.ini
 IniRead, versionCheck, versionCheck.ini, Check, version
 IniRead, versionString, versionCheck.ini, Check, name
