@@ -1,5 +1,7 @@
 # Rawalle
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/ravalle)
+
 ## Tech Support
 
 [Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ **AFTER** reading this page. If you still have unanswered questions, ping @Tech Support. 
