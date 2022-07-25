@@ -9,13 +9,9 @@ SetWorkingDir, %A_ScriptDir%
 SetKeyDelay, 0
 SetWinDelay, 1
 
-#Include %A_ScriptDir%/messages.ahk
+#Include %A_ScriptDir%\constants.ahk
 LoadSettings()
 
-global STATE_RESETTING  := 1
-global STATE_LOADING    := 2
-global STATE_PREVIEWING := 3
-global STATE_READY      := 4
 global resetState := STATE_READY
 
 global pid := 0

@@ -11,7 +11,7 @@ SetKeyDelay, 0
 SetWinDelay, 1
 SetTitleMatchMode, 2
 
-#Include %A_ScriptDir%\scripts\messages.ahk
+#Include %A_ScriptDir%\scripts\constants.ahk
 #Include %A_ScriptDir%\scripts\functions.ahk
 #Include %A_ScriptDir%\scripts\utilities.ahk
 global settingsFile := A_ScriptDir . "\settings.ini"

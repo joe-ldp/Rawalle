@@ -37,7 +37,7 @@ Play(idx := -1) {
         activeInstance := idx
         isOnWall := False
         SetAffinities()
-    } else if (ErrorLevel == 3) {
+    } else if (ErrorLevel == STATE_PREVIEWING) {
         LockInstance(idx, False)
     }
 }
