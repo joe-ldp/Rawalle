@@ -159,6 +159,7 @@ ManageState() {
                 if (resetState == STATE_RESETTING && A_TickCount - lastReset > 2000) {
                     for each, value in toValidateReset {
                         if (InStr(line, value)) {
+                            resetState := STATE_LOADING
                             newWorldPos := lineNum
                             break
                         }
