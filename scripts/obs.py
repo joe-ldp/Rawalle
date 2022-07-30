@@ -85,7 +85,7 @@ def execute_cmd(cmd):
                 with open(f"{path}{filename}.png", "wb") as f:
                     f.write(response.file.read())
 
-logging.basicConfig(filename="obs_log.txt")
+logging.basicConfig(filename="obs_log.log")
 
 try:
     print(sys.argv)

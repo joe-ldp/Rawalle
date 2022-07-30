@@ -2,6 +2,7 @@
 *-Joe.*
 *.tmp
 *.psd
+*.log
 actions.csv
 versionCheck.ini
 /scripts/__pyCache__
