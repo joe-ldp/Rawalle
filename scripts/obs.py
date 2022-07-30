@@ -17,6 +17,7 @@ import csv
 import sys
 import urllib.request
 import time
+import logging
 
 def get_cmd(path):
     cmdFiles = []
@@ -84,6 +85,8 @@ def execute_cmd(cmd):
                 with open(f"{path}{filename}.png", "wb") as f:
                     f.write(response.file.read())
 
+logging.basicConfig(filename="obs_log.txt")
+
 try:
     print(sys.argv)
     host = sys.argv[1]
@@ -105,6 +108,7 @@ try:
     ws.connect()
 except Exception as e:
     print(e)
+    logging.error(e)
 
 for i in range(1, num_instances+1):
     print(f"Setting up instance {i}")
@@ -114,12 +118,17 @@ for i in range(1, num_instances+1):
         lock_layer_name = lock_layer_format.replace("*", str(i))
         ws.call(requests.SetSceneItemRender(f"{lock_layer_name}", False, f"{wall_scene}"))
     except:
-        print("Some setup didn't complete (it's probably ok, just not using some features).")
+        msg = "Some setup didn't complete (it's probably ok, just not using some features)."
+        print(msg)
+        logging.debug(msg)
     
 try:
     ws.call(requests.SetCurrentScene(f"{wall_scene}"))
 except:
-    print("No wall scene found, not switching")
+    msg = "No wall scene found, not switching"
+    print(msg)
+    logging.debug(msg)
+
 
 try:
     path = os.path.dirname(os.path.realpath(__file__)) + "\\"
@@ -136,5 +145,6 @@ try:
         time.sleep(0.2)
 except Exception as e:
     print(f"Error: {e}")
+    logging.error(msg)
 
 ws.disconnect()
