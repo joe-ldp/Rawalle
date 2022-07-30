@@ -163,13 +163,6 @@ SetAffinities() {
     }
 }
 
-SetTitles() {
-    global IM_PIDs
-    for each, pid in IM_PIDs {
-        PostMessage, MSG_SETTITLE,,,,ahk_pid %pid%
-    }
-}
-
 MousePosToInstNumber() {
     global cols, instHeight, instWidth
     MouseGetPos, mX, mY

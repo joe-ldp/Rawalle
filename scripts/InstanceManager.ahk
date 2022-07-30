@@ -93,8 +93,6 @@ if (wideResets) {
 
 OnMessage(MSG_RESET, "Reset")
 OnMessage(MSG_SWITCH, "Switch")
-OnMessage(MSG_SETTITLE, "SetTitle")
-OnMessage(MSG_REVEAL, "Reveal")
 
 SetTitle()
 FileAppend,, IM%idx%ready.tmp
