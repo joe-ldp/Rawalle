@@ -501,6 +501,8 @@ Log(message) {
 }
 
 CountReset(resetType) {
+    if (!FileExist(Format("../resets/{1}.txt", resetType)))
+        FileAppend, 0, % Format("../resets/{1}.txt", resetType)
     file := FileOpen(Format("../resets/{1}.txt", resetType), "a -rw")
     if (!IsObject(file)) {
         cr := Func("CountReset").Bind(resetType)
