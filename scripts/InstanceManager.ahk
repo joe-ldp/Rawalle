@@ -168,7 +168,7 @@ ManageState() {
                     lastNewWorld := A_TickCount
                     resetState := STATE_PREVIEWING
                     continue 2
-                } else if (resetState == STATE_LOADING || resetState == STATE_PREVIEWING && InStr(line, "advancements")) {
+                } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
                     if (resetState != STATE_PREVIEWING)
                         lastNewWorld := A_TickCount
                     Log("Found load at line " . lineNum . " Log:`n" . line)
