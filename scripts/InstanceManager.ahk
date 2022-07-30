@@ -135,6 +135,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
         resetState := STATE_RESETTING
         SetTimer, ManageState, -200
+        CountReset("Resets")
+        CountReset("Daily Resets")
     }
 }
 
@@ -496,4 +498,17 @@ LoadSettings() {
 
 Log(message) {
     FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %resetState% | %message%`n, %mcDir%log.log
+}
+
+CountReset(resetType) {
+    file := FileOpen(Format("../resets/{1}.txt", resetType), "a -rw")
+    if (!IsObject(file)) {
+        cr := Func("CountReset").Bind(resetType)
+        SetTimer, %cr%, -500
+    }
+    file.Seek(0)
+    num := file.Read()
+    num += 1
+    file.Seek(0)
+    file.Write(num)
 }

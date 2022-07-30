@@ -6,8 +6,6 @@ Reset(idx := -1) {
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
     PostMessage, MSG_RESET, A_TickCount,,,ahk_pid %IM_PID%
-    CountResets("Resets")
-    CountResets("Daily Resets")
 
     if (activeInstance == idx) {
         if (mode == "Wall") {
@@ -221,17 +219,6 @@ SendOBSCommand(cmd) {
     cmdFile := A_ScriptDir . "\scripts\pyCmds\TWCMD" . cmdNum . ".txt"
     cmdNum++
     FileAppend, %cmd%, %cmdFile%
-}
-
-CountResets(resetType) {
-    filename := A_ScriptDir . "\resets\" . resetType . ".txt"
-    FileRead, numResets, %filename%
-    if (ErrorLevel)
-        numResets := 0
-    else
-        FileDelete, %filename%
-    numResets += 1
-    FileAppend, %numResets%, %filename%
 }
 
 LogAction(idx, action) {
