@@ -128,11 +128,11 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             }
         }
 
-        lastReset := A_TickCount
-        resetPos := GetNumLogLines()
-        resetValidated := False
         reset := settings["key_CreateNewWorld"]
-        ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
+        leavePreview := setting["key_LeavePreview"]
+        resetPos := GetNumLogLines()
+        lastReset := A_TickCount
+        ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
         resetState := STATE_RESETTING
         SetTimer, ManageState, -200
         CountReset("Resets")
