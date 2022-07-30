@@ -73,6 +73,7 @@ ControlSend,, {Blind}{Esc}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
 
 GetControls()
 GetSettings()
+SetTitle()
 
 if (settings.fullscreen == "true") {
     fs := settings["key_key.fullscreen"]
