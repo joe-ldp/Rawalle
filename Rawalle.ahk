@@ -133,13 +133,13 @@ if (mode == "Multi") {
 }
 
 if (readySound) {
-    file = %A_ScriptDir%/media/ready.wav
-    Random, pos, 0, 10
-    wmp := ComObjCreate("WMPlayer.OCX")
-    wmp.controls.currentPosition := pos
-    wmp.url := file
-    Sleep, 1000
-    wmp.close
+    numSounds := 0
+    Loop, Files, %A_ScriptDir%/media/ready/*
+    {
+        numSounds++
+    }
+    Random, sound, 1, %numSounds%
+    SoundPlay, %A_ScriptDir%/media/ready/ready%sound%.wav
 }
 
 Shutdown(ExitReason, ExitCode) {
