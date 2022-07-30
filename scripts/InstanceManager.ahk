@@ -41,7 +41,7 @@ if (!pid := IsInstanceOpen()) {
     Log("No Minecraft instance found, launching")
     centralModsDir := A_ScriptDir . "\..\mods\"
     instModsDir := mcDir . "mods\"
-    if (syncMods && DesyncedMods(centralModsDir . "*", instModsDir . "*") && FileExist(instModsDir)) {
+    if (syncMods && DesyncedMods(centralModsDir . "*", instModsDir . "*") && FileExist(centralModsDir)) {
         Loop, Files, %instModsDir%*
         {
             FileDelete, %A_LoopFileLongPath%
