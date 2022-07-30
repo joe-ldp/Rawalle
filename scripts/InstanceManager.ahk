@@ -189,6 +189,7 @@ ManageState() {
         }
         if (resetState == STATE_RESETTING && (A_TickCount - lastReset > 15000)) {
             Log("Found failed reset. Forcing reset")
+            lastReset := A_NowUTC
             reset := settings["key_CreateNewWorld"]
             ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
         }
