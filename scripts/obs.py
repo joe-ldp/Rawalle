@@ -14,10 +14,10 @@ from obswebsocket import obsws, requests
 from os.path import exists
 import os
 import csv
-import sys
 import urllib.request
 import time
 import logging
+import obsSettings as settings
 
 def get_cmd(path):
     cmdFiles = []
@@ -43,34 +43,34 @@ def get_cmd(path):
 def execute_cmd(cmd):
     if (len(cmd) > 0):
         global inst_num
-        instance_layer_name = instance_source_format.replace("*", str(inst_num))
+        instance_layer_name = settings.instance_source_format.replace("*", str(inst_num))
         match cmd[0]:
             case "ToWall":
-                ws.call(requests.SetCurrentScene(f"{wall_scene}"))
+                ws.call(requests.SetCurrentScene(f"{settings.wall_scene}"))
             case "Play":
                 old_inst_num = inst_num
                 inst_num = cmd[1]
-                if (single_scene):
-                    ws.call(requests.SetSceneItemRender(f"{instance_layer_name}", True, f"{playing_scene}"))
+                if (settings.single_scene):
+                    ws.call(requests.SetSceneItemRender(f"{instance_layer_name}", True, f"{settings.playing_scene}"))
                     if (inst_num != old_inst_num):
-                        ws.call(requests.SetSceneItemRender(instance_source_format.replace("*", old_inst_num), False, f"{playing_scene}"))
-                    ws.call(requests.SetCurrentScene(f"{playing_scene}"))
+                        ws.call(requests.SetSceneItemRender(settings.instance_source_format.replace("*", old_inst_num), False, f"{settings.playing_scene}"))
+                    ws.call(requests.SetCurrentScene(f"{settings.playing_scene}"))
                 else:
-                    ws.call(requests.SetCurrentScene(instance_scene_format.replace("*", inst_num)))
+                    ws.call(requests.SetCurrentScene(settings.instance_scene_format.replace("*", inst_num)))
             case "Lock":
                 lock_num = cmd[1]
                 render = True if int(cmd[2]) else False
-                ws.call(requests.SetSceneItemRender(lock_layer_format.replace("*", lock_num), render, f"{wall_scene}"))
+                ws.call(requests.SetSceneItemRender(settings.lock_layer_format.replace("*", lock_num), render, f"{settings.wall_scene}"))
             case "GetImg":
                 global img_data
                 start = datetime.now().timestamp()
                 while (datetime.now().timestamp() - start < 3):
-                    if (single_scene):
-                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", f"{playing_scene}")).datain
+                    if (settings.single_scene):
+                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", f"{settings.playing_scene}")).datain
                     else:
-                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", instance_scene_format.replace("*", inst_num))).datain
+                        layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", settings.instance_scene_format.replace("*", inst_num))).datain
                     h = layer_info_data["sourceHeight"]
-                    wide_height = screen_height / width_multiplier
+                    wide_height = settings.screen_height / settings.width_multiplier
                     print(layer_info_data)
                     if (h <= wide_height):
                         print(f"Found height {h}, instance is still wide, waiting")
@@ -88,42 +88,29 @@ def execute_cmd(cmd):
 logging.basicConfig(filename="obs_log.log")
 
 try:
-    print(sys.argv)
-    host = sys.argv[1]
-    port = int(sys.argv[2])
-    password = sys.argv[3]
-    lock_layer_format = sys.argv[4]
-    wall_scene = sys.argv[5]
-    instance_scene_format = sys.argv[6]
-    single_scene = True if sys.argv[7] == "True" else False
-    playing_scene = sys.argv[8]
-    instance_source_format = sys.argv[9]
-    num_instances = int(sys.argv[10])
-    width_multiplier = float(sys.argv[11])
-    screen_height = int(sys.argv[12])
     inst_num = 0
     img_data = ""
 
-    ws = obsws(host, port, password)
+    ws = obsws(settings.host, settings.port, settings.password)
     ws.connect()
 except Exception as e:
     print(e)
     logging.error(e)
 
-for i in range(1, num_instances+1):
+for i in range(1, settings.num_instances+1):
     print(f"Setting up instance {i}")
     try:
-        source_layer_name = instance_source_format.replace("*", str(i))
-        ws.call(requests.SetSceneItemRender(f"{source_layer_name}", False, f"{playing_scene}"))
-        lock_layer_name = lock_layer_format.replace("*", str(i))
-        ws.call(requests.SetSceneItemRender(f"{lock_layer_name}", False, f"{wall_scene}"))
+        source_layer_name = settings.instance_source_format.replace("*", str(i))
+        ws.call(requests.SetSceneItemRender(f"{source_layer_name}", False, f"{settings.playing_scene}"))
+        lock_layer_name = settings.lock_layer_format.replace("*", str(i))
+        ws.call(requests.SetSceneItemRender(f"{lock_layer_name}", False, f"{settings.wall_scene}"))
     except:
         msg = "Some setup didn't complete (it's probably ok, just not using some features)."
         print(msg)
         logging.debug(msg)
     
 try:
-    ws.call(requests.SetCurrentScene(f"{wall_scene}"))
+    ws.call(requests.SetCurrentScene(f"{settings.wall_scene}"))
 except:
     msg = "No wall scene found, not switching"
     print(msg)

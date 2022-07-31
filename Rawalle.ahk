@@ -76,7 +76,7 @@ if (!FileExist(resetsFolder := A_ScriptDir . "\resets"))
     FileCreateDir, %resetsFolder%
 
 if (useObsWebsocket) {
-    Run, scripts\obs.py "%host%" "%port%" "%password%" "%lockLayerFormat%" "%wallScene%" "%instanceSceneFormat%" "%singleScene%" "%playingScene%" "%instanceSourceFormat%" "%numInstances%" "%widthMultiplier%" "%A_ScreenHeight%",, Hide
+    Run, scripts\obs.py,, Hide
 }
 
 Loop, %numInstances% {

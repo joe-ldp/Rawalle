@@ -5,6 +5,7 @@
 *.log
 actions.csv
 versionCheck.ini
+obsSettings.py
 /scripts/__pyCache__
 /scripts/pyCmds
 /scripts/runPy.tmp
