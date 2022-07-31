@@ -70,7 +70,7 @@ def execute_cmd(cmd):
                     else:
                         layer_info_data = ws.call(requests.GetSceneItemProperties(f"{instance_layer_name}", instance_scene_format.replace("*", inst_num))).datain
                     h = layer_info_data["sourceHeight"]
-                    wide_height = screen_height / 2.5
+                    wide_height = screen_height / width_multiplier
                     print(layer_info_data)
                     if (h <= wide_height):
                         print(f"Found height {h}, instance is still wide, waiting")
