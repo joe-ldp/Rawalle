@@ -66,18 +66,12 @@ global locked := []
 
 OnExit("Shutdown")
 DetectHiddenWindows, On
-if (useObsWebsocket)
-    FileAppend,, scripts/runPy.tmp
 if (!FileExist(enteredScreenshots := A_ScriptDir . "\screenshots\entered"))
     FileCreateDir, %enteredScreenshots%
 if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
     FileCreateDir, %unenteredScreenshots%
 if (!FileExist(resetsFolder := A_ScriptDir . "\resets"))
     FileCreateDir, %resetsFolder%
-
-if (useObsWebsocket) {
-    Run, scripts\obs.py,, Hide
-}
 
 Loop, %numInstances% {
     if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . A_Index . "ready.tmp"))
@@ -109,6 +103,12 @@ for each, program in arrLaunchPrograms {
     } 
     if (!isOpen)
         Run, %filename%, %dir%
+}
+
+if (useObsWebsocket) {
+    while (!FileExist(Format("{1}\scripts\runPy.tmp", A_ScriptDir)))
+        FileAppend,, %A_ScriptDir%\scripts\runPy.tmp
+    Run, %A_ScriptDir%\scripts\obs.py, %A_ScriptDir%\scripts\
 }
 
 checkIdx := 1
