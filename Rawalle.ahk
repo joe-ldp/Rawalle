@@ -108,7 +108,7 @@ for each, program in arrLaunchPrograms {
 if (useObsWebsocket) {
     while (!FileExist(Format("{1}\scripts\runPy.tmp", A_ScriptDir)))
         FileAppend,, %A_ScriptDir%\scripts\runPy.tmp
-    Run, %A_ScriptDir%\scripts\obs.py, %A_ScriptDir%\scripts\
+    Run, %A_ScriptDir%\scripts\obs.py, %A_ScriptDir%\scripts\, Hide
 }
 
 checkIdx := 1

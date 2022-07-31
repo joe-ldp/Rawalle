@@ -68,7 +68,9 @@ if (!pid := IsInstanceOpen()) {
     FileAppend, %pid%, inst%idx%open.tmp
 }
 
-ControlClick, x0 y0, ahk_pid %pid%,, RIGHT
+WinGetTitle, mcTitle, ahk_pid %pid%
+if (!InStr(mcTitle, "-"))
+    ControlClick, x0 y0, ahk_pid %pid%,, RIGHT
 ControlSend,, {Blind}{Esc}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
 
 GetControls()
