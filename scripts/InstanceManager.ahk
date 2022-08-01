@@ -22,11 +22,9 @@ global mcDir := instDir . "\.minecraft\"
 global instanceMods := []
 global settings := []
 global frozen := False
-global lastReset := 0
+global lastResetTime := 0
 global lastNewWorld := 0
-global lastResetAt := GetNumLogLines()
-global resetPos := 0
-global newWorldPos := 0
+global readFromLine := 0
 global resetValidated := False
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 
@@ -101,7 +99,7 @@ FileAppend,, IM%idx%ready.tmp
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
     global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets, settingsDelay
-    if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastReset && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
+    if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
     } else {
@@ -130,8 +128,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 
         reset := settings["key_CreateNewWorld"]
         leavePreview := setting["key_LeavePreview"]
-        resetPos := GetNumLogLines()
-        lastReset := A_TickCount
+        lastResetTime := A_TickCount
         ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
         resetState := STATE_RESETTING
         SetTimer, ManageState, -200
@@ -149,16 +146,19 @@ ManageState() {
             Sleep, -1
             Critical, On
         }
+        numLines := 0
+        Loop, Read, %mcDir%\logs\latest.log
+            numLines++
         Loop, Read, %mcDir%\logs\latest.log
         {
-            if (A_Index >= (resetState == STATE_RESETTING ? resetPos : newWorldPos)) {
+            if ((A_Index >= readFromLine) && (numLines - A_Index < 5)) {
                 line := A_LoopReadLine
                 lineNum := A_Index
-                if (resetState == STATE_RESETTING && A_TickCount - lastReset > 2000) {
+                if (resetState == STATE_RESETTING && A_TickCount - lastResetTime > 2500) {
                     for each, value in toValidateReset {
                         if (InStr(line, value)) {
                             resetState := STATE_LOADING
-                            newWorldPos := lineNum
+                            readFromLine := lineNum
                             break
                         }
                     }
@@ -166,13 +166,14 @@ ManageState() {
                 if (resetState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
                     Log("Found preview at line " . lineNum . ":`n" . line)
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    newWorldPos := lineNum
+                    readFromLine := lineNum + 1
                     lastNewWorld := A_TickCount
                     resetState := STATE_PREVIEWING
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
                     if (resetState != STATE_PREVIEWING)
                         lastNewWorld := A_TickCount
+                    readFromLine := lineNum
                     Log("Found load at line " . lineNum . " Log:`n" . line)
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
@@ -189,9 +190,9 @@ ManageState() {
                 }
             }
         }
-        if (resetState == STATE_RESETTING && (A_TickCount - lastReset > 15000)) {
+        if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 15000)) {
             Log("Found failed reset. Forcing reset")
-            lastReset := A_NowUTC
+            lastResetTime := A_NowUTC
             reset := settings["key_CreateNewWorld"]
             ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
         }
@@ -255,13 +256,6 @@ Play() {
     }
     
     Log("Playing")
-}
-
-GetNumLogLines() {
-    numLines := 0
-    Loop, Read, %mcDir%\logs\latest.log
-        numLines++
-    return numLines
 }
 
 Freeze() {
