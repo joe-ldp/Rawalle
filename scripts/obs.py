@@ -85,7 +85,11 @@ def execute_cmd(cmd):
                 with open(f"{path}{filename}.png", "wb") as f:
                     f.write(response.file.read())
 
-logging.basicConfig(filename="obs_log.log")
+logging.basicConfig(
+    filename="obs_log.log",
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 try:
     inst_num = 0
@@ -107,15 +111,14 @@ for i in range(1, settings.num_instances+1):
     except:
         msg = "Some setup didn't complete (it's probably ok, just not using some features)."
         print(msg)
-        logging.debug(msg)
+        logging.info(msg)
     
 try:
     ws.call(requests.SetCurrentScene(f"{settings.wall_scene}"))
 except:
     msg = "No wall scene found, not switching"
     print(msg)
-    logging.debug(msg)
-
+    logging.info(msg)
 
 try:
     path = os.path.dirname(os.path.realpath(__file__)) + "\\"
