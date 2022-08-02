@@ -26,6 +26,7 @@ global lastResetTime := 0
 global lastNewWorld := 0
 global readFromLine := 0
 global resetValidated := False
+global wideHeight := Floor(A_ScreenHeight / widthMultiplier)
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 
 Log("Instance Manager launched")
@@ -33,6 +34,11 @@ Log("Instance Manager launched")
 if (autoBop) {
     cmd := Format("python.exe " . A_ScriptDir . "\worldBopper9000.py {1}", mcDir)
     Run, %cmd%,, Hide
+}
+if (syncConfigs) {
+    mainConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", 1))
+    thisConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", idx))
+    FileCopy, %mainConfig%\*.*, %thisConfig%\*.*, 1
 }
 
 if (!pid := IsInstanceOpen()) {
@@ -46,8 +52,6 @@ if (!pid := IsInstanceOpen()) {
         }
         FileCopyDir, %centralModsDir%, %instModsDir%, 1
     }
-    if (syncConfigs)
-        SyncConfig()
     mmcpack := instDir . "\mmc-pack.json"
     FileGetTime, packModified, %mmcpack%, M
     Run, %multiMCLocation%\MultiMC.exe -l "%instName%"
@@ -78,18 +82,16 @@ if (settings.fullscreen == "true") {
     fs := settings["key_key.fullscreen"]
     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
 }
-if (borderless) {
+if (borderless)
     WinSet, Style, -0xC40000, ahk_pid %pid%
-} else {
+else
     WinSet, Style, +0xC40000, ahk_pid %pid%
-}
 if (mode == "Multi")
     wideResets := False
-if (wideResets) {
+if (wideResets)
     Widen()
-} else {
+else
     WinMaximize, ahk_pid %pid%
-}
 
 OnMessage(MSG_RESET, "Reset")
 OnMessage(MSG_SWITCH, "Switch")
@@ -98,7 +100,7 @@ SetTitle()
 FileAppend,, IM%idx%ready.tmp
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
-    global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets, settingsDelay
+    global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets
     if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
@@ -108,7 +110,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             Unfreeze()
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
-
         if (WinActive("ahk_pid " . pid)) {
             GetSettings()
             if (useObsWebsocket && screenshotWorlds)
@@ -127,7 +128,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         }
 
         reset := settings["key_CreateNewWorld"]
-        leavePreview := setting["key_LeavePreview"]
+        leavePreview := settings["key_LeavePreview"]
         lastResetTime := A_TickCount
         ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
         resetState := STATE_RESETTING
@@ -190,7 +191,7 @@ ManageState() {
                 }
             }
         }
-        if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 15000)) {
+        if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 25000)) {
             Log("Found failed reset. Forcing reset")
             lastResetTime := A_NowUTC
             reset := settings["key_CreateNewWorld"]
@@ -348,10 +349,8 @@ CurrentWorldEntered() {
 }
 
 Widen() {
-    global widthMultiplier
-    newHeight := Floor(A_ScreenHeight / widthMultiplier)
     WinRestore, ahk_pid %pid%
-    WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %newHeight%
+    WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %wideHeight%
 }
 
 IsInstanceOpen() {
@@ -414,13 +413,6 @@ HasMod(modName) {
     return False
 }
 
-SyncConfig() {
-    global multiMCLocation, multiMCNameFormat
-    mainConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", 1))
-    thisConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", idx))
-    FileCopy, %mainConfig%\*.*, %thisConfig%\*.*, 1
-}
-
 LoadSettings() {
     global
     local filename, file, sect, equalsPos, key, value
@@ -462,9 +454,10 @@ Log(message) {
 }
 
 CountReset(resetType) {
-    if (!FileExist(Format("../resets/{1}.txt", resetType)))
-        FileAppend, 0, % Format("../resets/{1}.txt", resetType)
-    file := FileOpen(Format("../resets/{1}.txt", resetType), "a -rw")
+    filePath := Format("../resets/{1}.txt", resetType)
+    if (!FileExist(filePath))
+        FileAppend, 0, %filePath%
+    file := FileOpen(filePath, "a -rw")
     if (!IsObject(file)) {
         cr := Func("CountReset").Bind(resetType)
         SetTimer, %cr%, -500
