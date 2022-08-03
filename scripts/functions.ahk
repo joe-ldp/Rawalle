@@ -274,7 +274,6 @@ LoadHotkeys() {
     global numInstances
     #If, WinActive("Minecraft") && WinActive("ahk_exe javaw.exe")
     #If, WinActive("Fullscreen Projector")
-    #If
     FileRead, file, %A_ScriptDir%\hotkeys.ini
     Loop, Parse, file, `n`r, %A_Space%%A_Tab%
     {
