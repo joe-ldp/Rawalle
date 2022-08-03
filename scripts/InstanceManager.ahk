@@ -121,10 +121,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             }
             if (wideResets)
                 Widen()
-            if (mode == "Wall") {
-                WinMaximize, Fullscreen Projector
-                WinActivate, Fullscreen Projector
-            }
         }
 
         reset := settings["key_CreateNewWorld"]
@@ -179,11 +175,8 @@ ManageState() {
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                         resetState := STATE_READY
-                        if (performanceMethod == "F") {
-                            Frz := Func("Freeze").Bind()
-                            bfd := 0 - beforeFreezeDelay
-                            SetTimer, %Frz%, %bfd%
-                        }
+                        if (performanceMethod == "F")
+                            SetTimer, % Func("Freeze").Bind(), -%bfd%
                     } else {
                         Play()
                     }
@@ -202,7 +195,7 @@ ManageState() {
 }
 
 Switch() {
-    global useObsWebsocket, screenshotWorlds, obsDelay, mode, fullscreen, fullscreenDelay, performanceMethod, wideResets
+    global screenshotWorlds, mode, fullscreen, fullscreenDelay, performanceMethod, wideResets
     if ((mode == "Wall" && resetState == STATE_READY) || (mode == "Multi" && (resetState == STATE_PREVIEWING || resetState == STATE_READY))) {
         Log("Switched to instance")
 

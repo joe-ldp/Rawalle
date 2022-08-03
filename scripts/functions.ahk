@@ -191,7 +191,8 @@ ToWall() {
     activeInstance := 0
     isOnWall := True
     if (bypassWall) {
-        Sleep, %fullscreenDelay%
+        if (fullscreen)
+            Sleep, %fullscreenDelay%
         for idx, lockTime in locked {
             if (lockTime)
                 if (Play(idx) == 0)
@@ -205,6 +206,8 @@ ToWall() {
         Sleep, %obsDelay%
         Send, {F12 Up}
     }
+    WinMaximize, Fullscreen Projector
+    WinActivate, Fullscreen Projector
 }
 
 SendOBSCommand(cmd) {
