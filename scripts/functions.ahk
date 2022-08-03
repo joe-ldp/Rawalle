@@ -187,7 +187,7 @@ NextInstance() {
 }
 
 ToWall() {
-    global useObsWebsocket, obsDelay, bypassWall, fullscreenDelay
+    global useObsWebsocket, obsDelay, bypassWall, fullscreen, fullscreenDelay
     activeInstance := 0
     isOnWall := True
     if (bypassWall) {
