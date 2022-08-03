@@ -344,7 +344,9 @@ Widen() {
 }
 
 IsInstanceOpen() {
-    for proc in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_Process where ExecutablePath like ""%jdk%javaw.exe%""") {
+    for proc in ComObjGet("winmgmts:").ExecQuery("SELECT * from Win32_Process WHERE Name LIKE ""%java%""") {
+        if (InStr(proc.ExecutablePath, "javapath"))
+            continue
         cmdLine := proc.Commandline
         if(RegExMatch(cmdLine, "-Djava\.library\.path=(?P<Dir>[^\""]+?)(?:\/|\\)natives", thisInst)) {
             thisInstDir := StrReplace(thisInstDir, "/", "\")
