@@ -9,11 +9,7 @@ Reset(idx := -1) {
 
     if (activeInstance == idx) {
         if (mode == "Wall") {
-            activeInstance := 0
-            if (bypassWall)
-                ToWallOrNextInstance()
-            else
-                ToWall()
+            ToWall()
         } else {
             NextInstance()
         }
@@ -25,18 +21,29 @@ Reset(idx := -1) {
 }
 
 Play(idx := -1) {
-    global IM_PIDs, activeInstance, isOnWall
+    global IM_PIDs, activeInstance, isOnWall, useObsWebsocket, screenshotWorlds, obsDelay
     idx := (idx == -1) ? MousePosToInstNumber() : idx
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
     if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
+        if (useObsWebsocket) {
+            SendOBSCommand("Play," . idx)
+            if (screenshotWorlds)
+                SendOBSCommand("GetImg")
+        } else {
+            Send, {Numpad%idx% down}
+            Sleep, %obsDelay%
+            Send, {Numpad%idx% up}
+        }
         LogAction(idx, "play")
         LockInstance(idx, False)
         activeInstance := idx
         isOnWall := False
         SetAffinities()
+        return 0
     } else if (ErrorLevel == STATE_PREVIEWING) {
         LockInstance(idx, False)
+        return 1
     }
 }
 
@@ -180,30 +187,23 @@ NextInstance() {
 }
 
 ToWall() {
-    global useObsWebsocket, obsDelay, isOnWall
+    global useObsWebsocket, obsDelay, bypassWall, fullscreenDelay
+    activeInstance := 0
+    isOnWall := True
+    if (bypassWall) {
+        Sleep, %fullscreenDelay%
+        for idx, lockTime in locked {
+            if (lockTime)
+                if (Play(idx) == 0)
+                    return
+        }
+    }
     if (useObsWebsocket) {
         SendOBSCommand("ToWall")
     } else {
         Send, {F12 Down}
         Sleep, %obsDelay%
         Send, {F12 Up}
-    }
-    isOnWall := True
-}
-
-ToWallOrNextInstance() {
-    local minTime := A_TickCount, goToIdx := 0
-    for idx, lockTime in locked {
-        if (lockTime && lockTime < minTime) {
-            minTime := lockTime
-            goToIdx := idx
-        }
-    }
-    
-    if (goToIdx != 0) {
-        Play(goToIdx)
-    } else {
-        ToWall()
     }
 }
 

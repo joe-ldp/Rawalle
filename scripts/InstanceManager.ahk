@@ -220,16 +220,6 @@ Switch() {
             Sleep, %fullscreenDelay%
         }
 
-        if (useObsWebsocket) {
-            SendOBSCommand("Play," . idx)
-            if (screenshotWorlds)
-                SendOBSCommand("GetImg")
-        } else {
-            Send, {Numpad%idx% down}
-            Sleep, %obsDelay%
-            Send, {Numpad%idx% up}
-        }
-
         Send, {RButton}
         if (resetState == STATE_READY)
             Play()
