@@ -22,10 +22,14 @@ IniRead, versionCheck, versionCheck.ini, Check, version
 IniRead, versionString, versionCheck.ini, Check, name
 IniRead, verCheckSkip, %settingsFile%, Init, verCheckSkip
 if (versionCheck > currVersion && verCheckSkip < versionCheck) {
+    global downloadTag
     global execute := false
+    IniRead, notes, versionCheck.ini, Check, notes, Couldn't fetch patch notes. Oops!
+    IniRead, downloadTag, versionCheck.ini, Check, tag
     Gui, New
     Gui, Margin, 10, 10
     Gui, Add, Text,, Hey! A new version of Rawalle is available (%versionString%). Would you like to download it?
+    Gui, Add, Text, x10, % StrReplace(notes, "|", "`n")
     Gui, Add, Button, w100 h25 gDownloadLatest, Exit && Download
     Gui, Add, Button, x+10 w80 h25 gSkipVersion, Skip Version
     Gui, Add, Button, x+10 w100 h25 gRemindLater, Remind me later
@@ -176,8 +180,7 @@ Reboot() {
 return
 
 DownloadLatest:
-    Run, https://github.com/joe-ldp/Rawalle/releases/latest
-    FileDelete, versionCheck.ini
+    Run, https://github.com/joe-ldp/Rawalle/releases/%downloadTag%
     ExitApp
 return
 
