@@ -4,17 +4,18 @@
 {
     ; Add custom / extra hotkeys for in Minecraft here
 
-    *CapsLock::ResetAll()
+    ; Uncomment the following lines to use default background resetting functionality
+    ; *CapsLock::ResetAll()
 
-    *Numpad1::LockInstance(1)
-    *Numpad2::LockInstance(2)
-    *Numpad3::LockInstance(3)
-    *Numpad4::LockInstance(4)
-    *Numpad5::LockInstance(5)
-    *Numpad6::LockInstance(6)
-    *Numpad7::LockInstance(7)
-    *Numpad8::LockInstance(8)
-    *Numpad9::LockInstance(9)
+    ; *Numpad1::LockInstance(1)
+    ; *Numpad2::LockInstance(2)
+    ; *Numpad3::LockInstance(3)
+    ; *Numpad4::LockInstance(4)
+    ; *Numpad5::LockInstance(5)
+    ; *Numpad6::LockInstance(6)
+    ; *Numpad7::LockInstance(7)
+    ; *Numpad8::LockInstance(8)
+    ; *Numpad9::LockInstance(9)
 }
 
 #If WinActive("Fullscreen Projector")
