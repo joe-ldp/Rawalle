@@ -1,4 +1,4 @@
-# v1.2.0
+# v1.2.1
 
 # Code taken and adapted from https://github.com/grahamlyons/delete-old-files
 

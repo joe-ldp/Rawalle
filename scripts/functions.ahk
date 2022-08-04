@@ -1,4 +1,4 @@
-; v1.2.0
+; v1.2.1
 
 Reset(idx := -1) {
     global isOnWall, activeInstance, IM_PIDs, mode, bypassWall
