@@ -190,9 +190,9 @@ ToWall() {
     global useObsWebsocket, obsDelay, bypassWall, fullscreen, fullscreenDelay
     activeInstance := 0
     isOnWall := True
+    if (fullscreen)
+        Sleep, %fullscreenDelay%
     if (bypassWall) {
-        if (fullscreen)
-            Sleep, %fullscreenDelay%
         for idx, lockTime in locked {
             if (lockTime)
                 if (Play(idx) == 0)
