@@ -129,8 +129,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
         resetState := STATE_RESETTING
         SetTimer, ManageState, -200
-        SetTimer, % Func("CountReset").Bind("Resets"), -0
-        SetTimer, % Func("CountReset").Bind("Daily Resets"), -0
+        CountReset("Resets")
+        CountReset("Daily Resets")
     }
 }
 
@@ -442,19 +442,17 @@ CountReset(resetType) {
     filePath := Format("../resets/{1}.txt", resetType)
     if (!FileExist(filePath))
         FileAppend, 0, %filePath%
-    Loop, {
-        file := FileOpen(filePath, "a -rw")
-        if (IsObject(file)) {
-            file.Seek(0)
-            num := file.Read()
-            num += 1
-            file.Seek(0)
-            file.Write(num)
-            file.Close()
-            break
-        }
-        file.Close()
+    file := FileOpen(filePath, "a -rw")
+    if (!IsObject(file)) {
+        SetTimer, % Func("CountReset").Bind(resetType), -500
+        return
     }
+    file.Seek(0)
+    num := file.Read()
+    num += 1
+    file.Seek(0)
+    file.Write(num)
+    file.Close()
 }
 
 TranslateKey(mcKey) {
