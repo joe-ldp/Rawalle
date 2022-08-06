@@ -2,8 +2,17 @@
 
 # Code taken and adapted from https://github.com/grahamlyons/delete-old-files
 
+import logging
 import glob, sys, shutil, os
 from operator import itemgetter
+
+logging.basicConfig(
+    filename="worldBopper.log",
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
+
+bopped = 0
 
 def sort_files_by_last_modified(files):
     file_data = {}
@@ -15,10 +24,18 @@ def sort_files_by_last_modified(files):
     return file_data
 
 def delete_oldest_files(sorted_files):
+    global bopped
     for x in range(0, len(sorted_files) - 10):
         shutil.rmtree(sorted_files[x][0])
+        bopped += 1
 
-file_paths = glob.glob(sys.argv[1] + "/saves/*")
-sorted_files = sort_files_by_last_modified(file_paths)
+try:
+    file_paths = glob.glob(sys.argv[1] + "/saves/*")
+    sorted_files = sort_files_by_last_modified(file_paths)
 
-delete_oldest_files(sorted_files)
+    delete_oldest_files(sorted_files)
+    if (bopped > 0):
+        logging.log(logging.INFO, f"Bopped {bopped} worlds successfully")
+except Exception as e:
+    print(e)
+    logging.error(e)

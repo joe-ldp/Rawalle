@@ -9,15 +9,27 @@
 # cmd[0]: "SaveImg" saves current screenshot, cmd[1] specifies filename, cmd[2] specifies if run entered (1 = entered, 0 = did not)
 
 from datetime import datetime
-import shutil
-from obswebsocket import obsws, requests
 from os.path import exists
 import os
 import csv
 import urllib.request
 import time
 import logging
-import obsSettings as settings
+import shutil
+
+logging.basicConfig(
+    filename="obs_log.log",
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
+
+try:
+    from obswebsocket import obsws, requests
+    import obsSettings as settings
+except Exception as e:
+    print(e)
+    logging.error(e)
+    os.exit()
 
 def get_cmd(path):
     cmdFiles = []
@@ -84,12 +96,6 @@ def execute_cmd(cmd):
                 response = urllib.request.urlopen(img_data)
                 with open(f"{path}{filename}.png", "wb") as f:
                     f.write(response.file.read())
-
-logging.basicConfig(
-    filename="obs_log.log",
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S')
 
 try:
     inst_num = 0
