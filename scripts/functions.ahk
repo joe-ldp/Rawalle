@@ -1,11 +1,12 @@
 ; v1.2.1
 
-Reset(idx := -1) {
+Reset(idx := -1, timestamp := -1) {
     global isOnWall, activeInstance, IM_PIDs, mode, bypassWall
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    timestamp := (timestamp == -1) ? A_TickCount : timestamp
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
-    PostMessage, MSG_RESET, A_TickCount,,,ahk_pid %IM_PID%
+    PostMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%
 
     if (activeInstance == idx) {
         if (mode == "Wall") {
@@ -56,10 +57,11 @@ Reveal(idx) {
 FocusReset(idx := -1) {
     global numInstances, locked
     idx := (idx == -1) ? MousePosToInstNumber() : idx
+    timestamp := A_TickCount
     Play(idx)
     Loop, %numInstances%
         if (idx != A_Index && !locked[A_Index])
-            Reset(A_Index)
+            Reset(A_Index, timestamp)
 }
 
 BackgroundReset(idx) {
@@ -70,9 +72,10 @@ BackgroundReset(idx) {
 
 ResetAll() {
     global numInstances, locked
+    timestamp := A_TickCount
     Loop, %numInstances%
         if (!locked[A_Index])
-            Reset(A_Index)
+            Reset(A_Index, timestamp)
 }
 
 LockInstance(idx := -1, sound := True) {
