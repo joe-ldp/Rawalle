@@ -1,6 +1,8 @@
-; Ravalle's new Multi Instance & Wall Macro
+; Ravalle's Wall & Multi Instance Macro (Rawalle)
 ; Author: Ravalle / Joe
 ; v1.2.1
+
+;region imports
 
 #NoEnv
 #Persistent
@@ -15,6 +17,10 @@ SetTitleMatchMode, 2
 #Include %A_ScriptDir%\scripts\functions.ahk
 #Include %A_ScriptDir%\scripts\utilities.ahk
 global settingsFile := A_ScriptDir . "\settings.ini"
+
+;endregion
+
+;region init
 
 currVersion := 1.21
 UrlDownloadToFile, https://raw.githubusercontent.com/joe-ldp/Rawalle/main/versionCheck.ini, versionCheck.ini
@@ -52,7 +58,20 @@ if (firstLaunch) {
         RunWait, Rawalle Config.exe
     IniWrite, 0, %settingsFile%, Init, firstLaunch
 }
-LoadSettings()
+LoadSettings(settingsFile)
+
+OnExit("Shutdown")
+DetectHiddenWindows, On
+if (!FileExist(enteredScreenshots := A_ScriptDir . "\screenshots\entered"))
+    FileCreateDir, %enteredScreenshots%
+if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
+    FileCreateDir, %unenteredScreenshots%
+if (!FileExist(resetsFolder := A_ScriptDir . "\resets"))
+    FileCreateDir, %resetsFolder%
+
+;endregion
+
+;region globals
 
 global activeInstance := 0
 global MC_PIDs := []
@@ -68,14 +87,9 @@ global instHeight := Floor(A_ScreenHeight / rows)
 global isOnWall := True
 global locked := []
 
-OnExit("Shutdown")
-DetectHiddenWindows, On
-if (!FileExist(enteredScreenshots := A_ScriptDir . "\screenshots\entered"))
-    FileCreateDir, %enteredScreenshots%
-if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
-    FileCreateDir, %unenteredScreenshots%
-if (!FileExist(resetsFolder := A_ScriptDir . "\resets"))
-    FileCreateDir, %resetsFolder%
+;endregion
+
+;region startup
 
 Loop, %numInstances% {
     if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . A_Index . "ready.tmp"))
@@ -131,8 +145,6 @@ if (mode == "Multi") {
     isOnWall := False
     NextInstance()
 } else {
-    WinMaximize, Fullscreen Projector
-    WinActivate, Fullscreen Projector
     ToWall()
 }
 
@@ -146,8 +158,189 @@ if (readySound) {
     SoundPlay, %A_ScriptDir%/media/ready/ready%sound%.wav
 }
 
+;endregion
+
+;region funcs
+
+Reset(idx := -1, timestamp := -1) {
+    global isOnWall, activeInstance, IM_PIDs, mode, bypassWall
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    timestamp := (timestamp == -1) ? A_TickCount : timestamp
+    IM_PID := IM_PIDs[idx]
+    UnlockInstance(idx, False)
+    PostMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%
+
+    if (activeInstance == idx) {
+        if (mode == "Wall") {
+            ToWall()
+        } else {
+            NextInstance()
+        }
+        LogAction(idx, "exitworld")
+    } else {
+        LogAction(idx, "reset")
+    }
+    SetAffinities()
+}
+
+Play(idx := -1) {
+    global IM_PIDs, activeInstance, isOnWall, useObsWebsocket, screenshotWorlds, obsDelay
+    idx := (idx == -1) ? MousePosToInstNumber() : idx
+    pid := IM_PIDs[idx]
+    SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
+    if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
+        if (useObsWebsocket) {
+            SendOBSCommand("Play," . idx)
+            if (screenshotWorlds)
+                SendOBSCommand("GetImg")
+        } else {
+            Send, {Numpad%idx% down}
+            Sleep, %obsDelay%
+            Send, {Numpad%idx% up}
+        }
+        LogAction(idx, "play")
+        LockInstance(idx, False)
+        activeInstance := idx
+        isOnWall := False
+        SetAffinities()
+        return 0
+    } else if (ErrorLevel == STATE_PREVIEWING) {
+        LockInstance(idx, False)
+        return 1
+    }
+}
+
+FocusReset(idx := -1) {
+    global numInstances, locked
+    idx := (idx == -1) ? MousePosToInstNumber() : idx
+    timestamp := A_TickCount
+    Play(idx)
+    Loop, %numInstances%
+        if (idx != A_Index && !locked[A_Index])
+            Reset(A_Index, timestamp)
+}
+
+BackgroundReset(idx) {
+    global activeInstance
+    if (idx != activeInstance)
+        Reset(idx)
+}
+
+ResetAll() {
+    global numInstances, locked
+    timestamp := A_TickCount
+    Loop, %numInstances%
+        if (!locked[A_Index])
+            Reset(A_Index, timestamp)
+}
+
+LockInstance(idx := -1, sound := True) {
+    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    if (lockSounds && sound)
+        SoundPlay, media\lock.wav
+    if (locked[idx])
+        return
+    if (useObsWebsocket && lockIndicators)
+        SendOBSCommand("Lock," . idx . "," . 1)
+    locked[idx] := A_TickCount
+    LogAction(idx, "lock")
+}
+
+UnlockInstance(idx := -1, sound := True) {
+    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    if (lockSounds && sound)
+        SoundPlay, media\lock.wav
+    if (!locked[idx])
+        return
+    if (useObsWebsocket && lockIndicators)
+        SendOBSCommand("Lock," . idx . "," . 0)
+    locked[idx] := 0
+    LogAction(idx, "unlock")
+}
+
+ToggleLock(idx := -1) {
+    global isOnWall, activeInstance, locked
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    if (locked[idx])
+        UnlockInstance(idx)
+    else
+        LockInstance(idx)
+}
+
+WallLock(idx := -1) {
+    global isOnWall, activeInstance, lockIndicators, useObsWebsocket
+    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
+    if (useObsWebsocket && lockIndicators)
+        ToggleLock(idx)
+    else
+        LockInstance(idx)
+}
+
+FreezeAll() {
+    for each, pid in MC_PIDs {
+        Freeze(pid)
+    }
+}
+
+UnfreezeAll() {
+    for each, pid in MC_PIDs {
+        Unfreeze(pid)
+    }
+}
+
+SetAffinities() {
+    global MC_PIDs, activeInstance, highBitMask, midBitMask, lowBitMask
+    for idx, pid in MC_PIDs {
+        mask := activeInstance == idx ? highBitMask : activeInstance == 0 ? midBitMask : lowBitMask
+        hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
+        DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
+        DllCall("CloseHandle", "Ptr", hProc)
+    }
+}
+
+MousePosToInstNumber() {
+    global cols, instHeight, instWidth
+    MouseGetPos, mX, mY
+    return (Floor(mY / instHeight) * cols) + Floor(mX / instWidth) + 1
+}
+
+NextInstance() {
+    global activeInstance, numInstances
+    Loop, {
+        activeInstance := activeInstance + 1 > numInstances ? 1 : activeInstance + 1
+        Play(activeInstance)
+        if (ErrorLevel == 0)
+            break
+    }
+}
+
+ToWall() {
+    global useObsWebsocket, obsDelay, bypassWall, fullscreen, fullscreenDelay
+    activeInstance := 0
+    isOnWall := True
+    if (fullscreen)
+        Sleep, %fullscreenDelay%
+    if (bypassWall) {
+        for idx, lockTime in locked {
+            if (lockTime)
+                if (Play(idx) == 0)
+                    return
+        }
+    }
+    if (useObsWebsocket) {
+        SendOBSCommand("ToWall")
+    } else {
+        Send, {F12 Down}
+        Sleep, %obsDelay%
+        Send, {F12 Up}
+    }
+    WinMaximize, Fullscreen Projector
+    WinActivate, Fullscreen Projector
+}
+
 Shutdown(ExitReason, ExitCode) {
-    global IM_PIDs, MC_PIDs
     FileDelete, scripts/runPy.tmp
     DetectHiddenWindows, On
     UnfreezeAll()
@@ -163,9 +356,8 @@ Shutdown(ExitReason, ExitCode) {
             FileDelete, %readyFile%
     }
     if (ExitReason == "Exit and Close Instances") {
-        for each, pid in MC_PIDs {
+        for each, pid in MC_PIDs
             Process, Close, %pid%
-        }
         ExitApp
     }
 }
@@ -175,7 +367,11 @@ Reboot() {
     Reload
 }
 
+;endregion
+
 #Include customHotkeys.ahk
+
+;region labels
 
 return
 
@@ -193,3 +389,5 @@ return
 RemindLater:
     execute := True
 return
+
+;endregion

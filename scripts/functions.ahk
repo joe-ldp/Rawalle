@@ -1,126 +1,6 @@
 ; v1.2.1
 
-Reset(idx := -1, timestamp := -1) {
-    global isOnWall, activeInstance, IM_PIDs, mode, bypassWall
-    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    timestamp := (timestamp == -1) ? A_TickCount : timestamp
-    IM_PID := IM_PIDs[idx]
-    UnlockInstance(idx, False)
-    PostMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%
-
-    if (activeInstance == idx) {
-        if (mode == "Wall") {
-            ToWall()
-        } else {
-            NextInstance()
-        }
-        LogAction(idx, "exitworld")
-    } else {
-        LogAction(idx, "reset")
-    }
-    SetAffinities()
-}
-
-Play(idx := -1) {
-    global IM_PIDs, activeInstance, isOnWall, useObsWebsocket, screenshotWorlds, obsDelay
-    idx := (idx == -1) ? MousePosToInstNumber() : idx
-    pid := IM_PIDs[idx]
-    SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
-    if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
-        if (useObsWebsocket) {
-            SendOBSCommand("Play," . idx)
-            if (screenshotWorlds)
-                SendOBSCommand("GetImg")
-        } else {
-            Send, {Numpad%idx% down}
-            Sleep, %obsDelay%
-            Send, {Numpad%idx% up}
-        }
-        LogAction(idx, "play")
-        LockInstance(idx, False)
-        activeInstance := idx
-        isOnWall := False
-        SetAffinities()
-        return 0
-    } else if (ErrorLevel == STATE_PREVIEWING) {
-        LockInstance(idx, False)
-        return 1
-    }
-}
-
-Reveal(idx) {
-    global IM_PIDs
-    pid := IM_PIDs[idx]
-    PostMessage, MSG_REVEAL,,,,ahk_pid %pid%
-}
-
-FocusReset(idx := -1) {
-    global numInstances, locked
-    idx := (idx == -1) ? MousePosToInstNumber() : idx
-    timestamp := A_TickCount
-    Play(idx)
-    Loop, %numInstances%
-        if (idx != A_Index && !locked[A_Index])
-            Reset(A_Index, timestamp)
-}
-
-BackgroundReset(idx) {
-    global activeInstance
-    if (idx != activeInstance)
-        Reset(idx)
-}
-
-ResetAll() {
-    global numInstances, locked
-    timestamp := A_TickCount
-    Loop, %numInstances%
-        if (!locked[A_Index])
-            Reset(A_Index, timestamp)
-}
-
-LockInstance(idx := -1, sound := True) {
-    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
-    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    if (lockSounds && sound)
-        SoundPlay, media\lock.wav
-    if (locked[idx])
-        return
-    if (useObsWebsocket && lockIndicators)
-        SendOBSCommand("Lock," . idx . "," . 1)
-    locked[idx] := A_TickCount
-    LogAction(idx, "lock")
-}
-
-UnlockInstance(idx := -1, sound := True) {
-    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
-    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    if (lockSounds && sound)
-        SoundPlay, media\lock.wav
-    if (!locked[idx])
-        return
-    if (useObsWebsocket && lockIndicators)
-        SendOBSCommand("Lock," . idx . "," . 0)
-    locked[idx] := 0
-    LogAction(idx, "unlock")
-}
-
-ToggleLock(idx := -1) {
-    global isOnWall, activeInstance, locked
-    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    if (locked[idx])
-        UnlockInstance(idx)
-    else
-        LockInstance(idx)
-}
-
-WallLock(idx := -1) {
-    global isOnWall, activeInstance, lockIndicators, useObsWebsocket
-    idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    if (useObsWebsocket && lockIndicators)
-        ToggleLock(idx)
-    else
-        LockInstance(idx)
-}
+;region 
 
 Freeze(pid) {
     hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
@@ -149,73 +29,9 @@ Unfreeze(pid) {
     }
 }
 
-FreezeAll() {
-    global MC_PIDs
-    for each, pid in MC_PIDs {
-        Freeze(pid)
-    }
-}
-
-UnfreezeAll() {
-    global MC_PIDs
-    for each, pid in MC_PIDs {
-        Unfreeze(pid)
-    }
-}
-
-SetAffinities() {
-    global MC_PIDs, activeInstance, highBitMask, midBitMask, lowBitMask
-    for idx, pid in MC_PIDs {
-        mask := activeInstance == idx ? highBitMask : activeInstance == 0 ? midBitMask : lowBitMask
-        hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
-        DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
-        DllCall("CloseHandle", "Ptr", hProc)
-    }
-}
-
-MousePosToInstNumber() {
-    global cols, instHeight, instWidth
-    MouseGetPos, mX, mY
-    return (Floor(mY / instHeight) * cols) + Floor(mX / instWidth) + 1
-}
-
-NextInstance() {
-    global activeInstance, numInstances
-    Loop, {
-        activeInstance := activeInstance + 1 > numInstances ? 1 : activeInstance + 1
-        Play(activeInstance)
-        if (ErrorLevel == 0)
-            break
-    }
-}
-
-ToWall() {
-    global useObsWebsocket, obsDelay, bypassWall, fullscreen, fullscreenDelay
-    activeInstance := 0
-    isOnWall := True
-    if (fullscreen)
-        Sleep, %fullscreenDelay%
-    if (bypassWall) {
-        for idx, lockTime in locked {
-            if (lockTime)
-                if (Play(idx) == 0)
-                    return
-        }
-    }
-    if (useObsWebsocket) {
-        SendOBSCommand("ToWall")
-    } else {
-        Send, {F12 Down}
-        Sleep, %obsDelay%
-        Send, {F12 Up}
-    }
-    WinMaximize, Fullscreen Projector
-    WinActivate, Fullscreen Projector
-}
-
-SendOBSCommand(cmd) {
+SendOBSCommand(cmd, ref := "TW") {
     static cmdNum := 1
-    cmdFile := A_ScriptDir . "\scripts\pyCmds\TWCMD" . cmdNum . ".txt"
+    cmdFile := Format("{1}\scripts\pyCmds\{2}CMD{3}.txt", A_ScriptDir, ref, cmdNum)
     cmdNum++
     FileAppend, %cmd%, %cmdFile%
 }
@@ -224,7 +40,7 @@ LogAction(idx, action) {
     FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
 }
 
-LoadSettings() {
+LoadSettings(settingsFile) {
     global
     local filename, file, sect, equalsPos, key, value
     FileRead, file, %settingsFile%
@@ -309,4 +125,127 @@ LoadHotkeys() {
             }
         }
     }
+}
+
+TranslateKey(mcKey) {
+    static keyArray := Object("key.keyboard.f1", "F1"
+    ,"key.keyboard.f2", "F2"
+    ,"key.keyboard.f3", "F3"
+    ,"key.keyboard.f4", "F4"
+    ,"key.keyboard.f5", "F5"
+    ,"key.keyboard.f6", "F6"
+    ,"key.keyboard.f7", "F7"
+    ,"key.keyboard.f8", "F8"
+    ,"key.keyboard.f9", "F9"
+    ,"key.keyboard.f10", "F10"
+    ,"key.keyboard.f11", "F11"
+    ,"key.keyboard.f12", "F12"
+    ,"key.keyboard.f13", "F13"
+    ,"key.keyboard.f14", "F14"
+    ,"key.keyboard.f15", "F15"
+    ,"key.keyboard.f16", "F16"
+    ,"key.keyboard.f17", "F17"
+    ,"key.keyboard.f18", "F18"
+    ,"key.keyboard.f19", "F19"
+    ,"key.keyboard.f20", "F20"
+    ,"key.keyboard.f21", "F21"
+    ,"key.keyboard.f22", "F22"
+    ,"key.keyboard.f23", "F23"
+    ,"key.keyboard.f24", "F24"
+    ,"key.keyboard.q", "q"
+    ,"key.keyboard.w", "w"
+    ,"key.keyboard.e", "e"
+    ,"key.keyboard.r", "r"
+    ,"key.keyboard.t", "t"
+    ,"key.keyboard.y", "y"
+    ,"key.keyboard.u", "u"
+    ,"key.keyboard.i", "i"
+    ,"key.keyboard.o", "o"
+    ,"key.keyboard.p", "p"
+    ,"key.keyboard.a", "a"
+    ,"key.keyboard.s", "s"
+    ,"key.keyboard.d", "d"
+    ,"key.keyboard.f", "f"
+    ,"key.keyboard.g", "g"
+    ,"key.keyboard.h", "h"
+    ,"key.keyboard.j", "j"
+    ,"key.keyboard.k", "k"
+    ,"key.keyboard.l", "l"
+    ,"key.keyboard.z", "z"
+    ,"key.keyboard.x", "x"
+    ,"key.keyboard.c", "c"
+    ,"key.keyboard.v", "v"
+    ,"key.keyboard.b", "b"
+    ,"key.keyboard.n", "n"
+    ,"key.keyboard.m", "m"
+    ,"key.keyboard.1", "1"
+    ,"key.keyboard.2", "2"
+    ,"key.keyboard.3", "3"
+    ,"key.keyboard.4", "4"
+    ,"key.keyboard.5", "5"
+    ,"key.keyboard.6", "6"
+    ,"key.keyboard.7", "7"
+    ,"key.keyboard.8", "8"
+    ,"key.keyboard.9", "9"
+    ,"key.keyboard.0", "0"
+    ,"key.keyboard.tab", "Tab"
+    ,"key.keyboard.left.bracket", "["
+    ,"key.keyboard.right.bracket", "]"
+    ,"key.keyboard.backspace", "Backspace"
+    ,"key.keyboard.equal", "="
+    ,"key.keyboard.minus", "-"
+    ,"key.keyboard.grave.accent", "`"
+    ,"key.keyboard.slash", "/"
+    ,"key.keyboard.space", "Space"
+    ,"key.keyboard.left.alt", "LAlt"
+    ,"key.keyboard.right.alt", "RAlt"
+    ,"key.keyboard.print.screen", "PrintScreen"
+    ,"key.keyboard.insert", "Insert"
+    ,"key.keyboard.scroll.lock", "ScrollLock"
+    ,"key.keyboard.pause", "Pause"
+    ,"key.keyboard.right.control", "RControl"
+    ,"key.keyboard.left.control", "LControl"
+    ,"key.keyboard.right.shift", "RShift"
+    ,"key.keyboard.left.shift", "LShift"
+    ,"key.keyboard.comma", ","
+    ,"key.keyboard.period", "."
+    ,"key.keyboard.home", "Home"
+    ,"key.keyboard.end", "End"
+    ,"key.keyboard.page.up", "PgUp"
+    ,"key.keyboard.page.down", "PgDn"
+    ,"key.keyboard.delete", "Delete"
+    ,"key.keyboard.left.win", "LWin"
+    ,"key.keyboard.right.win", "RWin"
+    ,"key.keyboard.menu", "AppsKey"
+    ,"key.keyboard.backslash", "\"
+    ,"key.keyboard.caps.lock", "CapsLock"
+    ,"key.keyboard.semicolon", ";"
+    ,"key.keyboard.apostrophe", "'"
+    ,"key.keyboard.enter", "Enter"
+    ,"key.keyboard.up", "Up"
+    ,"key.keyboard.down", "Down"
+    ,"key.keyboard.left", "Left"
+    ,"key.keyboard.right", "Right"
+    ,"key.keyboard.keypad.0", "Numpad0"
+    ,"key.keyboard.keypad.1", "Numpad1"
+    ,"key.keyboard.keypad.2", "Numpad2"
+    ,"key.keyboard.keypad.3", "Numpad3"
+    ,"key.keyboard.keypad.4", "Numpad4"
+    ,"key.keyboard.keypad.5", "Numpad5"
+    ,"key.keyboard.keypad.6", "Numpad6"
+    ,"key.keyboard.keypad.7", "Numpad7"
+    ,"key.keyboard.keypad.8", "Numpad8"
+    ,"key.keyboard.keypad.9", "Numpad9"
+    ,"key.keyboard.keypad.decimal", "NumpadDot"
+    ,"key.keyboard.keypad.enter", "NumpadEnter"
+    ,"key.keyboard.keypad.add", "NumpadAdd"
+    ,"key.keyboard.keypad.subtract", "NumpadSub"
+    ,"key.keyboard.keypad.multiply", "NumpadMult"
+    ,"key.keyboard.keypad.divide", "NumpadDiv"
+    ,"key.mouse.left", "LButton"
+    ,"key.mouse.right", "RButton"
+    ,"key.mouse.middle", "MButton"
+    ,"key.mouse.4", "XButton1"
+    ,"key.mouse.5", "XButton2")
+    return keyArray[mcKey]
 }
