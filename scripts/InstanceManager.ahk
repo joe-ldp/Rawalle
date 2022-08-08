@@ -105,6 +105,7 @@ else
 
 OnMessage(MSG_RESET, "Reset")
 OnMessage(MSG_SWITCH, "Switch")
+OnMessage(MSG_LOCK, "Lock")
 
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 FileAppend,, IM%idx%ready.tmp
@@ -154,11 +155,9 @@ ManageState() {
     global mode, performanceMethod
     Critical
     while (resetState != STATE_READY) {
-        if (resetState == STATE_PREVIEWING) {
-            Critical, Off
-            Sleep, -1
-            Critical, On
-        }
+        Critical, Off
+        Sleep, -1
+        Critical, On
         numLines := 0
         Loop, Read, %mcDir%\logs\latest.log
             numLines++
@@ -256,6 +255,16 @@ Play() {
     }
     
     Log("Playing")
+}
+
+Lock() {
+    if (resetState == STATE_RESETTING) {
+        return 0
+    } else if (resetState == STATE_LOADING || resetState == STATE_PREVIEWING) {
+        return 1
+    } else { ; if (resetState == STATE_READY)
+        return 2
+    }
 }
 
 GetSettings() {

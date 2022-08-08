@@ -1,7 +1,5 @@
 ; v1.2.1
 
-;region 
-
 Freeze(pid) {
     hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
     if (hProcess) {

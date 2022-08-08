@@ -184,11 +184,13 @@ Reset(idx := -1, timestamp := -1) {
 }
 
 Play(idx := -1) {
+    Critical
     global IM_PIDs, activeInstance, isOnWall, useObsWebsocket, screenshotWorlds, obsDelay
     idx := (idx == -1) ? MousePosToInstNumber() : idx
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
     if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
+        SetTimer, BypassWall, Off
         if (useObsWebsocket) {
             SendOBSCommand("Play," . idx)
             if (screenshotWorlds)
@@ -235,16 +237,23 @@ ResetAll() {
 }
 
 LockInstance(idx := -1, sound := True) {
-    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
+    global isOnWall, activeInstance, IM_PIDs, lockSounds, locked, useObsWebsocket, lockIndicators
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    if (lockSounds && sound)
-        SoundPlay, media\lock.wav
-    if (locked[idx])
+    pid := IM_PIDs[idx]
+    SendMessage, MSG_LOCK,,,,ahk_pid %pid%,,100
+    l := ErrorLevel
+    if (l == 0) {
         return
-    if (useObsWebsocket && lockIndicators)
-        SendOBSCommand("Lock," . idx . "," . 1)
-    locked[idx] := A_TickCount
-    LogAction(idx, "lock")
+    } else {
+        if (lockSounds && sound)
+            SoundPlay, media\lock.wav
+        if (!locked[idx]) {
+            if (useObsWebsocket && lockIndicators)
+                SendOBSCommand("Lock," . idx . "," . 1)
+            locked[idx] := A_TickCount
+            LogAction(idx, "lock")
+        }
+    }
 }
 
 UnlockInstance(idx := -1, sound := True) {
