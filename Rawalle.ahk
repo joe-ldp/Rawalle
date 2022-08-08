@@ -305,9 +305,7 @@ SetAffinities() {
     global MC_PIDs, activeInstance, highBitMask, midBitMask, lowBitMask
     for idx, pid in MC_PIDs {
         mask := activeInstance == idx ? highBitMask : activeInstance == 0 ? midBitMask : lowBitMask
-        hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
-        DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
-        DllCall("CloseHandle", "Ptr", hProc)
+        SetAffinity(pid, mask)
     }
 }
 
