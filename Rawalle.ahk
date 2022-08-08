@@ -254,6 +254,8 @@ LockInstance(idx := -1, sound := True) {
             LogAction(idx, "lock")
         }
     }
+    if (l == 1)
+        SetTimer, BypassWall, 100
 }
 
 UnlockInstance(idx := -1, sound := True) {
@@ -331,13 +333,8 @@ ToWall() {
     isOnWall := True
     if (fullscreen)
         Sleep, %fullscreenDelay%
-    if (bypassWall) {
-        for idx, lockTime in locked {
-            if (lockTime)
-                if (Play(idx) == 0)
-                    return
-        }
-    }
+    if (bypassWall && BypassWall())
+        return
     if (useObsWebsocket) {
         SendOBSCommand("ToWall")
     } else {
@@ -347,6 +344,15 @@ ToWall() {
     }
     WinMaximize, Fullscreen Projector
     WinActivate, Fullscreen Projector
+}
+
+BypassWall() { ; returns 1 if instance was played
+    global locked
+    for idx, lockTime in locked {
+        if (lockTime)
+            if (Play(idx) == 0)
+                return 1
+    }
 }
 
 Shutdown(ExitReason, ExitCode) {
