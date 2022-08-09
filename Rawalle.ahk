@@ -237,12 +237,12 @@ ResetAll() {
 }
 
 LockInstance(idx := -1, sound := True) {
-    global isOnWall, activeInstance, IM_PIDs, lockSounds, locked, useObsWebsocket, lockIndicators
+    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators, bypassWall
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    pid := IM_PIDs[idx]
-    SendMessage, MSG_LOCK,,,,ahk_pid %pid%,,100
-    l := ErrorLevel
-    if (l == 0) {
+    IM_PID := IM_PIDs[idx]
+    SendMessage, MSG_GETSTATE,,,,ahk_pid %IM_PID%,,100
+    state := ErrorLevel
+    if (state == STATE_RESETTING) {
         return
     } else {
         if (lockSounds && sound)
@@ -253,8 +253,9 @@ LockInstance(idx := -1, sound := True) {
             locked[idx] := A_TickCount
             LogAction(idx, "lock")
         }
+        PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     }
-    if (l == 1)
+    if (bypassWall && (state == STATE_LOADING || state == STATE_PREVIEWING))
         SetTimer, BypassWall, 100
 }
 
@@ -267,6 +268,8 @@ UnlockInstance(idx := -1, sound := True) {
         return
     if (useObsWebsocket && lockIndicators)
         SendOBSCommand("Lock," . idx . "," . 0)
+    IM_PID := IM_PIDs[idx]
+    PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     locked[idx] := 0
     LogAction(idx, "unlock")
 }

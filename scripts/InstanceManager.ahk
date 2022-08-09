@@ -33,6 +33,7 @@ global readFromLine := 0
 global resetValidated := False
 global wideHeight := Floor(A_ScreenHeight / widthMultiplier)
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
+global locked := False
 
 ;endregion
 
@@ -105,6 +106,7 @@ else
 
 OnMessage(MSG_RESET, "Reset")
 OnMessage(MSG_SWITCH, "Switch")
+OnMessage(MSG_GETSTATE, "GetState")
 OnMessage(MSG_LOCK, "Lock")
 
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
@@ -257,13 +259,13 @@ Play() {
     Log("Playing")
 }
 
-Lock() {
-    if (resetState == STATE_RESETTING) {
-        return 0
-    } else if (resetState == STATE_LOADING || resetState == STATE_PREVIEWING) {
-        return 1
-    } else { ; if (resetState == STATE_READY)
-        return 2
+GetState() {
+    return resetState
+}
+
+Lock(nowLocked) {
+    locked := nowLocked
+}
     }
 }
 
