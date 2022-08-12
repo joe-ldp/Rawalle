@@ -117,8 +117,13 @@ FileAppend,, IM%idx%ready.tmp
 ;region funcs
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
-    global performanceMethod, resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets
-    if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
+    global resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets
+    if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 3000)) {
+        Log("Found failed reset. Forcing reset")
+        lastResetTime := A_TickCount
+        reset := settings["key_CreateNewWorld"]
+        ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
+    } else if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
     } else {
@@ -195,12 +200,6 @@ ManageState() {
                     return
                 }
             }
-        }
-        if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 25000)) {
-            Log("Found failed reset. Forcing reset")
-            lastResetTime := A_NowUTC
-            reset := settings["key_CreateNewWorld"]
-            ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
         }
         Sleep, 50
     }
