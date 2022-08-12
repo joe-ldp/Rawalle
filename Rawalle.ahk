@@ -78,9 +78,9 @@ global MC_PIDs := []
 global IM_PIDs := []
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
-global highBitMask := (2 ** threadCount) - 1
-global midBitMask := (2 ** Max(Floor(threadCount * 0.8), threadCount - 4)) - 1
-global lowBitMask := (2 ** Ceil(threadCount * Min(affinityLevel, 1))) - 1
+global highThreads := threadCount
+global midThreads := Max(Floor(threadCount * 0.8), threadCount - 4)
+global lowThreads := Ceil(threadCount * Min(affinityLevel, 1))
 
 global instWidth := Floor(A_ScreenWidth / cols)
 global instHeight := Floor(A_ScreenHeight / rows)
