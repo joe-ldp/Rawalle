@@ -123,10 +123,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         return
     } else {
         Log("Resetting")
-        if (performanceMethod == "F") {
-            SetTimer, % Func("Freeze").Bind(pid), -0
-            Unfreeze(pid)
-        }
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         if (WinActive("ahk_pid " . pid)) {
@@ -154,8 +150,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 }
 
 ManageState() {
-    global mode, performanceMethod
     Critical
+    global mode
     while (resetState != STATE_READY) {
         Critical, Off
         Sleep, -1
@@ -192,8 +188,6 @@ ManageState() {
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                         resetState := STATE_READY
-                        if (performanceMethod == "F")
-                            SetTimer, % Func("Freeze").Bind(pid), -%bfd%
                     } else {
                         Play()
                     }
@@ -212,12 +206,10 @@ ManageState() {
 }
 
 Switch() {
-    global screenshotWorlds, mode, fullscreen, fullscreenDelay, performanceMethod, wideResets
+    global screenshotWorlds, mode, fullscreen, fullscreenDelay, wideResets
     if ((mode == "Wall" && resetState == STATE_READY) || (mode == "Multi" && (resetState == STATE_PREVIEWING || resetState == STATE_READY))) {
         Log("Switched to instance")
 
-        if (performanceMethod == "F")
-            Unfreeze(pid)
         if (wideResets) ; && !fullscreen)
             WinMaximize, ahk_pid %pid%
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
