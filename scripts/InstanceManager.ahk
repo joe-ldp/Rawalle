@@ -173,8 +173,7 @@ ManageState() {
                 if (resetState == STATE_RESETTING && A_TickCount - lastResetTime > 2500) {
                     for each, value in toValidateReset {
                         if (InStr(line, value)) {
-                            resetState := STATE_LOADING
-                            readFromLine := lineNum
+                            ValidateReset(STATE_LOADING, lineNum)
                             break
                         }
                     }
@@ -182,27 +181,29 @@ ManageState() {
                 if (resetState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
                     Log("Found preview at line " . lineNum . ":`n" . line)
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    readFromLine := lineNum + 1
+                    ValidateReset(STATE_PREVIEWING, lineNum)
                     lastNewWorld := A_TickCount
-                    resetState := STATE_PREVIEWING
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
                     if (resetState != STATE_PREVIEWING)
                         lastNewWorld := A_TickCount
-                    readFromLine := lineNum
                     Log("Found load at line " . lineNum . " Log:`n" . line)
+                    ValidateReset(STATE_READY, lineNum)
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                        resetState := STATE_READY
                     } else {
                         Play()
                     }
-                    return
                 }
             }
         }
         Sleep, 50
     }
+}
+
+ValidateReset(newState, lineNum) {
+    resetState := newState
+    readFromLine := lineNum + 1
 }
 
 Switch() {
