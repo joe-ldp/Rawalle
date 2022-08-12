@@ -18,12 +18,11 @@ Freeze(pid) {
 }
 
 Unfreeze(pid) {
-    global resumeDelay
     hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
     if (hProcess) {
         DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
         DllCall("CloseHandle", "Int", hProcess)
-        Sleep, %resumeDelay%
+        Sleep, 50
     }
 }
 
