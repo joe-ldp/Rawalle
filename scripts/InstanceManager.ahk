@@ -259,8 +259,6 @@ GetState() {
 Lock(nowLocked) {
     locked := nowLocked
 }
-    }
-}
 
 GetSettings() {
     Loop, Read, %mcDir%/options.txt
