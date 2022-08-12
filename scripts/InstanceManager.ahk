@@ -127,6 +127,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         if (WinActive("ahk_pid " . pid)) {
             GetSettings()
+            ControlSend,, {Blind}{F3}, ahk_pid %pid%
             if (useObsWebsocket && screenshotWorlds)
                 SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered(), Format("IM{1}", idx))
             if (fullscreen && settings.fullscreen == "true") {
