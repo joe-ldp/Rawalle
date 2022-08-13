@@ -93,10 +93,13 @@ if (settings.fullscreen == "true") {
     fs := settings["key_key.fullscreen"]
     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
 }
-if (borderless)
+if (borderless) {
     WinSet, Style, -0xC40000, ahk_pid %pid%
-else
+    WinSet, ExStyle, -0x00000200, ahk_pid %pid%
+} else {
     WinSet, Style, +0xC40000, ahk_pid %pid%
+    WinSet, ExStyle, +0x00000200, ahk_pid %pid%
+}
 if (mode == "Multi")
     wideResets := False
 if (wideResets)
