@@ -34,6 +34,7 @@ global resetValidated := False
 global wideHeight := Floor(A_ScreenHeight / widthMultiplier)
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 global locked := False
+global playing := False
 
 global maxThreads := 24 ; placeholder
 global boostThreads := 20
@@ -139,6 +140,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         if (WinActive("ahk_pid " . pid)) {
+            playing := False
             GetSettings()
             ControlSend,, {Blind}{F3}, ahk_pid %pid%
             if (useObsWebsocket && screenshotWorlds)
@@ -221,6 +223,8 @@ Switch() {
     if ((mode == "Wall" && resetState == STATE_READY) || (mode == "Multi" && (resetState == STATE_PREVIEWING || resetState == STATE_READY))) {
         Log("Switched to instance")
 
+        playing := True
+        SetTimer, UpdateAffinity, Off
         SetAffinity(pid, maxThreads)
         if (wideResets) ; && !fullscreen)
             WinMaximize, ahk_pid %pid%
@@ -273,7 +277,9 @@ Lock(nowLocked) {
 }
 
 UpdateAffinity() {
-    if (resetState == STATE_READY) {
+    if (playing) {
+        SetAffinity(pid, maxThreads)
+    } else if (resetState == STATE_READY) {
         SetAffinity(pid, lowThreads)
         SetTimer, UpdateAffinity, Off
     } else if (WinActive("Fullscreen Projector")) {
