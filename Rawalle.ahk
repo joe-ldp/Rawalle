@@ -180,7 +180,6 @@ Reset(idx := -1, timestamp := -1) {
     } else {
         LogAction(idx, "reset")
     }
-    SetAffinities()
 }
 
 Play(idx := -1) {
@@ -305,10 +304,8 @@ UnfreezeAll() {
 }
 
 SetAffinities() {
-    global MC_PIDs, activeInstance, highBitMask, midBitMask, lowBitMask
-    for idx, pid in MC_PIDs {
-        mask := activeInstance == idx ? highBitMask : activeInstance == 0 ? midBitMask : lowBitMask
-        SetAffinity(pid, mask)
+    for each, pid in IM_PIDs {
+        PostMessage, MSG_AFFINITY,,,,ahk_pid %IM_PID%
     }
 }
 

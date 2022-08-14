@@ -246,10 +246,3 @@ TranslateKey(mcKey) {
     ,"key.mouse.5", "XButton2")
     return keyArray[mcKey]
 }
-
-SetAffinity(pid, threads) {
-    mask := (2 ** threads) - 1
-    hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
-    DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
-    DllCall("CloseHandle", "Ptr", hProc)
-}

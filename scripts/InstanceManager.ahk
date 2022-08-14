@@ -35,6 +35,12 @@ global wideHeight := Floor(A_ScreenHeight / widthMultiplier)
 global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
 global locked := False
 
+global maxThreads := 24 ; placeholder
+global boostThreads := 20
+global loadThreads := 10
+global lowThreads := 12
+global bgThreads := 14
+
 ;endregion
 
 ;region startup
@@ -111,6 +117,7 @@ OnMessage(MSG_RESET, "Reset")
 OnMessage(MSG_SWITCH, "Switch")
 OnMessage(MSG_GETSTATE, "GetState")
 OnMessage(MSG_LOCK, "Lock")
+OnMessage(MSG_AFFINITY, "UpdateAffinity")
 
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 FileAppend,, IM%idx%ready.tmp
@@ -147,11 +154,12 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
                 Widen()
         }
 
+        resetState := STATE_RESETTING
+        UpdateAffinity()
         reset := settings["key_CreateNewWorld"]
         leavePreview := settings["key_LeavePreview"]
         lastResetTime := A_TickCount
         ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
-        resetState := STATE_RESETTING
         SetTimer, ManageState, -200
         CountReset("Resets")
         CountReset("Daily Resets")
@@ -186,6 +194,7 @@ ManageState() {
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     ValidateReset(STATE_PREVIEWING, lineNum)
                     lastNewWorld := A_TickCount
+                    SetTimer, UpdateAffinity, 500
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
                     if (resetState != STATE_PREVIEWING)
@@ -214,6 +223,7 @@ Switch() {
     if ((mode == "Wall" && resetState == STATE_READY) || (mode == "Multi" && (resetState == STATE_PREVIEWING || resetState == STATE_READY))) {
         Log("Switched to instance")
 
+        SetAffinity(pid, maxThreads)
         if (wideResets) ; && !fullscreen)
             WinMaximize, ahk_pid %pid%
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
@@ -261,6 +271,38 @@ GetState() {
 
 Lock(nowLocked) {
     locked := nowLocked
+    UpdateAffinity()
+}
+
+UpdateAffinity() {
+    if (resetState == STATE_READY) {
+        SetAffinity(pid, lowThreads)
+        SetTimer, UpdateAffinity, Off
+    } else if (WinActive("Fullscreen Projector")) {
+        if (resetState == STATE_RESETTING || resetState == STATE_LOADING) {
+            SetAffinity(pid, maxThreads)
+        } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
+            SetAffinity(pid, boostThreads)
+        } else {
+            SetAffinity(pid, loadThreads)
+        }
+    } else if (WinActive("Minecraft")) {
+        if (WinActive("ahk_pid " . pid)) {
+            SetAffinity(pid, maxThreads)
+        } else {
+            SetAffinity(pid, bgThreads)
+        }
+    } else {
+        SetAffinity(pid, lowThreads)
+    }
+}
+
+SetAffinity(pid, threads) {
+    mask := (2 ** threads) - 1
+    hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
+    DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
+    DllCall("CloseHandle", "Ptr", hProc)
+    Log("Set affinity to " . threads)
 }
 
 GetSettings() {
