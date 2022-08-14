@@ -101,10 +101,8 @@ if (settings.fullscreen == "true") {
 }
 if (borderless) {
     WinSet, Style, -0xC40000, ahk_pid %pid%
-    WinSet, ExStyle, -0x00000200, ahk_pid %pid%
 } else {
     WinSet, Style, +0xC40000, ahk_pid %pid%
-    WinSet, ExStyle, +0x00000200, ahk_pid %pid%
 }
 if (mode == "Multi")
     wideResets := False
