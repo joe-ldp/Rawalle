@@ -37,11 +37,11 @@ global locked := False
 global playing := False
 
 EnvGet, threadCount, threadCount
-global maxMask   := BitMaskify(maxThreads   == -1 ? threadCount            : maxThreads)
-global boostMask := BitMaskify(boostThreads == -1 ? Ceil(maxThreads * 0.8) : boostThreads)
-global loadMask  := BitMaskify(loadThreads  == -1 ? Ceil(maxThreads * 0.5) : loadThreads)
-global lowMask   := BitMaskify(lowThreads   == -1 ? Ceil(maxThreads * 0.5) : lowThreads)
-global bgMask    := BitMaskify(bgThreads    == -1 ? Ceil(maxThreads * 0.4) : bgThreads)
+global maxMask   := BitMaskify(threadCount)
+global boostMask := BitMaskify(boostThreads == -1 ? Ceil(threadCount * 0.8) : boostThreads)
+global loadMask  := BitMaskify(loadThreads  == -1 ? Ceil(threadCount * 0.5) : loadThreads)
+global lowMask   := BitMaskify(lowThreads   == -1 ? Ceil(threadCount * 0.5) : lowThreads)
+global bgMask    := BitMaskify(bgThreads    == -1 ? Ceil(threadCount * 0.4) : bgThreads)
 
 ;endregion
 
