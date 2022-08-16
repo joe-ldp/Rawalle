@@ -358,6 +358,7 @@ CurrentWorldEntered() {
 Widen() {
     WinRestore, ahk_pid %pid%
     WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %wideHeight%
+    Sleep, 200
 }
 
 IsInstanceOpen(instDir) {
