@@ -36,11 +36,8 @@ global toValidateReset := ["Resetting a random seed", "Resetting the set seed", 
 global locked := False
 global playing := False
 
-global maxThreads := 24 ; placeholder
-global boostThreads := 20
-global loadThreads := 10
-global lowThreads := 12
-global bgThreads := 14
+EnvGet, threadCount, threadCount
+global threadCount
 
 ;endregion
 
@@ -225,7 +222,7 @@ Switch() {
 
         playing := True
         SetTimer, UpdateAffinity, Off
-        SetAffinity(pid, maxThreads)
+        UpdateAffinity()
         if (wideResets) ; && !fullscreen)
             WinMaximize, ahk_pid %pid%
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
@@ -277,6 +274,13 @@ Lock(nowLocked) {
 }
 
 UpdateAffinity() {
+    global maxThreads, boostThreads, loadThreads, bgThreads, lowThreads
+    static maxThreads   := maxThreads   == -1 ? threadCount            : maxThreads
+    static boostThreads := boostThreads == -1 ? Ceil(maxThreads * 0.8) : boostThreads
+    static loadThreads  := loadThreads  == -1 ? Ceil(maxThreads * 0.5) : loadThreads
+    static lowThreads   := lowThreads   == -1 ? Ceil(maxThreads * 0.5) : lowThreads
+    static bgThreads    := bgThreads    == -1 ? Ceil(maxThreads * 0.4) : bgThreads
+
     if (playing) {
         SetAffinity(pid, maxThreads)
     } else if (resetState == STATE_READY) {
