@@ -87,6 +87,9 @@ global instHeight := Floor(A_ScreenHeight / rows)
 global isOnWall := True
 global locked := []
 
+EnvGet, userProfileDir, USERPROFILE
+global userProfileDir
+
 ;endregion
 
 ;region startup
@@ -177,6 +180,7 @@ Reset(idx := -1, timestamp := -1) {
             NextInstance()
         }
         LogAction(idx, "exitworld")
+        FileDelete, %userProfileDir%\sleepbg.lock
     } else {
         LogAction(idx, "reset")
     }
@@ -201,6 +205,7 @@ Play(idx := -1) {
         }
         LogAction(idx, "play")
         LockInstance(idx, False)
+        FileAppend,, %userProfileDir%\sleepbg.lock
         activeInstance := idx
         isOnWall := False
         SetAffinities()
