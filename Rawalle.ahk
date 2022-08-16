@@ -304,7 +304,7 @@ UnfreezeAll() {
 }
 
 SetAffinities() {
-    for each, pid in IM_PIDs {
+    for each, IM_PID in IM_PIDs {
         PostMessage, MSG_AFFINITY,,,,ahk_pid %IM_PID%
     }
 }

@@ -37,12 +37,11 @@ global locked := False
 global playing := False
 
 EnvGet, threadCount, threadCount
-global threadCount
-global maxThreads   := maxThreads   == -1 ? threadCount            : maxThreads
-global boostThreads := boostThreads == -1 ? Ceil(maxThreads * 0.8) : boostThreads
-global loadThreads  := loadThreads  == -1 ? Ceil(maxThreads * 0.5) : loadThreads
-global lowThreads   := lowThreads   == -1 ? Ceil(maxThreads * 0.5) : lowThreads
-global bgThreads    := bgThreads    == -1 ? Ceil(maxThreads * 0.4) : bgThreads
+global maxMask   := BitMaskify(maxThreads   == -1 ? threadCount            : maxThreads)
+global boostMask := BitMaskify(boostThreads == -1 ? Ceil(maxThreads * 0.8) : boostThreads)
+global loadMask  := BitMaskify(loadThreads  == -1 ? Ceil(maxThreads * 0.5) : loadThreads)
+global lowMask   := BitMaskify(lowThreads   == -1 ? Ceil(maxThreads * 0.5) : lowThreads)
+global bgMask    := BitMaskify(bgThreads    == -1 ? Ceil(maxThreads * 0.4) : bgThreads)
 
 ;endregion
 
@@ -280,35 +279,37 @@ Lock(nowLocked) {
 
 UpdateAffinity() {
     if (playing) {
-        SetAffinity(pid, maxThreads)
+        SetAffinity(pid, maxMask)
     } else if (resetState == STATE_READY) {
-        SetAffinity(pid, lowThreads)
+        SetAffinity(pid, lowMask)
         SetTimer, UpdateAffinity, Off
     } else if (WinActive("Fullscreen Projector")) {
         if (resetState == STATE_RESETTING || resetState == STATE_LOADING) {
-            SetAffinity(pid, maxThreads)
+            SetAffinity(pid, maxMask)
         } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
-            SetAffinity(pid, boostThreads)
+            SetAffinity(pid, boostMask)
         } else {
-            SetAffinity(pid, loadThreads)
+            SetAffinity(pid, loadMask)
         }
     } else if (WinActive("Minecraft")) {
         if (WinActive("ahk_pid " . pid)) {
-            SetAffinity(pid, maxThreads)
+            SetAffinity(pid, maxMask)
         } else {
-            SetAffinity(pid, bgThreads)
+            SetAffinity(pid, bgMask)
         }
     } else {
-        SetAffinity(pid, lowThreads)
+        SetAffinity(pid, lowMask)
     }
 }
 
-SetAffinity(pid, threads) {
-    mask := (2 ** threads) - 1
+SetAffinity(pid, mask) {
     hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
     DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
     DllCall("CloseHandle", "Ptr", hProc)
-    Log("Set affinity to " . threads)
+}
+
+BitMaskify(threads) {
+    return (2 ** threads) - 1
 }
 
 GetSettings() {
