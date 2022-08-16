@@ -36,7 +36,7 @@ global toValidateReset := ["Resetting a random seed", "Resetting the set seed", 
 global locked := False
 global playing := False
 
-EnvGet, threadCount, threadCount
+EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
 global boostMask := BitMaskify(boostThreads == -1 ? Ceil(threadCount * 0.8) : boostThreads)
 global loadMask  := BitMaskify(loadThreads  == -1 ? Ceil(threadCount * 0.5) : loadThreads)
