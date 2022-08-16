@@ -140,7 +140,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         Log("Resetting")
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
-        if (WinActive("ahk_pid " . pid)) {
+        if (playing) {
             playing := False
             GetSettings()
             ControlSend,, {Blind}{F3}, ahk_pid %pid%
@@ -359,7 +359,6 @@ CurrentWorldEntered() {
 Widen() {
     WinRestore, ahk_pid %pid%
     WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %wideHeight%
-    Sleep, 200
 }
 
 IsInstanceOpen(instDir) {
