@@ -38,6 +38,11 @@ global playing := False
 
 EnvGet, threadCount, threadCount
 global threadCount
+maxThreads   := maxThreads   == -1 ? threadCount            : maxThreads
+boostThreads := boostThreads == -1 ? Ceil(maxThreads * 0.8) : boostThreads
+loadThreads  := loadThreads  == -1 ? Ceil(maxThreads * 0.5) : loadThreads
+lowThreads   := lowThreads   == -1 ? Ceil(maxThreads * 0.5) : lowThreads
+bgThreads    := bgThreads    == -1 ? Ceil(maxThreads * 0.4) : bgThreads
 
 ;endregion
 
@@ -275,11 +280,6 @@ Lock(nowLocked) {
 
 UpdateAffinity() {
     global maxThreads, boostThreads, loadThreads, bgThreads, lowThreads
-    static maxThreads   := maxThreads   == -1 ? threadCount            : maxThreads
-    static boostThreads := boostThreads == -1 ? Ceil(maxThreads * 0.8) : boostThreads
-    static loadThreads  := loadThreads  == -1 ? Ceil(maxThreads * 0.5) : loadThreads
-    static lowThreads   := lowThreads   == -1 ? Ceil(maxThreads * 0.5) : lowThreads
-    static bgThreads    := bgThreads    == -1 ? Ceil(maxThreads * 0.4) : bgThreads
 
     if (playing) {
         SetAffinity(pid, maxThreads)
