@@ -77,11 +77,6 @@ global activeInstance := 0
 global MC_PIDs := []
 global IM_PIDs := []
 
-EnvGet, threadCount, NUMBER_OF_PROCESSORS
-global highThreads := threadCount
-global midThreads := Max(Floor(threadCount * 0.8), threadCount - 4)
-global lowThreads := Ceil(threadCount * Min(affinityLevel, 1))
-
 global instWidth := Floor(A_ScreenWidth / cols)
 global instHeight := Floor(A_ScreenHeight / rows)
 global isOnWall := True
