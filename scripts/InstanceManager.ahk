@@ -431,19 +431,6 @@ CountReset(resetType) {
     filePath := Format("../resets/{1}.txt", resetType)
     if (!FileExist(filePath))
         FileAppend, 0, %filePath%
-    ; Loop, {
-    ;     file := FileOpen(filePath, "a -rw")
-    ;     if (IsObject(file)) {
-    ;         file.Seek(0)
-    ;         num := file.Read()
-    ;         num += 1
-    ;         file.Seek(0)
-    ;         file.Write(num)
-    ;         file.Close()
-    ;         break
-    ;     }
-    ;     file.Close()
-    ; }
 
     file := FileOpen(filePath, "a -rw")
     if (!IsObject(file)) {
