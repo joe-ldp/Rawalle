@@ -30,7 +30,11 @@ def delete_oldest_files(sorted_files):
         bopped += 1
 
 try:
-    file_paths = glob.glob(sys.argv[1] + "/saves/*")
+    file_paths = ""
+    if (sys.argv[1][-1] == '\\' or sys.argv[1][-1] == "/"):
+        file_paths = glob.glob(sys.argv[1] + "saves/*")
+    else:
+        file_paths = glob.glob(sys.argv[1] + "/saves/*")
     sorted_files = sort_files_by_last_modified(file_paths)
 
     delete_oldest_files(sorted_files)
