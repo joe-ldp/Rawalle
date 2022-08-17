@@ -71,6 +71,7 @@ if (!FileExist(resetsFolder := Format("{1}\resets", A_ScriptDir)))
 
 OnExit("Shutdown")
 
+Menu, Tray, Add, Open Settings, OpenSettings
 Menu, Tray, Add, Close Instances, CloseInstances
 Menu, Tray, Add, Exit and Close Instances, Shutdown, 0
 
@@ -356,6 +357,11 @@ BypassWall() { ; returns 1 if instance was played
 
 LogAction(idx, action) {
     FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
+}
+
+OpenSettings() {
+    RunWait, Rawalle Config.exe
+    Reboot()
 }
 
 CloseInstances() {
