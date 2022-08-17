@@ -98,14 +98,14 @@ global userProfileDir
 ;region startup
 
 Loop, %numInstances% {
-    if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . A_Index . "ready.tmp"))
+    if (FileExist(readyFile := Format("{1}\scripts\IM{2}ready.tmp", A_ScriptDir, A_Index)))
         FileDelete, %readyFile%
     
     Run, scripts\InstanceManager.ahk %A_Index%, A_ScriptDir\scripts,, IM_PID
     WinWait, ahk_pid %IM_PID%
     IM_PIDs[A_Index] := IM_PID
 
-    openFile := A_ScriptDir . "\scripts\inst" . A_Index . "open.tmp"
+    openFile := Format("{1}\scripts\inst{2}open.tmp", A_ScriptDir, A_Index)
     while (!FileExist(openFile))
         Sleep, 100
     FileRead, MC_PID, %openFile%
@@ -133,7 +133,7 @@ if (useObsWebsocket) {
 
 checkIdx := 1
 while (checkIdx <= numInstances) {
-    if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . checkIdx . "ready.tmp")) {
+    if (FileExist(readyFile := Format("{1}\scripts\IM{2}ready.tmp", A_ScriptDir, checkIdx))) {
         while (FileExist(readyFile))
             FileDelete, %readyFile%
         checkIdx++
@@ -252,7 +252,7 @@ LockInstance(idx := -1, sound := True) {
             SoundPlay, media\lock.wav
         if (!locked[idx]) {
             if (useObsWebsocket && lockIndicators)
-                SendOBSCommand("Lock," . idx . "," . 1)
+                SendOBSCommand(Format("Lock,{1},{2}", idx, 1))
             locked[idx] := A_TickCount
             LogAction(idx, "lock")
         }
@@ -270,7 +270,7 @@ UnlockInstance(idx := -1, sound := True) {
     if (!locked[idx])
         return
     if (useObsWebsocket && lockIndicators)
-        SendOBSCommand("Lock," . idx . "," . 0)
+        SendOBSCommand(Format("Lock,{1},{2}", idx, 0))
     IM_PID := IM_PIDs[idx]
     PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     locked[idx] := 0
@@ -381,9 +381,9 @@ Shutdown(ExitReason, ExitCode) {
         if (WinExist("ahk_pid " . pid))
             Process, Close, %pid%
         WinWaitClose, ahk_pid %pid%
-        if (FileExist(openFile := A_ScriptDir . "\scripts\inst" . idx . "open.tmp"))
+        if (FileExist(openFile := Format("{1}\scripts\inst{2}open.tmp", A_ScriptDir, idx)))
             FileDelete, %openFile%
-        if (FileExist(readyFile := A_ScriptDir . "\scripts\IM" . idx . "ready.tmp"))
+        if (FileExist(readyFile := Format("{1}\scripts\IM{2}ready.tmp", A_ScriptDir, idx)))
             FileDelete, %readyFile%
     }
     if (ExitReason == "Exit and Close Instances") {

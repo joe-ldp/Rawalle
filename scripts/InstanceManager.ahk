@@ -13,7 +13,7 @@ SetWinDelay, 1
 
 #Include %A_ScriptDir%\constants.ahk
 #Include %A_ScriptDir%\functions.ahk
-LoadSettings(A_ScriptDir . "\..\settings.ini")
+LoadSettings(Format("{1}\..\settings.ini", A_ScriptDir))
 
 ;endregion
 
@@ -57,8 +57,8 @@ if (syncConfigs) {
 
 if (!pid := IsInstanceOpen(instDir)) {
     Log("No Minecraft instance found, launching")
-    centralModsDir := A_ScriptDir . "\..\mods\"
-    instModsDir := mcDir . "mods\"
+    centralModsDir := Format("{1}\..\mods\", A_ScriptDir)
+    instModsDir := Format("{1}mods\", mcDir)
     if (syncMods && DesyncedMods(centralModsDir . "*", instModsDir . "*") && FileExist(centralModsDir)) {
         Loop, Files, %instModsDir%*
         {
@@ -66,7 +66,7 @@ if (!pid := IsInstanceOpen(instDir)) {
         }
         FileCopyDir, %centralModsDir%, %instModsDir%, 1
     }
-    mmcpack := instDir . "\mmc-pack.json"
+    mmcpack := Format("{1}\mmc-pack.json", instDir)
     FileGetTime, packModified, %mmcpack%, M
     Run, %multiMCLocation%\MultiMC.exe -l "%instName%"
     while (!pid := IsInstanceOpen(instDir))
@@ -141,7 +141,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             GetSettings()
             ControlSend,, {Blind}{F3}, ahk_pid %pid%
             if (useObsWebsocket && screenshotWorlds)
-                SendOBSCommand("SaveImg," . A_NowUTC . "," . CurrentWorldEntered(), Format("IM{1}", idx))
+                SendOBSCommand(Format("SaveImg{1},{2}", A_NowUTC, CurrentWorldEntered()), Format("IM{1}", idx))
             if (fullscreen && settings.fullscreen == "true") {
                 fs := settings["key_key.fullscreen"]
                 ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
@@ -189,13 +189,13 @@ ManageState() {
                     }
                 }
                 if (resetState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
-                    Log("Found preview at line " . lineNum . ". Log:`n" . line)
+                    Log(Format("Found preview at line {1}. Log:`n{2}", lineNum, line))
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     ValidateReset(STATE_PREVIEWING, lineNum, True)
                     SetTimer, UpdateAffinity, -500
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
-                    Log("Found load at line " . lineNum . ". Log:`n" . line)
+                    Log(Format("Found load at line {1}. Log:`n{2}", lineNum, line))
                     ValidateReset(STATE_READY, lineNum, resetState != STATE_PREVIEWING)
                     UpdateAffinity()
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
