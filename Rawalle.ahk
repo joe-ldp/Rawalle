@@ -71,6 +71,9 @@ if (!FileExist(resetsFolder := Format("{1}\resets", A_ScriptDir)))
 
 OnExit("Shutdown")
 
+Menu, Tray, Add, Close Instances, CloseInstances
+Menu, Tray, Add, Exit and Close Instances, Shutdown, 0
+
 ;endregion
 
 ;region globals
@@ -106,10 +109,6 @@ Loop, %numInstances% {
     MC_PIDs[A_Index] := MC_PID
     while (FileExist(openFile))
         FileDelete, %openFile%
-}
-
-if (autoCloseInstances) {
-    Menu, Tray, Add, Exit and Close Instances, Shutdown, 0
 }
 
 for each, program in arrLaunchPrograms {
@@ -359,6 +358,11 @@ LogAction(idx, action) {
     FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
 }
 
+CloseInstances() {
+    for each, pid in MC_PIDs
+        Process, Close, %pid%
+}
+
 Shutdown(ExitReason, ExitCode) {
     FileDelete, scripts/runPy.tmp
     DetectHiddenWindows, On
@@ -375,10 +379,9 @@ Shutdown(ExitReason, ExitCode) {
             FileDelete, %readyFile%
     }
     if (ExitReason == "Exit and Close Instances") {
-        for each, pid in MC_PIDs
-            Process, Close, %pid%
-        ExitApp
+        CloseInstances()
     }
+    ExitApp
 }
 
 Reboot() {
