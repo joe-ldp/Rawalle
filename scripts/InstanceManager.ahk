@@ -185,23 +185,21 @@ ManageState() {
                 if (resetState == STATE_RESETTING && A_TickCount - lastResetTime > 2500) {
                     for each, value in toValidateReset {
                         if (InStr(line, value)) {
-                            ValidateReset(STATE_LOADING, lineNum)
+                            ValidateReset(STATE_LOADING, lineNum, False)
                             break
                         }
                     }
                 }
                 if (resetState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
-                    Log("Found preview at line " . lineNum . ":`n" . line)
+                    Log("Found preview at line " . lineNum . ". Log:`n" . line)
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    ValidateReset(STATE_PREVIEWING, lineNum)
-                    lastNewWorld := A_TickCount
-                    SetTimer, UpdateAffinity, 500
+                    ValidateReset(STATE_PREVIEWING, lineNum, True)
+                    SetTimer, UpdateAffinity, -500
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
-                    if (resetState != STATE_PREVIEWING)
-                        lastNewWorld := A_TickCount
-                    Log("Found load at line " . lineNum . " Log:`n" . line)
-                    ValidateReset(STATE_READY, lineNum)
+                    Log("Found load at line " . lineNum . ". Log:`n" . line)
+                    ValidateReset(STATE_READY, lineNum, resetState != STATE_PREVIEWING)
+                    UpdateAffinity()
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     } else {
@@ -214,9 +212,11 @@ ManageState() {
     }
 }
 
-ValidateReset(newState, lineNum) {
+ValidateReset(newState, lineNum, updateNewWorld) {
     resetState := newState
     readFromLine := lineNum + 1
+    if (updateNewWorld)
+        lastNewWorld := A_TickCount
 }
 
 Switch() {

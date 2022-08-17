@@ -12,11 +12,13 @@ SetWorkingDir, %A_ScriptDir%
 SetKeyDelay, 0
 SetWinDelay, 1
 SetTitleMatchMode, 2
+DetectHiddenWindows, On
 
 #Include %A_ScriptDir%\scripts\constants.ahk
 #Include %A_ScriptDir%\scripts\functions.ahk
 #Include %A_ScriptDir%\scripts\utilities.ahk
-global settingsFile := A_ScriptDir . "\settings.ini"
+global settingsFile := Format("{1}\settings.ini", A_ScriptDir)
+global hotkeysFile := Format("{1}\hotkeys.ini", A_ScriptDir)
 
 ;endregion
 
@@ -60,14 +62,14 @@ if (firstLaunch) {
 }
 LoadSettings(settingsFile)
 
-OnExit("Shutdown")
-DetectHiddenWindows, On
-if (!FileExist(enteredScreenshots := A_ScriptDir . "\screenshots\entered"))
+if (!FileExist(enteredScreenshots := Format("{1}\screenshots\entered", A_ScriptDir)))
     FileCreateDir, %enteredScreenshots%
-if (!FileExist(unenteredScreenshots := A_ScriptDir . "\screenshots\unentered"))
+if (!FileExist(unenteredScreenshots := Format("{1}\screenshots\unentered", A_ScriptDir)))
     FileCreateDir, %unenteredScreenshots%
-if (!FileExist(resetsFolder := A_ScriptDir . "\resets"))
+if (!FileExist(resetsFolder := Format("{1}\resets", A_ScriptDir)))
     FileCreateDir, %resetsFolder%
+
+OnExit("Shutdown")
 
 ;endregion
 
@@ -136,9 +138,9 @@ while (checkIdx <= numInstances) {
     }
 }
 
-LoadHotkeys()
-
+LoadHotkeys(hotkeysFile)
 SetAffinities()
+
 if (mode == "Multi") {
     isOnWall := False
     NextInstance()
@@ -351,6 +353,10 @@ BypassWall() { ; returns 1 if instance was played
             if (Play(idx) == 0)
                 return 1
     }
+}
+
+LogAction(idx, action) {
+    FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
 }
 
 Shutdown(ExitReason, ExitCode) {

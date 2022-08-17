@@ -33,10 +33,6 @@ SendOBSCommand(cmd, ref := "TW") {
     FileAppend, %cmd%, %cmdFile%
 }
 
-LogAction(idx, action) {
-    FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
-}
-
 LoadSettings(settingsFile) {
     global
     local filename, file, sect, equalsPos, key, value
@@ -86,11 +82,11 @@ LoadSettings(settingsFile) {
     FileAppend, screen_height = %A_ScreenHeight%`n, %obsSettingsFile%
 }
 
-LoadHotkeys() {
+LoadHotkeys(hotkeysFile) {
     global numInstances
     #If, WinActive("Minecraft") && (WinActive("ahk_exe javaw.exe") || WinActive("ahk_exe java.exe"))
     #If, WinActive("Fullscreen Projector")
-    FileRead, file, %A_ScriptDir%\hotkeys.ini
+    FileRead, file, %hotkeysFile%
     Loop, Parse, file, `n`r, %A_Space%%A_Tab%
     {
         equalsPos := InStr(A_LoopField, "=")
