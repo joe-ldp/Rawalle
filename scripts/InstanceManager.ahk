@@ -53,24 +53,37 @@ if (syncConfigs) {
     mainConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", 1))
     thisConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", idx))
     FileCopy, %mainConfig%\*.*, %thisConfig%\*.*, 1
+    if (ErrorLevel == 0)
+        Log("Synced configs successfully")
+    else
+        Log("Something went wrong when syncing configs")
 }
 
 if (!pid := IsInstanceOpen(instDir)) {
-    Log("No Minecraft instance found, launching")
+    Log("No Minecraft instance found")
+
     centralModsDir := Format("{1}\..\mods\", A_ScriptDir)
     instModsDir := Format("{1}mods\", mcDir)
     if (syncMods && DesyncedMods(centralModsDir . "*", instModsDir . "*") && FileExist(centralModsDir)) {
+        Log("Syncing mods...")
         Loop, Files, %instModsDir%*
         {
             FileDelete, %A_LoopFileLongPath%
         }
         FileCopyDir, %centralModsDir%, %instModsDir%, 1
+        if (ErrorLevel == 0)
+            Log("Synced mods successfully")
+        else
+            Log("Something went wrong when syncing mods")
     }
+
+    Log(Format("Launching MultiMC instance {1}", instName))
     mmcpack := Format("{1}\mmc-pack.json", instDir)
     FileGetTime, packModified, %mmcpack%, M
     Run, %multiMCLocation%\MultiMC.exe -l "%instName%"
     while (!pid := IsInstanceOpen(instDir))
         Sleep, 500
+    Log("Minecraft instance launched and found")
     Loop, {
         FileGetTime, packModifiedAgain, %mmcpack%, M
         if (packModifiedAgain > packModified)
@@ -118,6 +131,8 @@ OnMessage(MSG_AFFINITY, "UpdateAffinity")
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 FileAppend,, IM%idx%ready.tmp
 
+Log("Instance Manager fully initialised, ready to play")
+
 ;endregion
 
 ;region funcs
@@ -125,7 +140,7 @@ FileAppend,, IM%idx%ready.tmp
 Reset(msgTime) { ; msgTime is wParam from PostMessage
     global resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets
     if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 3000)) {
-        Log("Found failed reset. Forcing reset")
+        Log("Found failed reset. Resetting again")
         lastResetTime := A_TickCount
         reset := settings["key_CreateNewWorld"]
         ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
@@ -133,13 +148,13 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         Log("Discarding reset")
         return
     } else {
-        Log("Resetting")
         if (resetSounds)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         if (playing) {
+            Log("Exiting world (unfullscreening and widening)")
             playing := False
             GetSettings()
-            ControlSend,, {Blind}{F3}, ahk_pid %pid%
+            ControlSend,, {Blind}{F1}{F3}, ahk_pid %pid%
             if (useObsWebsocket && screenshotWorlds)
                 SendOBSCommand(Format("SaveImg{1},{2}", A_NowUTC, CurrentWorldEntered()), Format("IM{1}", idx))
             if (fullscreen && settings.fullscreen == "true") {
@@ -151,6 +166,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
                 Widen()
         }
 
+        Log("Resetting")
         resetState := STATE_RESETTING
         UpdateAffinity()
         reset := settings["key_CreateNewWorld"]
@@ -184,6 +200,7 @@ ManageState() {
                     for each, value in toValidateReset {
                         if (InStr(line, value)) {
                             ValidateReset(STATE_LOADING, lineNum, False)
+                            Log(Format("Validated reset at line {1}. Log:`n{2}", lineNum, line))
                             break
                         }
                     }
@@ -195,7 +212,7 @@ ManageState() {
                     SetTimer, UpdateAffinity, -500
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
-                    Log(Format("Found load at line {1}. Log:`n{2}", lineNum, line))
+                    Log(Format("Found world load at line {1}. Log:`n{2}", lineNum, line))
                     ValidateReset(STATE_READY, lineNum, resetState != STATE_PREVIEWING)
                     UpdateAffinity()
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
@@ -243,12 +260,15 @@ Switch() {
 
         return 0
     } else {
+        Log("Switch requested but instance was not ready")
         return resetState
     }
 }
 
 Play() {
     global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, renderDistance
+    Log("Playing instance")
+
     if (fullscreen && mode == "Multi") {
         fs := settings["key_key.fullscreen"]
         ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
@@ -262,8 +282,6 @@ Play() {
         if (!unpauseOnSwitch)
             ControlSend,, {Blind}{Esc}, ahk_pid %pid%
     }
-    
-    Log("Playing")
 }
 
 GetState() {
@@ -271,6 +289,7 @@ GetState() {
 }
 
 Lock(nowLocked) {
+    Log(Format("Instance lock state set to ", nowLocked))
     locked := nowLocked
     UpdateAffinity()
 }

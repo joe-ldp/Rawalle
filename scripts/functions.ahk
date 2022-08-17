@@ -98,7 +98,7 @@ LoadHotkeys(hotkeysFile) {
             if (keybind == "unbound")
                 continue
             if(!RegExMatch(keybind, "([<>]?[#^!+*])+"))
-                keybind := "*" . keybind
+                keybind := Format("*{1}", keybind)
             if (InStr(keybind, "idx")) {
                 Loop, %numInstances% {
                     fn := Func(function).Bind(A_Index)
