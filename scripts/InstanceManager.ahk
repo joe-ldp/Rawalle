@@ -424,7 +424,8 @@ HasMod(modName) {
 }
 
 Log(message) {
-    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %resetState% | %message%`n, %mcDir%log.log
+    static logPath := Format("{1}\..\logs\instance{2}.log", A_ScriptDir, A_Args[1])
+    FileAppend, [%A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%] | Current state: %resetState% | %message%`n, %logPath%
 }
 
 CountReset(resetType) {
