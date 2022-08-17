@@ -68,6 +68,8 @@ if (!FileExist(unenteredScreenshots := Format("{1}\screenshots\unentered", A_Scr
     FileCreateDir, %unenteredScreenshots%
 if (!FileExist(resetsFolder := Format("{1}\resets", A_ScriptDir)))
     FileCreateDir, %resetsFolder%
+if (!FileExist(logsFolder := Format("{1}\logs", A_ScriptDir)))
+    FileCreateDir, %logsFolder%
 
 OnExit("Shutdown")
 

@@ -19,22 +19,17 @@ LoadSettings(A_ScriptDir . "\..\settings.ini")
 
 ;region globals
 
-global resetState := STATE_READY
-global pid := 0
-global idx := A_Args[1]
-global instName := StrReplace(multiMCNameFormat, "*", idx)
-global instDir := multiMCLocation . "\instances\" . instName
-global mcDir := instDir . "\.minecraft\"
-global instanceMods := []
-global settings := []
+global idx           := A_Args[1]
+global instName      := StrReplace(multiMCNameFormat, "*", idx)
+global instDir       := Format("{1}\instances\{2}", multiMCLocation, instName)
+global mcDir         := Format("{1}\.minecraft\", instDir)
+global settings      := []
+global pid           := 0
 global lastResetTime := 0
-global lastNewWorld := 0
-global readFromLine := 0
-global resetValidated := False
-global wideHeight := Floor(A_ScreenHeight / widthMultiplier)
-global toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
-global locked := False
-global playing := False
+global lastNewWorld  := 0
+global locked        := False
+global playing       := False
+global resetState    := STATE_READY
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
@@ -50,9 +45,10 @@ global bgMask    := BitMaskify(bgThreads    == -1 ? Ceil(threadCount * 0.4) : bg
 Log("Instance Manager launched")
 
 if (autoBop) {
-    cmd := Format("python.exe " . A_ScriptDir . "\worldBopper9000.py {1}", mcDir)
+    cmd := Format("python.exe {1}\worldBopper9000.py {2}", A_ScriptDir, mcDir)
     Run, %cmd%,, Hide
 }
+
 if (syncConfigs) {
     mainConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", 1))
     thisConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", idx))
@@ -168,8 +164,10 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 }
 
 ManageState() {
-    Critical
     global mode
+    static toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
+    static readFromLine := 0
+    Critical
     while (resetState != STATE_READY) {
         Critical, Off
         Sleep, -1
@@ -357,6 +355,7 @@ CurrentWorldEntered() {
 }
 
 Widen() {
+    static wideHeight := Floor(A_ScreenHeight / widthMultiplier)
     WinRestore, ahk_pid %pid%
     WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %wideHeight%
 }
