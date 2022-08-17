@@ -386,8 +386,8 @@ Shutdown(ExitReason, ExitCode) {
     }
     if (ExitReason == "Exit and Close Instances") {
         CloseInstances()
+        ExitApp
     }
-    ExitApp
 }
 
 Reboot() {
