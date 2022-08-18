@@ -193,13 +193,13 @@ ManageState() {
             numLines++
         Loop, Read, %mcDir%\logs\latest.log
         {
-            if ((A_Index >= readFromLine) && (numLines - A_Index < 5)) {
+            if ((A_Index > readFromLine) && (numLines - A_Index < 5)) {
                 line := A_LoopReadLine
                 lineNum := A_Index
                 if (resetState == STATE_RESETTING && A_TickCount - lastResetTime > 2500) {
                     for each, value in toValidateReset {
                         if (InStr(line, value)) {
-                            ValidateReset(STATE_LOADING, lineNum, False)
+                            readFromLine := ValidateReset(STATE_LOADING, lineNum, False)
                             Log(Format("Validated reset at line {1}. Log:`n{2}", lineNum, line))
                             break
                         }
@@ -208,13 +208,13 @@ ManageState() {
                 if (resetState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
                     Log(Format("Found preview at line {1}. Log:`n{2}", lineNum, line))
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    ValidateReset(STATE_PREVIEWING, lineNum, True)
-                    SetTimer, UpdateAffinity, -500
+                    readFromLine := ValidateReset(STATE_PREVIEWING, lineNum, True)
+                    SetTimer, %lowerAffinity%, -500
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
                     Log(Format("Found world load at line {1}. Log:`n{2}", lineNum, line))
-                    ValidateReset(STATE_READY, lineNum, resetState != STATE_PREVIEWING)
                     UpdateAffinity()
+                    readFromLine := ValidateReset(STATE_READY, lineNum, resetState != STATE_PREVIEWING)
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     } else {
@@ -229,9 +229,9 @@ ManageState() {
 
 ValidateReset(newState, lineNum, updateNewWorld) {
     resetState := newState
-    readFromLine := lineNum + 1
     if (updateNewWorld)
         lastNewWorld := A_TickCount
+    return lineNum
 }
 
 Switch() {
