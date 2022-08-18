@@ -30,6 +30,7 @@ global lastNewWorld  := 0
 global locked        := False
 global playing       := False
 global resetState    := STATE_READY
+global wideHeight    := Floor(A_ScreenHeight / widthMultiplier)
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
@@ -374,7 +375,6 @@ CurrentWorldEntered() {
 }
 
 Widen() {
-    static wideHeight := Floor(A_ScreenHeight / widthMultiplier)
     WinRestore, ahk_pid %pid%
     WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %wideHeight%
 }
