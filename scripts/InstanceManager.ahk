@@ -140,7 +140,7 @@ Log("Instance Manager fully initialised, ready to play")
 Reset(msgTime) { ; msgTime is wParam from PostMessage
     global resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets
     if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 3000)) {
-        Log("Found failed reset. Resetting again")
+        Log("Found potential failed reset (reset still not validated after 3s). Resetting again")
         lastResetTime := A_TickCount
         reset := settings["key_CreateNewWorld"]
         ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
