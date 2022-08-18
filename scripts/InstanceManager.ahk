@@ -321,6 +321,10 @@ UpdateAffinity() {
 }
 
 SetAffinity(pid, mask) {
+    static laskMask := 0
+    if (mask == lastMask)
+        return
+    lastMask := mask
     hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
     DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
     DllCall("CloseHandle", "Ptr", hProc)
