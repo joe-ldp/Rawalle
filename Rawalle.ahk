@@ -308,8 +308,9 @@ UnfreezeAll() {
 }
 
 SetAffinities() {
-    for each, IM_PID in IM_PIDs {
-        PostMessage, MSG_AFFINITY,,,,ahk_pid %IM_PID%
+    for idx, IM_PID in IM_PIDs {
+        isBg := (activeInstance != 0) && (idx != activeInstance)
+        PostMessage, MSG_AFFINITY, isBg,,,ahk_pid %IM_PID%
     }
 }
 

@@ -155,7 +155,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             Log("Exiting world (unfullscreening and widening)")
             playing := False
             GetSettings()
-            ControlSend,, {Blind}{F1}{F3}, ahk_pid %pid%
+            ControlSend,, {Blind}{F3}, ahk_pid %pid%
             if (useObsWebsocket && screenshotWorlds)
                 SendOBSCommand(Format("SaveImg{1},{2}", A_NowUTC, CurrentWorldEntered()), Format("IM{1}", idx))
             if (fullscreen && settings.fullscreen == "true") {
@@ -212,12 +212,13 @@ ManageState() {
                     Log(Format("Found preview at line {1}. Log:`n{2}", lineNum, line))
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     readFromLine := ValidateReset(STATE_PREVIEWING, lineNum, True)
-                    SetTimer, %lowerAffinity%, -500
+                    UpdateAffinity()
                     continue 2
                 } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
                     Log(Format("Found world load at line {1}. Log:`n{2}", lineNum, line))
-                    UpdateAffinity()
                     readFromLine := ValidateReset(STATE_READY, lineNum, resetState != STATE_PREVIEWING)
+                    SetAffinity(pid, boostMask)
+                    SetTimer, UpdateAffinity, -500
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
                         ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     } else {
@@ -299,26 +300,23 @@ Lock(nowLocked) {
     UpdateAffinity()
 }
 
-UpdateAffinity() {
-    if (playing) {
+UpdateAffinity(isBg := 0) {
+    if (isBg) {
+        SetAffinity(pid, bgMask)
+    } else if (playing) {
         SetAffinity(pid, maxMask)
-    } else if (resetState == STATE_READY) {
-        SetAffinity(pid, lowMask)
-        SetTimer, UpdateAffinity, Off
     } else if (WinActive("Fullscreen Projector")) {
         if (resetState == STATE_RESETTING || resetState == STATE_LOADING) {
             SetAffinity(pid, maxMask)
         } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
             SetAffinity(pid, boostMask)
+        } else if (resetState == STATE_READY) {
+            SetAffinity(pid, lowMask)
+            return
         } else {
             SetAffinity(pid, loadMask)
         }
-    } else if (WinActive("Minecraft")) {
-        if (WinActive("ahk_pid " . pid)) {
-            SetAffinity(pid, maxMask)
-        } else {
-            SetAffinity(pid, bgMask)
-        }
+        SetTimer, UpdateAffinity, -100
     } else {
         SetAffinity(pid, lowMask)
     }
