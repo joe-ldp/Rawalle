@@ -175,6 +175,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         lastResetTime := A_TickCount
         ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
         SetTimer, ManageState, -200
+        Loop, Read, %mcDir%\logs\latest.log
+            readFromLine := A_Index
         CountReset("Resets")
         CountReset("Daily Resets")
     }
@@ -183,7 +185,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 ManageState() {
     global mode
     static toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
-    static readFromLine := 0
+    global readFromLine := 0
     Critical
     while (resetState != STATE_READY) {
         Critical, Off
@@ -221,6 +223,8 @@ ManageState() {
                     } else {
                         Play()
                     }
+                } else {
+                    readFromLine := A_Index
                 }
             }
         }
