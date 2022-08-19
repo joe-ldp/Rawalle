@@ -1,4 +1,4 @@
-; v1.2.2
+; v1.3.0
 
 #If WinActive("Minecraft") && WinActive("ahk_exe javaw.exe")
 {

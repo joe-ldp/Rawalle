@@ -1,6 +1,6 @@
 ; Ravalle's Wall & Multi Instance Macro (Rawalle)
 ; Author: Ravalle / Joe
-; v1.2.2
+; v1.3.0
 
 ;region imports
 
@@ -24,7 +24,7 @@ global hotkeysFile := Format("{1}\hotkeys.ini", A_ScriptDir)
 
 ;region init
 
-currVersion := 1.22
+currVersion := 1.3
 UrlDownloadToFile, https://raw.githubusercontent.com/joe-ldp/Rawalle/main/versionCheck.ini, versionCheck.ini
 IniRead, versionCheck, versionCheck.ini, Check, version
 IniRead, versionString, versionCheck.ini, Check, name

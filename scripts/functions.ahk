@@ -1,4 +1,4 @@
-; v1.2.2
+; v1.3.0
 
 Freeze(pid) {
     hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
