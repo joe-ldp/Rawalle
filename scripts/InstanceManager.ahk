@@ -31,6 +31,7 @@ global locked        := False
 global playing       := False
 global resetState    := STATE_READY
 global wideHeight    := Floor(A_ScreenHeight / widthMultiplier)
+global doF1          := IsStandardSettingsF1()
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
@@ -280,8 +281,11 @@ Play() {
         ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
         Sleep, %fullscreenDelay%
     }
-    if (resetState == STATE_READY && (unpauseOnSwitch || coopResets))
+    if (resetState == STATE_READY && (unpauseOnSwitch || coopResets)) {
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+        if (doF1)
+            ControlSend,, {Blind}{F1}, ahk_pid %pid%
+    }
     if (coopResets) {
         Sleep, 50
         ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
@@ -469,6 +473,19 @@ CountReset(resetType) {
     file.Seek(0)
     file.Write(num)
     file.Close()
+}
+
+IsStandardSettingsF1() {
+    Loop, Read, %mcDir%\config\standardoptions.txt
+    {
+        if (InStr(A_LoopReadLine, "f1:")) {
+            if (InStr(A_LoopReadLine, "true"))
+                return true
+            else
+                break
+        }
+    }
+    return false
 }
 
 ;endregion
