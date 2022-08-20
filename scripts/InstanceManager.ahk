@@ -299,7 +299,7 @@ GetState() {
 }
 
 Lock(nowLocked) {
-    Log(Format("Instance lock state set to ", nowLocked))
+    Log(Format("Instance lock state set to {1}", nowLocked))
     locked := nowLocked
     UpdateAffinity()
 }
