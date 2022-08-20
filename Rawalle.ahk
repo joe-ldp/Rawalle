@@ -322,6 +322,7 @@ SetAffinities() {
 }
 
 MousePosToInstNumber() {
+    global cols
     MouseGetPos, mX, mY
     return (Floor(mY / instHeight) * cols) + Floor(mX / instWidth) + 1
 }
