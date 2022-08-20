@@ -165,7 +165,7 @@ if (readySound) {
 ;region funcs
 
 Reset(idx := -1, timestamp := -1) {
-    global isOnWall, activeInstance, IM_PIDs, mode, bypassWall
+    global mode, bypassWall
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     timestamp := (timestamp == -1) ? A_TickCount : timestamp
     IM_PID := IM_PIDs[idx]
@@ -187,7 +187,7 @@ Reset(idx := -1, timestamp := -1) {
 
 Play(idx := -1) {
     Critical
-    global IM_PIDs, activeInstance, isOnWall, useObsWebsocket, screenshotWorlds, obsDelay
+    global useObsWebsocket, screenshotWorlds, obsDelay
     idx := (idx == -1) ? MousePosToInstNumber() : idx
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
@@ -216,7 +216,7 @@ Play(idx := -1) {
 }
 
 FocusReset(idx := -1) {
-    global numInstances, locked
+    global numInstances
     idx := (idx == -1) ? MousePosToInstNumber() : idx
     timestamp := A_TickCount
     Play(idx)
@@ -226,13 +226,12 @@ FocusReset(idx := -1) {
 }
 
 BackgroundReset(idx) {
-    global activeInstance
     if (idx != activeInstance)
         Reset(idx)
 }
 
 ResetAll() {
-    global numInstances, locked
+    global numInstances
     timestamp := A_TickCount
     Loop, %numInstances%
         if (!locked[A_Index])
@@ -240,7 +239,7 @@ ResetAll() {
 }
 
 LockInstance(idx := -1, sound := True) {
-    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators, bypassWall
+    global lockSounds, useObsWebsocket, lockIndicators, bypassWall
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     IM_PID := IM_PIDs[idx]
     SendMessage, MSG_GETSTATE,,,,ahk_pid %IM_PID%,,100
@@ -263,7 +262,7 @@ LockInstance(idx := -1, sound := True) {
 }
 
 UnlockInstance(idx := -1, sound := True) {
-    global isOnWall, activeInstance, lockSounds, locked, useObsWebsocket, lockIndicators
+    global useObsWebsocket, lockIndicators, lockSounds
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
@@ -278,7 +277,6 @@ UnlockInstance(idx := -1, sound := True) {
 }
 
 ToggleLock(idx := -1) {
-    global isOnWall, activeInstance, locked
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (locked[idx])
         UnlockInstance(idx)
@@ -287,7 +285,7 @@ ToggleLock(idx := -1) {
 }
 
 WallLock(idx := -1) {
-    global isOnWall, activeInstance, lockIndicators, useObsWebsocket
+    global lockIndicators, useObsWebsocket
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (useObsWebsocket && lockIndicators)
         ToggleLock(idx)
@@ -315,13 +313,12 @@ SetAffinities() {
 }
 
 MousePosToInstNumber() {
-    global cols, instHeight, instWidth
     MouseGetPos, mX, mY
     return (Floor(mY / instHeight) * cols) + Floor(mX / instWidth) + 1
 }
 
 NextInstance() {
-    global activeInstance, numInstances
+    global numInstances
     Loop, {
         activeInstance := activeInstance + 1 > numInstances ? 1 : activeInstance + 1
         Play(activeInstance)
@@ -350,7 +347,6 @@ ToWall() {
 }
 
 BypassWall() { ; returns 1 if instance was played
-    global locked
     for idx, lockTime in locked {
         if (lockTime)
             if (Play(idx) == 0)

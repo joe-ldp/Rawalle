@@ -273,7 +273,7 @@ Switch() {
 }
 
 Play() {
-    global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, renderDistance
+    global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets
     Log("Playing instance")
 
     if (fullscreen && mode == "Multi") {
