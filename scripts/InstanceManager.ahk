@@ -177,7 +177,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
         SetTimer, ManageState, -200
         Loop, Read, %mcDir%\logs\latest.log
-            readFromLine := A_Index
+            readFromLine := A_Index + 1
         CountReset("Resets")
         CountReset("Daily Resets")
     }
