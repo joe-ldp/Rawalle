@@ -304,25 +304,35 @@ Lock(nowLocked) {
     UpdateAffinity()
 }
 
-UpdateAffinity(isBg := 0) {
-    if (isBg) {
-        SetAffinity(pid, bgMask)
-    } else if (playing) {
-        SetAffinity(pid, maxMask)
-    } else if (WinActive("Fullscreen Projector")) {
-        if (resetState == STATE_RESETTING || resetState == STATE_LOADING) {
+UpdateAffinity(bgOverride := 0, anyLocked := -1) {
+    static doAdvanced := 0
+    doAdvanced := anyLocked != -1 ? anyLocked : doAdvanced
+    if (doAdvanced) {
+        if (bgOverride) {
+            SetAffinity(pid, bgMask)
+        } else if (playing) {
             SetAffinity(pid, maxMask)
-        } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
-            SetAffinity(pid, boostMask)
-        } else if (resetState == STATE_READY) {
-            SetAffinity(pid, lowMask)
-            return
+        } else if (WinActive("Fullscreen Projector")) {
+            if (resetState == STATE_RESETTING || resetState == STATE_LOADING) {
+                SetAffinity(pid, maxMask)
+            } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
+                SetAffinity(pid, boostMask)
+            } else if (resetState == STATE_READY) {
+                SetAffinity(pid, lowMask)
+                return
+            } else {
+                SetAffinity(pid, loadMask)
+            }
+            SetTimer, UpdateAffinity, -100
         } else {
-            SetAffinity(pid, loadMask)
+            SetAffinity(pid, lowMask)
         }
-        SetTimer, UpdateAffinity, -100
     } else {
-        SetAffinity(pid, lowMask)
+        if (playing || !bgOverride) {
+            SetAffinity(pid, maxMask)
+        } else {
+            SetAffinity(pid, bgMask)
+        }
     }
 }
 

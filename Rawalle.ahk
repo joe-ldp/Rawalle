@@ -259,6 +259,7 @@ LockInstance(idx := -1, sound := True) {
     }
     if (bypassWall && (state == STATE_LOADING || state == STATE_PREVIEWING))
         SetTimer, BypassWall, 100
+    SetAffinities()
 }
 
 UnlockInstance(idx := -1, sound := True) {
@@ -274,6 +275,7 @@ UnlockInstance(idx := -1, sound := True) {
     PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     locked[idx] := 0
     LogAction(idx, "unlock")
+    SetAffinities()
 }
 
 ToggleLock(idx := -1) {
@@ -306,9 +308,16 @@ UnfreezeAll() {
 }
 
 SetAffinities() {
+    anyLocked := 0
+    for each, lockTime in locked {
+        if (lockTime) {
+            anyLocked := 1
+            break
+        }
+    }
     for idx, IM_PID in IM_PIDs {
         isBg := (activeInstance != 0) && (idx != activeInstance)
-        PostMessage, MSG_AFFINITY, isBg,,,ahk_pid %IM_PID%
+        PostMessage, MSG_AFFINITY, isBg, anyLocked,,ahk_pid %IM_PID%
     }
 }
 
