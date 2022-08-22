@@ -26,13 +26,6 @@ Unfreeze(pid) {
     }
 }
 
-SendOBSCommand(cmd, ref := "TW") {
-    static cmdNum := 1
-    cmdFile := Format("{1}\scripts\pyCmds\{2}CMD{3}.txt", A_ScriptDir, ref, cmdNum)
-    cmdNum++
-    FileAppend, %cmd%, %cmdFile%
-}
-
 LoadSettings(settingsFile) {
     global
     local filename, file, sect, equalsPos, key, value

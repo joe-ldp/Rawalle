@@ -140,7 +140,7 @@ Log("Instance Manager fully initialised, ready to play")
 ;region funcs
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
-    global resetSounds, useObsWebsocket, screenshotWorlds, fullscreen, fullscreenDelay, mode, wideResets
+    global resetSounds, fullscreen, fullscreenDelay, mode, wideResets
     if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 3000)) {
         Log("Found potential failed reset (reset still not validated after 3s). Resetting again")
         lastResetTime := A_TickCount
@@ -157,8 +157,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             playing := False
             GetSettings()
             ControlSend,, {Blind}{F3}, ahk_pid %pid%
-            if (useObsWebsocket && screenshotWorlds)
-                SendOBSCommand(Format("SaveImg{1},{2}", A_NowUTC, CurrentWorldEntered()), Format("IM{1}", idx))
             if (fullscreen && settings.fullscreen == "true") {
                 fs := settings["key_key.fullscreen"]
                 ControlSend,, {Blind}{%fs%}, ahk_pid %pid%

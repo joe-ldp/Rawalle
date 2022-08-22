@@ -125,12 +125,6 @@ for each, program in arrLaunchPrograms {
         Run, %filename%, %dir%
 }
 
-if (useObsWebsocket) {
-    while (!FileExist(Format("{1}\scripts\runPy.tmp", A_ScriptDir)))
-        FileAppend,, %A_ScriptDir%\scripts\runPy.tmp
-    Run, %A_ScriptDir%\scripts\obs.py, %A_ScriptDir%\scripts\, Hide
-}
-
 checkIdx := 1
 while (checkIdx <= numInstances) {
     if (FileExist(readyFile := Format("{1}\scripts\IM{2}ready.tmp", A_ScriptDir, checkIdx))) {
@@ -187,16 +181,14 @@ Reset(idx := -1, timestamp := -1) {
 
 Play(idx := -1) {
     Critical
-    global useObsWebsocket, screenshotWorlds, obsDelay
+    global useObsScript, obsDelay
     idx := (idx == -1) ? MousePosToInstNumber() : idx
     pid := IM_PIDs[idx]
     SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
     if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
         SetTimer, BypassWall, Off
-        if (useObsWebsocket) {
-            SendOBSCommand("Play," . idx)
-            if (screenshotWorlds)
-                SendOBSCommand("GetImg")
+        if (useObsScript) {
+            SendOBSCmd("Play," . idx)
         } else {
             Send, {Numpad%idx% down}
             Sleep, %obsDelay%
@@ -239,7 +231,7 @@ ResetAll() {
 }
 
 LockInstance(idx := -1, sound := True) {
-    global lockSounds, useObsWebsocket, lockIndicators, bypassWall
+    global lockSounds, useObsScript, lockIndicators, bypassWall
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     IM_PID := IM_PIDs[idx]
     SendMessage, MSG_GETSTATE,,,,ahk_pid %IM_PID%,,100
@@ -250,8 +242,8 @@ LockInstance(idx := -1, sound := True) {
         if (lockSounds && sound)
             SoundPlay, media\lock.wav
         if (!locked[idx]) {
-            if (useObsWebsocket && lockIndicators)
-                SendOBSCommand(Format("Lock,{1},{2}", idx, 1))
+            if (useObsScript && lockIndicators)
+                SendOBSCmd(Format("Lock,{1},{2}", idx, 1))
             locked[idx] := A_TickCount
             LogAction(idx, "lock")
         }
@@ -263,14 +255,14 @@ LockInstance(idx := -1, sound := True) {
 }
 
 UnlockInstance(idx := -1, sound := True) {
-    global useObsWebsocket, lockIndicators, lockSounds
+    global useObsScript, lockIndicators, lockSounds
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (lockSounds && sound)
         SoundPlay, media\lock.wav
     if (!locked[idx])
         return
-    if (useObsWebsocket && lockIndicators)
-        SendOBSCommand(Format("Lock,{1},{2}", idx, 0))
+    if (useObsScript && lockIndicators)
+        SendOBSCmd(Format("Lock,{1},{2}", idx, 0))
     IM_PID := IM_PIDs[idx]
     PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     locked[idx] := 0
@@ -287,9 +279,9 @@ ToggleLock(idx := -1) {
 }
 
 WallLock(idx := -1) {
-    global lockIndicators, useObsWebsocket
+    global lockIndicators, useObsScript
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
-    if (useObsWebsocket && lockIndicators)
+    if (useObsScript && lockIndicators)
         ToggleLock(idx)
     else
         LockInstance(idx)
@@ -338,15 +330,15 @@ NextInstance() {
 }
 
 ToWall() {
-    global useObsWebsocket, obsDelay, bypassWall, fullscreen, fullscreenDelay
+    global useObsScript, obsDelay, bypassWall, fullscreen, fullscreenDelay
     activeInstance := 0
     isOnWall := True
     if (fullscreen)
         Sleep, %fullscreenDelay%
     if (bypassWall && BypassWall())
         return
-    if (useObsWebsocket) {
-        SendOBSCommand("ToWall")
+    if (useObsScript) {
+        SendOBSCmd("ToWall")
     } else {
         Send, {F12 Down}
         Sleep, %obsDelay%
@@ -362,6 +354,13 @@ BypassWall() { ; returns 1 if instance was played
             if (Play(idx) == 0)
                 return 1
     }
+}
+
+SendOBSCmd(cmd) {
+    static cmdNum := 1
+    static cmdDir := Format("{1}\scripts\pyCmds\", A_ScriptDir)
+    FileAppend, %cmd%, %cmdDir%%cmdNum%.txt
+    cmdNum++
 }
 
 LogAction(idx, action) {
