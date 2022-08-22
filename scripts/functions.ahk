@@ -61,18 +61,10 @@ LoadSettings(settingsFile) {
 
     obsSettingsFile := Format("{1}\scripts\obsSettings.py", A_ScriptDir)
     FileDelete, %obsSettingsFile%
-    FileAppend, host = "%host%"`n, %obsSettingsFile%
-    FileAppend, port = %port%`n, %obsSettingsFile%
-    FileAppend, password = "%password%"`n, %obsSettingsFile%
     FileAppend, lock_layer_format = "%lockLayerFormat%"`n, %obsSettingsFile%
     FileAppend, wall_scene = "%wallScene%"`n, %obsSettingsFile%
     FileAppend, instance_scene_format = "%instanceSceneFormat%"`n, %obsSettingsFile%
-    FileAppend, single_scene = %singleSceneOBS%`n, %obsSettingsFile%
-    FileAppend, playing_scene = "%playingScene%"`n, %obsSettingsFile%
-    FileAppend, instance_source_format = "%instanceSourceFormat%"`n, %obsSettingsFile%
     FileAppend, num_instances = %numInstances%`n, %obsSettingsFile%
-    FileAppend, width_multiplier = %widthMultiplier%`n, %obsSettingsFile%
-    FileAppend, screen_height = %A_ScreenHeight%`n, %obsSettingsFile%
 }
 
 LoadHotkeys(hotkeysFile) {
