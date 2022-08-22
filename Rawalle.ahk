@@ -231,7 +231,7 @@ ResetAll() {
 }
 
 LockInstance(idx := -1, sound := True) {
-    global lockSounds, useObsScript, lockIndicators, bypassWall
+    global lockSounds, useObsScript, lockIndicators, autoJoinInstances
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     IM_PID := IM_PIDs[idx]
     SendMessage, MSG_GETSTATE,,,,ahk_pid %IM_PID%,,100
@@ -249,7 +249,7 @@ LockInstance(idx := -1, sound := True) {
         }
         PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     }
-    if (bypassWall && (state == STATE_LOADING || state == STATE_PREVIEWING))
+    if (autoJoinInstances && (state == STATE_LOADING || state == STATE_PREVIEWING))
         SetTimer, BypassWall, 100
     SetAffinities()
 }
