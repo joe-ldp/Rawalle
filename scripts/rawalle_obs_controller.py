@@ -14,7 +14,7 @@ import csv
 import os
 
 logging.basicConfig(
-    filename=os.path.dirname(os.path.realpath(__file__)) + "obs_log.log",
+    filename=os.path.dirname(os.path.realpath(__file__)) + "\obs_log.log",
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')

@@ -3,6 +3,7 @@
 *.tmp
 *.psd
 *.log
+*Override.txt
 actions.csv
 versionCheck.ini
 obsSettings.py
