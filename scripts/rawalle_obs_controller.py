@@ -77,6 +77,7 @@ def script_description():
     return f"Ravalle's OBS Script for <a href=https://github.com/joe-ldp/rawalle/releases/tag/{version}>Rawalle {version}</a></h3>"
 
 try:
+    global wall_scene
     wall_scene = S.obs_scene_get_source(S.obs_get_scene_by_name(settings.wall_scene))
     S.obs_frontend_set_current_scene(wall_scene)
 except Exception as e:
