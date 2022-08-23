@@ -125,6 +125,10 @@ for each, program in arrLaunchPrograms {
         Run, %filename%, %dir%
 }
 
+if (useObsScript) {
+    SendOBSCmd("Reload")
+}
+
 checkIdx := 1
 while (checkIdx <= numInstances) {
     if (FileExist(readyFile := Format("{1}\scripts\IM{2}ready.tmp", A_ScriptDir, checkIdx))) {
@@ -378,7 +382,6 @@ CloseInstances() {
 }
 
 Shutdown(ExitReason, ExitCode) {
-    FileDelete, scripts/runPy.tmp
     DetectHiddenWindows, On
     UnfreezeAll()
     for idx, pid in IM_PIDs {

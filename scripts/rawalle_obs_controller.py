@@ -22,8 +22,7 @@ logging.basicConfig(
 version = "v1.3.0"
 
 def script_update(settings):
-    S.timer_remove(execute_latest)
-    S.timer_add(execute_latest, 30)
+    script_init()
 
 def get_cmd(path):
     cmdFiles = []
@@ -59,6 +58,8 @@ def execute_cmd(cmd):
             render = True if int(cmd[2]) else False
             lock_source = S.obs_scene_find_source(S.obs_scene_from_source(wall_scene), settings.lock_layer_format.replace("*", str(lock_num)))
             S.obs_sceneitem_set_visible(lock_source, render)
+        elif (cmd[0] == "Reload"):
+            script_init()
     except Exception as e:
         print(f"Error: {e}")
         logging.error(e)
@@ -76,30 +77,34 @@ def execute_latest():
 def script_description():
     return f"Ravalle's OBS Script for <a href=https://github.com/joe-ldp/rawalle/releases/tag/{version}>Rawalle {version}</a></h3>"
 
-try:
-    global wall_scene
-    wall_scene = S.obs_scene_get_source(S.obs_get_scene_by_name(settings.wall_scene))
-    S.obs_frontend_set_current_scene(wall_scene)
-except Exception as e:
-    print(f"Error: {e}")
-    logging.error(e)
-
-for i in range(1, settings.num_instances+1):
-    print(f"Setting up instance {i}")
-    logging.info(f"Setting up instance {i}")
+def script_init():
     try:
-        lock_source = S.obs_scene_find_source(S.obs_scene_from_source(wall_scene), settings.lock_layer_format.replace("*", str(i)))
-        S.obs_sceneitem_set_visible(lock_source, False)
+        global wall_scene
+        wall_scene = S.obs_scene_get_source(S.obs_get_scene_by_name(settings.wall_scene))
+        S.obs_frontend_set_current_scene(wall_scene)
     except Exception as e:
         print(f"Error: {e}")
         logging.error(e)
 
-path = os.path.dirname(os.path.realpath(__file__)) + "\\"
-cmdsPath = path + "pyCmds\\"
+    for i in range(1, settings.num_instances+1):
+        print(f"Setting up instance {i}")
+        logging.info(f"Setting up instance {i}")
+        try:
+            lock_source = S.obs_scene_find_source(S.obs_scene_from_source(wall_scene), settings.lock_layer_format.replace("*", str(i)))
+            S.obs_sceneitem_set_visible(lock_source, False)
+        except Exception as e:
+            print(f"Error: {e}")
+            logging.error(e)
 
-if (os.path.exists(cmdsPath)):
-    shutil.rmtree(cmdsPath)
-os.mkdir(cmdsPath)
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\"
+    cmdsPath = path + "pyCmds\\"
 
-print(f"Listening to {cmdsPath}...")
-logging.info(f"Listening to {cmdsPath}...")
+    if (os.path.exists(cmdsPath)):
+        shutil.rmtree(cmdsPath)
+    os.mkdir(cmdsPath)
+
+    print(f"Listening to {cmdsPath}...")
+    logging.info(f"Listening to {cmdsPath}...")
+
+    S.timer_remove(execute_latest)
+    S.timer_add(execute_latest, 30)
