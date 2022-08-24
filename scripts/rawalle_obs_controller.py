@@ -8,6 +8,7 @@
 
 import obsSettings as settings
 import obspython as S
+import importlib
 import logging
 import shutil
 import csv
@@ -79,6 +80,7 @@ def script_description():
     return f"Ravalle's OBS Script for <a href=https://github.com/joe-ldp/rawalle/releases/tag/{version}>Rawalle {version}</a></h3>"
 
 def script_init():
+    importlib.reload(settings)
     global wall_scene
     global cmdsPath
     try:
