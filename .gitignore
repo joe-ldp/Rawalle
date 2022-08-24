@@ -9,7 +9,6 @@ versionCheck.ini
 obsSettings.py
 /scripts/__pyCache__
 /scripts/pyCmds
-/scripts/runPy.tmp
 /screenshots/*
 /resets/*
 /mods/*

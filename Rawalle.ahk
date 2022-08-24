@@ -163,7 +163,7 @@ if (readySound) {
 ;region funcs
 
 Reset(idx := -1, timestamp := -1) {
-    global mode, bypassWall
+    global mode
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     timestamp := (timestamp == -1) ? A_TickCount : timestamp
     IM_PID := IM_PIDs[idx]
