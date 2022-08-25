@@ -62,10 +62,6 @@ if (firstLaunch) {
 }
 LoadSettings(settingsFile)
 
-if (!FileExist(enteredScreenshots := Format("{1}\screenshots\entered", A_ScriptDir)))
-    FileCreateDir, %enteredScreenshots%
-if (!FileExist(unenteredScreenshots := Format("{1}\screenshots\unentered", A_ScriptDir)))
-    FileCreateDir, %unenteredScreenshots%
 if (!FileExist(resetsFolder := Format("{1}\resets", A_ScriptDir)))
     FileCreateDir, %resetsFolder%
 if (!FileExist(logsFolder := Format("{1}\logs", A_ScriptDir)))
