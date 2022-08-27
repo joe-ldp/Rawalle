@@ -102,7 +102,9 @@ if (!pid := IsInstanceOpen(instDir)) {
 WinGetTitle, mcTitle, ahk_pid %pid%
 if (!InStr(mcTitle, "-")) {
     ControlClick, x0 y0, ahk_pid %pid%,, RIGHT
-    ControlSend,, {Blind}{Esc}{F3 down}{Esc}{F3 up}, ahk_pid %pid%
+    ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+    WinMinimize, ahk_pid %pid%
+    WinRestore, ahk_pid %pid%
 }
 
 GetControls()
