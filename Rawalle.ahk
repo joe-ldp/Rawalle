@@ -167,13 +167,17 @@ Reset(idx := -1, timestamp := -1) {
     PostMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%
 
     if (activeInstance == idx) {
+        FileDelete, %userProfileDir%\sleepbg.lock
+        LogAction(idx, "exitworld")
+        if (fullscreen)
+            Sleep, %fullscreenDelay%
         if (mode == "Wall") {
+            if (bypassWall && BypassWall())
+                return
             ToWall()
         } else {
             NextInstance()
         }
-        LogAction(idx, "exitworld")
-        FileDelete, %userProfileDir%\sleepbg.lock
     } else {
         LogAction(idx, "reset")
     }
@@ -333,10 +337,6 @@ ToWall() {
     global useObsScript, obsDelay, bypassWall, fullscreen, fullscreenDelay
     activeInstance := 0
     isOnWall := True
-    if (fullscreen)
-        Sleep, %fullscreenDelay%
-    if (bypassWall && BypassWall())
-        return
     if (useObsScript) {
         SendOBSCmd("ToWall")
     } else {
