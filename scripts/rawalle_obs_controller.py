@@ -94,7 +94,7 @@ def script_init():
         print(f"Setting up instance {i}")
         logging.info(f"Setting up instance {i}")
         try:
-            lock_source = S.obs_scene_find_source(S.obs_scene_from_source(wall_scene), settings.lock_layer_format.replace("*", str(i)))
+            lock_source = S.obs_scene_find_source_recursive(S.obs_scene_from_source(wall_scene), settings.lock_layer_format.replace("*", str(i)))
             S.obs_sceneitem_set_visible(lock_source, False)
         except Exception as e:
             print(f"Error: {e}")
