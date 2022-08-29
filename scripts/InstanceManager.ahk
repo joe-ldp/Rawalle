@@ -30,7 +30,6 @@ global locked        := False
 global playing       := False
 global resetState    := STATE_READY
 global wideHeight    := Floor(A_ScreenHeight / widthMultiplier)
-global doF1          := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
@@ -122,10 +121,10 @@ if (wideResets)
 else
     WinMaximize, ahk_pid %pid%
 
-OnMessage(MSG_RESET, "Reset")
-OnMessage(MSG_SWITCH, "Switch")
-OnMessage(MSG_LOCK, "Lock")
-OnMessage(MSG_AFFINITY, "UpdateAffinity")
+OnMessage(MSG_RESET,     "Reset")
+OnMessage(MSG_SWITCH,    "Switch")
+OnMessage(MSG_LOCK,      "Lock")
+OnMessage(MSG_AFFINITY,  "UpdateAffinity")
 
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 FileAppend,, IM%idx%ready.tmp
@@ -268,6 +267,7 @@ Switch() {
 
 Play() {
     global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets
+    static doF1 := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
     Log("Playing instance")
 
     if (fullscreen && mode == "Multi") {
