@@ -31,7 +31,7 @@ global locked        := False
 global playing       := False
 global resetState    := STATE_READY
 global wideHeight    := Floor(A_ScreenHeight / widthMultiplier)
-global doF1          := IsStandardSettingsF1()
+global doF1          := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
@@ -110,7 +110,7 @@ if (!InStr(mcTitle, "-")) {
 GetControls()
 GetSettings()
 
-if (settings.fullscreen == "true") {
+if (GetSetting("fullscreen") == "true") {
     fs := settings["key_key.fullscreen"]
     ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
 }
@@ -158,7 +158,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             playing := False
             GetSettings()
             ControlSend,, {Blind}{F3}, ahk_pid %pid%
-            if (fullscreen && settings.fullscreen == "true") {
+            if (fullscreen && GetSetting("fullscreen") == "true") {
                 fs := settings["key_key.fullscreen"]
                 ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
                 DllCall("Sleep", "UInt", fullscreenDelay)
@@ -371,6 +371,16 @@ GetSettings() {
     }
 }
 
+GetSetting(setting, default := "", file := "options.txt") {
+    Loop, Read, %mcDir%/%file%
+    {
+        kv := StrSplit(Format("{:L}", A_LoopReadLine), ":")
+        if (kv.MaxIndex() == 2 && kv[1] == setting)
+            return StrReplace(kv[2], A_Space)
+    }
+    return default
+}
+
 GetControls() {
     atumKeyFound := False
     Loop, Read, %mcDir%/options.txt
@@ -486,19 +496,6 @@ CountReset(resetType) {
     file.Seek(0)
     file.Write(num)
     file.Close()
-}
-
-IsStandardSettingsF1() {
-    Loop, Read, %mcDir%\config\standardoptions.txt
-    {
-        if (InStr(A_LoopReadLine, "f1:")) {
-            if (InStr(A_LoopReadLine, "true"))
-                return true
-            else
-                break
-        }
-    }
-    return false
 }
 
 ;endregion
