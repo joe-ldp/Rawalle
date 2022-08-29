@@ -136,7 +136,7 @@ Log("Instance Manager fully initialised, ready to play")
 ;region funcs
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
-    global resetSounds, fullscreen, fullscreenDelay, mode, wideResets
+    global resetSounds, fullscreen, fullscreenDelay, mode, wideResets, key_createnewworld, key_leavepreview, key_fullscreen
     if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 3000)) {
         Log("Found potential failed reset (reset still not validated after 3s). Resetting again")
         lastResetTime := A_TickCount
@@ -236,7 +236,7 @@ ValidateReset(newState, lineNum, updateNewWorld) {
 }
 
 Switch() {
-    global screenshotWorlds, mode, fullscreen, fullscreenDelay, wideResets
+    global screenshotWorlds, mode, fullscreen, fullscreenDelay, wideResets, key_fullscreen
     if ((mode == "Wall" && resetState == STATE_READY) || (mode == "Multi" && (resetState == STATE_PREVIEWING || resetState == STATE_READY))) {
         Log("Switched to instance")
 
@@ -266,7 +266,7 @@ Switch() {
 }
 
 Play() {
-    global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets
+    global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, key_fullscreen
     static doF1 := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
     Log("Playing instance")
 
@@ -354,8 +354,8 @@ GetSetting(setting, default := "", file := "options.txt") {
 }
 
 GetControls() {
-    global key_ := []
-    atumKeyFound := False
+    global
+    local atumKeyFound := False
     Loop, Read, %mcDir%/options.txt
     {
         kv := StrSplit(A_LoopReadLine, ":")
