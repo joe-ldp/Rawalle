@@ -49,7 +49,7 @@ if (autoBop) {
     Run, %cmd%,, Hide
 }
 
-if (syncConfigs) {
+if (syncConfigs && idx != 1) {
     mainConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", 1))
     thisConfig := Format("{1}\instances\{2}\.minecraft\config\", multiMCLocation, StrReplace(multiMCNameFormat, "*", idx))
     FileCopy, %mainConfig%\*.*, %thisConfig%\*.*, 1
@@ -178,9 +178,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 }
 
 ManageState() {
-    global mode
+    global mode, readFromLine := 0
     static toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
-    global readFromLine := 0
     Critical
     while (resetState != STATE_READY) {
         Critical, Off
@@ -287,12 +286,8 @@ Play() {
     }
 }
 
-GetState() {
-    return resetState
-}
-
 Lock(nowLocked) {
-    Log(Format("Instance lock state set to {1}", nowLocked))
+    Log(Format("Instance lock state set to {1}", nowLocked ? "True" : "False"))
     locked := nowLocked
     UpdateAffinity()
 }
@@ -371,11 +366,6 @@ GetControls() {
         key_createnewworld := "f6"
 }
 
-CurrentWorldEntered() {
-    FileRead, logContents, %mcDir%\logs\latest.log
-    return (InStr(logContents, "We Need To Go Deeper",, 0) > InStr(logContents, "spawn area",, 0))
-}
-
 Widen() {
     WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %wideHeight%
 }
@@ -394,14 +384,14 @@ IsInstanceOpen(instDir) {
     return False
 }
 
-DesyncedMods(dir1, dir2) {
+DesyncedMods(centralModsDir, instModsDir) {
     centralMods := [""]
     instMods := [""]
-    Loop, Files, %dir1%
+    Loop, Files, %centralModsDir%
     {
         centralMods[A_Index] := A_LoopFileName
     }
-    Loop, Files, %dir2%
+    Loop, Files, %instModsDir%
     {
         instMods[A_Index] := A_LoopFileName
     }
