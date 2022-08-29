@@ -58,13 +58,6 @@ LoadSettings(settingsFile) {
                 }
         }
     }
-
-    obsSettingsFile := Format("{1}\scripts\obsSettings.py", A_ScriptDir)
-    FileDelete, %obsSettingsFile%
-    FileAppend, lock_layer_format = "%lockLayerFormat%"`n, %obsSettingsFile%
-    FileAppend, wall_scene = "%wallScene%"`n, %obsSettingsFile%
-    FileAppend, instance_scene_format = "%instanceSceneFormat%"`n, %obsSettingsFile%
-    FileAppend, num_instances = %numInstances%`n, %obsSettingsFile%
 }
 
 LoadHotkeys(hotkeysFile) {
