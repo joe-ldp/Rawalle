@@ -23,7 +23,6 @@ global idx           := A_Args[1]
 global instName      := StrReplace(multiMCNameFormat, "*", idx)
 global instDir       := Format("{1}\instances\{2}", multiMCLocation, instName)
 global mcDir         := Format("{1}\.minecraft\", instDir)
-global settings      := []
 global pid           := 0
 global lastResetTime := 0
 global lastNewWorld  := 0
@@ -108,7 +107,6 @@ if (!InStr(mcTitle, "-")) {
 }
 
 GetControls()
-GetSettings()
 
 if (GetSetting("fullscreen") == "true") {
     fs := settings["key_key.fullscreen"]
@@ -156,7 +154,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         if (playing) {
             Log("Exiting world (unfullscreening and widening)")
             playing := False
-            GetSettings()
             ControlSend,, {Blind}{F3}, ahk_pid %pid%
             if (fullscreen && GetSetting("fullscreen") == "true") {
                 fs := settings["key_key.fullscreen"]
@@ -352,23 +349,6 @@ SetAffinity(pid, mask) {
 
 BitMaskify(threads) {
     return (2 ** threads) - 1
-}
-
-GetSettings() {
-    Loop, Read, %mcDir%/options.txt
-    {
-        line := A_LoopReadLine
-        if (!InStr(line, "key")) {
-            kv := StrSplit(line, ":")
-            if (kv.MaxIndex() == 2) {
-                key := kv[1]
-                value := kv[2]
-                StringReplace, key, key, %A_Space%,, All
-                StringReplace, value, value, %A_Space%,, All
-                settings[key] := value
-            }
-        }
-    }
 }
 
 GetSetting(setting, default := "", file := "options.txt") {
