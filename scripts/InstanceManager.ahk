@@ -108,10 +108,8 @@ if (!InStr(mcTitle, "-")) {
 
 GetControls()
 
-if (GetSetting("fullscreen") == "true") {
-    fs := settings["key_key.fullscreen"]
-    ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
-}
+if (GetSetting("fullscreen") == "true")
+    ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
 if (borderless) {
     WinSet, Style, -0xC40000, ahk_pid %pid%
 } else {
@@ -143,8 +141,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
     if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 3000)) {
         Log("Found potential failed reset (reset still not validated after 3s). Resetting again")
         lastResetTime := A_TickCount
-        reset := settings["key_CreateNewWorld"]
-        ControlSend,, {Blind}{%reset%}, ahk_pid %pid%
+        ControlSend,, {Blind}{%key_createnewworld%}, ahk_pid %pid%
     } else if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
@@ -156,8 +153,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             playing := False
             ControlSend,, {Blind}{F3}, ahk_pid %pid%
             if (fullscreen && GetSetting("fullscreen") == "true") {
-                fs := settings["key_key.fullscreen"]
-                ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+                ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
                 DllCall("Sleep", "UInt", fullscreenDelay)
             }
             WinRestore, ahk_pid %pid%
@@ -171,10 +167,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             Log("Resetting")
             resetState := STATE_RESETTING
             UpdateAffinity()
-            reset := settings["key_CreateNewWorld"]
-            leavePreview := settings["key_LeavePreview"]
             lastResetTime := A_TickCount
-            ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
+            ControlSend,, {Blind}{%key_createnewworld%}{%key_leavepreview%}, ahk_pid %pid%
             SetTimer, ManageState, -200
             Loop, Read, %mcDir%\logs\latest.log
                 readFromLine := A_Index + 1
@@ -257,8 +251,7 @@ Switch() {
         if (mode == "Wall")
             WinMinimize, Fullscreen Projector
         if (fullscreen && mode == "Wall") {
-            fs := settings["key_key.fullscreen"]
-            ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+            ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
             Sleep, %fullscreenDelay%
         }
 
@@ -278,8 +271,7 @@ Play() {
     Log("Playing instance")
 
     if (fullscreen && mode == "Multi") {
-        fs := settings["key_key.fullscreen"]
-        ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
+        ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
         Sleep, %fullscreenDelay%
     }
     if (resetState == STATE_READY && (unpauseOnSwitch || coopResets)) {
@@ -362,25 +354,21 @@ GetSetting(setting, default := "", file := "options.txt") {
 }
 
 GetControls() {
+    global key_ := []
     atumKeyFound := False
     Loop, Read, %mcDir%/options.txt
     {
-        line = %A_LoopReadLine%
-        if (InStr(line, "key")) {
-            kv := StrSplit(line, ":")
-            if (kv.MaxIndex() == 2) {
-                key = % kv[1]
-                value = % kv[2]
-                StringReplace, key, key, %A_Space%,, All
-                StringReplace, value, value, %A_Space%,, All
-                settings[key] := TranslateKey(value)
-                if (key == "key_CreateNewWorld")
-                    atumKeyFound := True
-            }
+        kv := StrSplit(A_LoopReadLine, ":")
+        if (kv.MaxIndex() == 2 && InStr(kv[1], "key")) {
+            key := StrReplace(StrReplace(StrReplace(StrReplace(Format("{:L}", kv[1]), A_Space), "key"), "_"), ".")
+            value := StrReplace(Format("{:L}", kv[2]), A_Space)
+            key_%key% := TranslateKey(value)
+            if (key == "createnewworld")
+                atumKeyFound := True
         }
     }
     if (!atumKeyFound)
-        settings["key_CreateNewWorld"] := "f6"
+        key_createnewworld := "f6"
 }
 
 CurrentWorldEntered() {
