@@ -128,7 +128,6 @@ else
 
 OnMessage(MSG_RESET, "Reset")
 OnMessage(MSG_SWITCH, "Switch")
-OnMessage(MSG_GETSTATE, "GetState")
 OnMessage(MSG_LOCK, "Lock")
 OnMessage(MSG_AFFINITY, "UpdateAffinity")
 

@@ -187,8 +187,8 @@ Play(idx := -1) {
     Critical
     global useObsScript, obsDelay
     idx := (idx == -1) ? MousePosToInstNumber() : idx
-    pid := IM_PIDs[idx]
-    SendMessage, MSG_SWITCH,,,,ahk_pid %pid%,,1000
+    IM_PID := IM_PIDs[idx]
+    SendMessage, MSG_SWITCH,,,,ahk_pid %IM_PID%,,1000
     if (ErrorLevel == 0) { ; errorlevel is set to 0 if the instance was ready to be played; 1 otherwise
         SetTimer, BypassWall, Off
         if (useObsScript) {
