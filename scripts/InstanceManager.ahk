@@ -30,6 +30,7 @@ global locked        := False
 global playing       := False
 global resetState    := STATE_READY
 global wideHeight    := Floor(A_ScreenHeight / widthMultiplier)
+global doF1 := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
@@ -266,7 +267,6 @@ Switch() {
 
 Play() {
     global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, key_fullscreen
-    static doF1 := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
     Log("Playing instance")
 
     if (fullscreen && mode == "Multi") {
