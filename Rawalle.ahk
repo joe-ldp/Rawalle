@@ -164,10 +164,10 @@ Reset(idx := -1, timestamp := -1) {
     timestamp := (timestamp == -1) ? A_TickCount : timestamp
     IM_PID := IM_PIDs[idx]
     UnlockInstance(idx, False)
-    PostMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%
 
     if (activeInstance == idx) {
         FileDelete, %userProfileDir%\sleepbg.lock
+        SendMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%,,1000
         LogAction(idx, "exitworld")
         if (fullscreen)
             Sleep, %fullscreenDelay%
@@ -179,6 +179,7 @@ Reset(idx := -1, timestamp := -1) {
             NextInstance()
         }
     } else {
+        PostMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%
         LogAction(idx, "reset")
     }
 }

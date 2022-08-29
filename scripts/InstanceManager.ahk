@@ -163,22 +163,27 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
                 ControlSend,, {Blind}{%fs%}, ahk_pid %pid%
                 DllCall("Sleep", "UInt", fullscreenDelay)
             }
+            WinRestore, ahk_pid %pid%
             if (wideResets)
-                Widen()
+                SetTimer, Widen, -100, -1
+            SetTimer, ActualReset, -0
+            return 0
         }
 
-        Log("Resetting")
-        resetState := STATE_RESETTING
-        UpdateAffinity()
-        reset := settings["key_CreateNewWorld"]
-        leavePreview := settings["key_LeavePreview"]
-        lastResetTime := A_TickCount
-        ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
-        SetTimer, ManageState, -200
-        Loop, Read, %mcDir%\logs\latest.log
-            readFromLine := A_Index + 1
-        CountReset("Resets")
-        CountReset("Daily Resets")
+        ActualReset:
+            Log("Resetting")
+            resetState := STATE_RESETTING
+            UpdateAffinity()
+            reset := settings["key_CreateNewWorld"]
+            leavePreview := settings["key_LeavePreview"]
+            lastResetTime := A_TickCount
+            ControlSend,, {Blind}{%reset%}{%leavePreview%}, ahk_pid %pid%
+            SetTimer, ManageState, -200
+            Loop, Read, %mcDir%\logs\latest.log
+                readFromLine := A_Index + 1
+            CountReset("Resets")
+            CountReset("Daily Resets")
+        return
     }
 }
 
