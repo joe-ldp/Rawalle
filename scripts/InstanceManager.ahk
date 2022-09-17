@@ -30,7 +30,7 @@ global locked        := False
 global playing       := False
 global resetState    := STATE_READY
 global wideHeight    := Floor(A_ScreenHeight / widthMultiplier)
-global doF1 := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
+global doF1          := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
 
 EnvGet, threadCount, NUMBER_OF_PROCESSORS
 global maxMask   := BitMaskify(threadCount)
@@ -58,6 +58,7 @@ if (syncConfigs && idx != 1) {
         Log("Synced configs successfully")
     else
         Log("Something went wrong when syncing configs")
+    doF1 := GetSetting("f1", "false", "/config/standardoptions.txt") == "true"
 }
 
 if (!pid := IsInstanceOpen(instDir)) {
