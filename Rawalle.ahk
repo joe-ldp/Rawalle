@@ -211,6 +211,8 @@ Play(idx := -1) {
         activeInstance := idx
         isOnWall := False
         SetAffinities()
+        if (mode == "Wall")
+            WinMinimize, Fullscreen Projector
         return 0
     } else if (ErrorLevel == STATE_PREVIEWING) {
         LockInstance(idx, False)

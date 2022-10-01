@@ -248,8 +248,6 @@ Switch() {
             WinMaximize, ahk_pid %pid%
         WinSet, AlwaysOnTop, On, ahk_pid %pid%
         WinSet, AlwaysOnTop, Off, ahk_pid %pid%
-        if (mode == "Wall")
-            WinMinimize, Fullscreen Projector
         if (fullscreen && mode == "Wall") {
             ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
             Sleep, %fullscreenDelay%
