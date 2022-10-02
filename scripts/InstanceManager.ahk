@@ -186,7 +186,7 @@ ManageState() {
         numLines := GetNumLogLines()
         Loop, Read, %mcDir%\logs\latest.log
         {
-            if ((A_Index > readFromLine) && (numLines - A_Index < 5)) {
+            if (A_Index > readFromLine) {
                 line := A_LoopReadLine
                 lineNum := A_Index
                 if (resetState == STATE_RESETTING && InStr(line, "Starting Preview")) {
