@@ -138,7 +138,7 @@ Log("Instance Manager fully initialised, ready to play")
 ;region funcs
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
-    global resetSounds, fullscreen, fullscreenDelay, mode, wideResets, key_createnewworld, key_leavepreview, key_fullscreen
+    global resetSounds, fullscreen, fullscreenDelay, wideResets, key_createnewworld, key_leavepreview, key_fullscreen
     if (resetState == STATE_RESETTING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
