@@ -167,8 +167,6 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             lastResetTime := A_TickCount
             ControlSend,, {Blind}{%key_createnewworld%}{%key_leavepreview%}, ahk_pid %pid%
             SetTimer, ManageState, -200
-            Loop, Read, %mcDir%\logs\latest.log
-                readFromLine := A_Index + 1
             CountReset("Resets")
             CountReset("Daily Resets")
         return
@@ -176,7 +174,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 }
 
 ManageState() {
-    global mode, readFromLine := 0
+    global mode
     Critical
     readFromLine := GetNumLogLines()
     while (resetState != STATE_READY) {
