@@ -139,11 +139,7 @@ Log("Instance Manager fully initialised, ready to play")
 
 Reset(msgTime) { ; msgTime is wParam from PostMessage
     global resetSounds, fullscreen, fullscreenDelay, mode, wideResets, key_createnewworld, key_leavepreview, key_fullscreen
-    if (resetState == STATE_RESETTING && (A_TickCount - lastResetTime > 3000)) {
-        Log("Found potential failed reset (reset still not validated after 3s). Resetting again")
-        lastResetTime := A_TickCount
-        ControlSend,, {Blind}{%key_createnewworld%}, ahk_pid %pid%
-    } else if (resetState == STATE_RESETTING || resetState == STATE_LOADING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
+    if (resetState == STATE_RESETTING || (msgTime > lastResetTime && msgTime < lastNewWorld) || (msgTime < lastNewWorld + 400)) {
         Log("Discarding reset")
         return
     } else {
@@ -181,38 +177,29 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
 
 ManageState() {
     global mode, readFromLine := 0
-    static toValidateReset := ["Resetting a random seed", "Resetting the set seed", "Done waiting for save lock", "Preparing spawn area"]
     Critical
+    readFromLine := GetNumLogLines()
     while (resetState != STATE_READY) {
         Critical, Off
         Sleep, -1
         Critical, On
-        numLines := 0
-        Loop, Read, %mcDir%\logs\latest.log
-            numLines++
+        numLines := GetNumLogLines()
         Loop, Read, %mcDir%\logs\latest.log
         {
             if ((A_Index > readFromLine) && (numLines - A_Index < 5)) {
                 line := A_LoopReadLine
                 lineNum := A_Index
-                if (resetState == STATE_RESETTING && A_TickCount - lastResetTime > 2500) {
-                    for each, value in toValidateReset {
-                        if (InStr(line, value)) {
-                            readFromLine := ValidateReset(STATE_LOADING, lineNum, False)
-                            Log(Format("Validated reset at line {1}. Log:`n{2}", lineNum, line))
-                            break
-                        }
-                    }
-                }
-                if (resetState != STATE_PREVIEWING && InStr(line, "Starting Preview")) {
+                if (resetState == STATE_RESETTING && InStr(line, "Starting Preview")) {
                     Log(Format("Found preview at line {1}. Log:`n{2}", lineNum, line))
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    readFromLine := ValidateReset(STATE_PREVIEWING, lineNum, True)
+                    resetState := STATE_PREVIEWING
+                    lastNewWorld := A_TickCount
                     UpdateAffinity()
                     continue 2
-                } else if ((resetState == STATE_LOADING || resetState == STATE_PREVIEWING) && InStr(line, "advancements")) {
+                } else if (resetState == STATE_PREVIEWING && InStr(line, "advancements")) {
                     Log(Format("Found world load at line {1}. Log:`n{2}", lineNum, line))
-                    readFromLine := ValidateReset(STATE_READY, lineNum, resetState != STATE_PREVIEWING)
+                    resetState := STATE_READY
+                    lastNewWorld := A_TickCount
                     SetAffinity(pid, boostMask)
                     SetTimer, UpdateAffinity, -500
                     if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
@@ -220,20 +207,19 @@ ManageState() {
                     } else {
                         Play()
                     }
-                } else {
-                    readFromLine := A_Index
                 }
+                readFromLine := lineNum
             }
         }
         Sleep, 50
     }
 }
 
-ValidateReset(newState, lineNum, updateNewWorld) {
-    resetState := newState
-    if (updateNewWorld)
-        lastNewWorld := A_TickCount
-    return lineNum
+GetNumLogLines() {
+    numLines := 0
+    Loop, Read, %mcDir%\logs\latest.log
+        numLines++
+    return numLines
 }
 
 Switch() {
@@ -300,7 +286,7 @@ UpdateAffinity(bgOverride := 0, anyLocked := -1) {
         } else if (playing) {
             SetAffinity(pid, maxMask)
         } else if (WinActive("Fullscreen Projector")) {
-            if (resetState == STATE_RESETTING || resetState == STATE_LOADING) {
+            if (resetState == STATE_RESETTING) {
                 SetAffinity(pid, maxMask)
             } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
                 SetAffinity(pid, boostMask)
