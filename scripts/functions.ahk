@@ -85,7 +85,7 @@ LoadHotkeys(hotkeysFile) {
                         MsgBox, I think you're using more than 9 instances or tried to assign an invalid hotkey! Check the readme on the Rawalle GitHub page for help.
                         break
                     } else if (ErrorLevel > 0) {
-                        MsgBox, Unhandled error code %ErrorLevel% when creating a hotkey. Contact Ravalle if you need help 😅
+                        MsgBox, Unhandled error code %ErrorLevel% when creating a hotkey. Check the readme on the Rawalle GitHub page for help.
                         break
                     }
                 }
