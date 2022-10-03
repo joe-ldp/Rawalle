@@ -4,7 +4,7 @@
 
 ## Tech Support
 
-[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ **AFTER** reading this page. If you still have unanswered questions, ping @Tech Support. 
+[Join the Discord](https://discord.gg/g4qVPMuYc4) and read the FAQ **AFTER** reading this page. If you still have unanswered questions, open a ticket in [#tech-support](https://discord.com/channels/913143777806417983/1000403129310924910).
 
 ## Setup
 
@@ -15,6 +15,13 @@ This macro doesn't need much setup outside of the config exe. All you need to do
 Most settings & hotkeys are easily configurable using `Rawalle Config.exe`
 
 You can add new/custom keybinds by editing customHotkeys.ahk. Hopefully this will be removed in the future as everything is planned to be editable via the GUI.
+
+# Hotkey Error Codes
+
+Due to technical restrictions when creating the GUI, some hotkey binds may cause errors when you load the macro.
+- Error code 2: The GUI failed to translate the name of a key to a valid AutoHotkey key name. Check your hotkeys.ini, there should be a key with a weird name (probably "OemKeyX"). Change it to the valid key name listed [here](https://www.autohotkey.com/docs/KeyList.htm).
+- Error code 3: [Unsupported prefix key](https://www.autohotkey.com/docs/commands/Hotkey.htm#ErrorLevel). Likely only encountered if you manually edited a hotkey in `hotkeys.ini` and didn't format it correctly.
+- Other error codes not listed: If you encounter any of these, I'm guessing you edited the macro. If you didn't then [join the Discord](https://discord.gg/g4qVPMuYc4) and open a ticket in [#tech-support](https://discord.com/channels/913143777806417983/1000403129310924910). [More info on Hotkey error codes here](https://www.autohotkey.com/docs/commands/Hotkey.htm#ErrorLevel).
 
 ## Basic Usage
 
@@ -35,24 +42,10 @@ Keyboard-based hotkeys:
 - Ctrl + (1-9): Plays the corresponding instance, and reset the rest
 - Alt + (1-9): Locks the corresponding instance so Reset All and Focus Reset skip over it
 
-## Background Resetting
-
-When in-game, you can reset other instances in the background. To do this, I'd advise:
-
-- Right click on wall scene (or your verification scene) in OBS scene list
-- Open a windowed projector
-- Make it small, put it somewhere convenient
-- Right click it -> select stay on top
-
-To actually background reset, lock good looking instances then reset all.
-
-I'd advise messing with the default hotkeys for background resetting in customHotkeys.ahk (will be accessible via the config GUI later) and finding something you're comfortable with.
-(Don't worry about these being bound to numpad keys and it affecting your OBS - when the macro is running, the key presses won't affect OBS)
-
 ## Other extra features
 
 - Borderless: Like fullscreen, but less annoying and easier for OBS to capture. May have more input lag than fullscreen, but try it out.
-- Coop resets: When enabled, the macro will open to lan (with cheats on) when you play an instance.
+- Co-op resets: When enabled, the macro will open to lan (with cheats on) when you play an instance.
 - Bypass wall: When you reset, if there are any other instances currently locked you will get sent straight to that instance, bypassing the wall entirely. I only recommend this if you're background resetting.
 - Unpause on switch: Unpause or don't unpause when you play an instance
 - Auto-bop: Automatically deletes old worlds when you load up the macro.
