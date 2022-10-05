@@ -16,7 +16,7 @@ Most settings & hotkeys are easily configurable using `Rawalle Config.exe`
 
 You can add new/custom keybinds by editing customHotkeys.ahk. Hopefully this will be removed in the future as everything is planned to be editable via the GUI.
 
-# Hotkey Error Codes
+### Hotkey Error Codes
 
 Due to technical restrictions when creating the GUI, some hotkey binds may cause errors when you load the macro.
 - Error code 2: The GUI failed to translate the name of a key to a valid AutoHotkey key name. Check your hotkeys.ini, there should be a key with a weird name (probably "OemKeyX"). Change it to the valid key name listed [here](https://www.autohotkey.com/docs/KeyList.htm).
