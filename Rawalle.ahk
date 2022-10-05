@@ -164,6 +164,30 @@ if (readySound) {
 
 ;region funcs
 
+HandleHotkey(context, func, param := "") {
+    boundFunc := Func(func).Bind()
+    if (param != "")
+        boundFunc := Func(func).Bind(param)
+    switch (context)
+    {
+        case "General":
+            boundFunc.Call()
+        case "InGame":
+            if (WinActive("Minecraft") && (WinActive("ahk_exe javaw.exe") || WinActive("ahk_exe java.exe")))
+                boundFunc.Call()
+        case "OnWall":
+            WinGetPos,,, w, h, A
+            if ((WinActive("Full") && WinActive("screen Projector")) || (WinActive("ahk_exe obs64.exe") && w == A_ScreenWidth && h == A_ScreenHeight)) {
+                boundFunc.Call()
+            }
+        default:
+            Log("Unknown context: %context% provided. Attempting to match to window title, may cause unexpected behaviour.")
+            if (WinActive(context))
+                boundFunc.Call()
+
+    }
+}
+
 Reset(idx := -1, timestamp := -1) {
     global mode
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
