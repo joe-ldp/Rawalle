@@ -178,8 +178,8 @@ HandleHotkey(context, func, param := "") {
             if (WinActive("Minecraft") && (WinActive("ahk_exe javaw.exe") || WinActive("ahk_exe java.exe")))
                 boundFunc.Call()
         case "OnWall":
-            WinGetPos,,, w, h, A
-            if ((WinActive("Full") && WinActive("screen Projector")) || (WinActive("ahk_exe obs64.exe") && w == A_ScreenWidth && h == A_ScreenHeight)) {
+            WinGet, activeID, ID, A
+            if ((WinActive("Full") && WinActive("screen Projector")) || (WinActive("ahk_exe obs64.exe") && HwndIsFullscreen(activeID))) {
                 boundFunc.Call()
             }
         default:
