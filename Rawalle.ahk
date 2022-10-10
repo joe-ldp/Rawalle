@@ -86,6 +86,7 @@ global instHeight := Floor(A_ScreenHeight / rows)
 global isOnWall := True
 global locked := []
 global numLocked := 0
+global projectorID := 0
 
 EnvGet, userProfileDir, USERPROFILE
 global userProfileDir
@@ -236,8 +237,10 @@ Play(idx := -1) {
         activeInstance := idx
         isOnWall := False
         SetAffinities()
-        if (mode == "Wall")
-            WinMinimize, Fullscreen Projector
+        if (mode == "Wall") {
+            GetProjectorID(projectorID)
+            WinMinimize, ahk_id %projectorID%
+        }
         return 0
     } else if (ErrorLevel == STATE_PREVIEWING) {
         LockInstance(idx, False)
@@ -362,6 +365,25 @@ NextInstance() {
     }
 }
 
+GetProjectorID(ByRef projID) {
+    if (HwndIsFullscreen(projID))
+        return
+    WinGet, IDs, List, ahk_exe obs64.exe
+    Loop %IDs%
+    {
+        projID := IDs%A_Index%
+        if (HwndIsFullscreen(projID))
+            return
+    }
+    projID := -1
+    MsgBox, Could not detect OBS Fullscreen Projector window. Will try again at next Wall action. If this persists, contact Rawalle tech support.
+}
+
+HwndIsFullscreen(hwnd) { ; ahk_id or ID is HWND
+    WinGetPos,,, w, h, ahk_id %hwnd%
+    return (w == A_ScreenWidth && h == A_ScreenHeight)
+}
+
 ToWall() {
     global useObsScript, obsDelay, bypassWall, fullscreen, fullscreenDelay
     activeInstance := 0
@@ -373,8 +395,9 @@ ToWall() {
         Sleep, %obsDelay%
         Send, {F12 Up}
     }
-    WinMaximize, Fullscreen Projector
-    WinActivate, Fullscreen Projector
+    GetProjectorID(projectorID)
+    WinMaximize, ahk_id %projectorID%
+    WinActivate, ahk_id %projectorID%
 }
 
 BypassWall() { ; returns 1 if instance was played
