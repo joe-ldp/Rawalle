@@ -286,7 +286,7 @@ LockInstance(idx := -1, sound := True) {
         }
         PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     }
-    if (autoJoinInstances && (state == STATE_LOADING || state == STATE_PREVIEWING))
+    if (autoJoinInstances && state == STATE_PREVIEWING)
         SetTimer, BypassWall, 100
     SetAffinities()
 }
