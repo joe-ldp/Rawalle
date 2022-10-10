@@ -299,7 +299,6 @@ UpdateAffinity(bgOverride := 0, anyLocked := -1) {
                 }
                 SetTimer, UpdateAffinity, -100
             }
-            SetTimer, UpdateAffinity, -100
         } else {
             SetAffinity(pid, lowMask)
         }
