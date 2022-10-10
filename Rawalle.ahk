@@ -85,6 +85,7 @@ global instWidth := Floor(A_ScreenWidth / cols)
 global instHeight := Floor(A_ScreenHeight / rows)
 global isOnWall := True
 global locked := []
+global numLocked := 0
 
 EnvGet, userProfileDir, USERPROFILE
 global userProfileDir
@@ -282,6 +283,7 @@ LockInstance(idx := -1, sound := True) {
             if (useObsScript && lockIndicators)
                 SendOBSCmd(Format("Lock,{1},{2}", idx, 1))
             locked[idx] := A_TickCount
+            numLocked++
             LogAction(idx, "lock")
         }
         PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
@@ -303,6 +305,7 @@ UnlockInstance(idx := -1, sound := True) {
     IM_PID := IM_PIDs[idx]
     PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     locked[idx] := 0
+    numLocked--
     LogAction(idx, "unlock")
     SetAffinities()
 }
@@ -337,16 +340,9 @@ UnfreezeAll() {
 }
 
 SetAffinities() {
-    anyLocked := 0
-    for each, lockTime in locked {
-        if (lockTime) {
-            anyLocked := 1
-            break
-        }
-    }
     for idx, IM_PID in IM_PIDs {
         isBg := (activeInstance != 0) && (idx != activeInstance)
-        PostMessage, MSG_AFFINITY, isBg, anyLocked,,ahk_pid %IM_PID%
+        PostMessage, MSG_AFFINITY, isBg, numLocked,,ahk_pid %IM_PID%
     }
 }
 
