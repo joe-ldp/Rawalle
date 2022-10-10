@@ -112,3 +112,6 @@ def script_init():
 
     S.timer_remove(execute_latest)
     S.timer_add(execute_latest, 30)
+
+def script_unload():
+    S.timer_remove(execute_latest)
