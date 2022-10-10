@@ -284,16 +284,20 @@ UpdateAffinity(bgOverride := 0, anyLocked := -1) {
             SetAffinity(pid, bgMask)
         } else if (playing) {
             SetAffinity(pid, maxMask)
-        } else if (WinActive("Fullscreen Projector")) {
-            if (resetState == STATE_RESETTING) {
-                SetAffinity(pid, maxMask)
-            } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
-                SetAffinity(pid, boostMask)
-            } else if (resetState == STATE_READY) {
-                SetAffinity(pid, lowMask)
-                return
-            } else {
-                SetAffinity(pid, loadMask)
+        } else if ((WinActive("Full") && WinActive("screen Projector")) || WinActive("ahk_exe obs64.exe")) {
+            WinGetPos,,, w, h, A
+            if (w == A_ScreenWidth && h == A_ScreenHeight) {
+                if (resetState == STATE_RESETTING) {
+                    SetAffinity(pid, maxMask)
+                } else if (resetState == STATE_PREVIEWING && (A_TickCount - lastNewWorld <= 500 || locked)) {
+                    SetAffinity(pid, boostMask)
+                } else if (resetState == STATE_READY) {
+                    SetAffinity(pid, lowMask)
+                    return
+                } else {
+                    SetAffinity(pid, loadMask)
+                }
+                SetTimer, UpdateAffinity, -100
             }
             SetTimer, UpdateAffinity, -100
         } else {
