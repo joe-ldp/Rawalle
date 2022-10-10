@@ -18,7 +18,7 @@
     ; *Numpad9::LockInstance(9)
 }
 
-#If WinActive("Fullscreen Projector")
+#If WinActive("Full") && WinActive("screen Projector")
 {
     ; Add custom / extra hotkeys for on The Wall here
 
