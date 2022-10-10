@@ -297,7 +297,7 @@ UnlockInstance(idx := -1, sound := True) {
     global useObsScript, lockIndicators, lockSounds
     idx := (idx == -1) ? (isOnWall ? MousePosToInstNumber() : activeInstance) : idx
     if (lockSounds && sound)
-        SoundPlay, media\lock.wav
+        SoundPlay, media\unlock.wav
     if (!locked[idx])
         return
     if (useObsScript && lockIndicators)
