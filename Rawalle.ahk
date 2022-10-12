@@ -345,7 +345,7 @@ UnfreezeAll() {
 SetAffinities() {
     for idx, IM_PID in IM_PIDs {
         isBg := (activeInstance != 0) && (idx != activeInstance)
-        PostMessage, MSG_AFFINITY, isBg, numLocked,,ahk_pid %IM_PID%
+        PostMessage, MSG_AFFINITY, isBg, numLocked,, ahk_pid %IM_PID%
     }
 }
 
@@ -366,7 +366,7 @@ NextInstance() {
 }
 
 GetProjectorID(ByRef projID) {
-    if (HwndIsFullscreen(projID))
+    if (WinExist("ahk_id " . projID))
         return
     WinGet, IDs, List, ahk_exe obs64.exe
     Loop %IDs%
