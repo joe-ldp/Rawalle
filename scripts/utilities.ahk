@@ -73,3 +73,34 @@ SetPortal() {
 	Sleep, 100
 	Send, setblock ~ ~ ~ minecraft:nether_portal{Enter}
 }
+
+WideInst() {
+	WinGetPos,,,, h, A
+	if (h > wideHeight) {
+		WinMove, A,, 0, %widePos%, %A_ScreenWidth%, %wideHeight%
+	} else {
+		WinRestore, A
+		WinMaximize, A
+	}
+}
+
+ThinInst() {
+	WinGetPos,,, w,, A
+	if (w > thinWidth) {
+		WinMove, A,, %thinPos%, 0, %thinWidth%, %A_ScreenHeight%
+	} else {
+		WinRestore, A
+		WinMaximize, A
+	}
+}
+
+EyeZoom() {
+	global eyeZoomWidth, eyeZoomHeight
+	WinGetPos,,,,h,A
+	if (h < eyeZoomHeight) {
+		DllCall("SetWindowPos", "Ptr", WinExist("A"), "UInt", 0, "Int", 0, "Int", -(eyeZoomHeight/2.7), "Int", eyeZoomWidth, "Int", eyeZoomHeight, "UInt", 0x0400)	
+	} else {
+		WinRestore, A
+		WinMaximize, A
+	}
+}

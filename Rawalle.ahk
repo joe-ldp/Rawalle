@@ -88,6 +88,11 @@ global locked := []
 global numLocked := 0
 global projectorID := 0
 
+global wideHeight := Floor(A_ScreenHeight / wideMultiplier)
+global thinWidth := Floor(A_ScreenWidth / thinMultiplier)
+global widePos := Floor((A_ScreenHeight / 2) - (wideHeight / 2))
+global thinPos := Floor((A_ScreenWidth / 2) - (thinWidth / 2))
+
 EnvGet, userProfileDir, USERPROFILE
 global userProfileDir
 
