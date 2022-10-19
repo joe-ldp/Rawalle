@@ -198,8 +198,6 @@ ManageState() {
                     continue 2
                 } else if (resetState == STATE_PREVIEWING && InStr(line, "advancements")) {
                     Log(Format("Found world load at line {1}. Log:`n{2}", lineNum, line))
-                    if (resetState != STATE_PREVIEWING)
-                        lastNewWorld := A_TickCount
                     resetState := STATE_READY
                     SetAffinity(pid, boostMask)
                     SetTimer, UpdateAffinity, -500
