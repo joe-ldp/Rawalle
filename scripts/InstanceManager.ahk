@@ -189,6 +189,7 @@ ManageState() {
             if (A_Index > readFromLine) {
                 line := A_LoopReadLine
                 lineNum := A_Index
+                readFromLine := lineNum
                 if (resetState == STATE_RESETTING && InStr(line, "Starting Preview")) {
                     Log(Format("Found preview at line {1}. Log:`n{2}", lineNum, line))
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
@@ -205,7 +206,6 @@ ManageState() {
                     if (mode == "Multi" && WinActive("ahk_pid " . pid))
                         Play()
                 }
-                readFromLine := lineNum
             }
         }
         Sleep, 50
