@@ -205,6 +205,7 @@ ManageState() {
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
                     if (mode == "Multi" && WinActive("ahk_pid " . pid))
                         Play()
+                    return
                 }
             }
         }
