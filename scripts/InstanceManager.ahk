@@ -156,6 +156,8 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             WinRestore, ahk_pid %pid%
             if (wideResets)
                 SetTimer, Widen, -100, -1
+            else
+                WinMaximize, ahk_pid %pid%
             SetTimer, ActualReset, -0
             return 0
         }
