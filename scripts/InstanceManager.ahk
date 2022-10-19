@@ -203,11 +203,9 @@ ManageState() {
                     resetState := STATE_READY
                     SetAffinity(pid, boostMask)
                     SetTimer, UpdateAffinity, -500
-                    if (mode == "Wall" || !WinActive("ahk_pid " . pid)) {
-                        ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-                    } else {
+                    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    if (mode == "Multi" && WinActive("ahk_pid " . pid))
                         Play()
-                    }
                 }
                 readFromLine := lineNum
             }
@@ -259,16 +257,21 @@ Play() {
         ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
         Sleep, %fullscreenDelay%
     }
-    if (resetState == STATE_READY && (unpauseOnSwitch || coopResets)) {
-        ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+    if (unpauseOnSwitch || coopResets || doF1) {
+        if (WinActive("ahk_pid " . pid))
+            ControlSend,, {Blind}{Esc}, ahk_pid %pid%
         if (doF1)
             ControlSend,, {Blind}{F1}, ahk_pid %pid%
-    }
-    if (coopResets) {
-        Sleep, 50
-        ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
-        if (!unpauseOnSwitch)
-            ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+        if (coopResets) {
+            Sleep, 50
+            ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, ahk_pid %pid%
+        }
+        if (!unpauseOnSwitch) {
+            if (coopResets)
+                ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+            else
+                ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+        }
     }
 }
 
