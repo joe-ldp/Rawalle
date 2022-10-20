@@ -148,7 +148,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         if (playing) {
             Log("Exiting world (unfullscreening and widening)")
             playing := False
-            ControlSend,, {Blind}{F3}{Esc}, ahk_pid %pid%
+            ControlSend,, {Blind}{F3}{Esc 3}, ahk_pid %pid%
             if (fullscreen && GetSetting("fullscreen") == "true") {
                 ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
                 DllCall("Sleep", "UInt", fullscreenDelay)
