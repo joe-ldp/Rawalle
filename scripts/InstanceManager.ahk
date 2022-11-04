@@ -262,8 +262,7 @@ Play() {
         Sleep, %fullscreenDelay%
     }
     if (unpauseOnSwitch || coopResets || doF1) {
-        if (WinActive("ahk_pid " . pid))
-            ControlSend,, {Blind}{Esc}, ahk_pid %pid%
+        ControlSend,, {Blind}{Esc}, ahk_pid %pid%
         if (doF1)
             ControlSend,, {Blind}{F1}, ahk_pid %pid%
         if (coopResets) {
