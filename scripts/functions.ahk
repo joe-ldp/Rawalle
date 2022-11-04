@@ -62,25 +62,24 @@ LoadSettings(settingsFile) {
 
 LoadHotkeys(hotkeysFile) {
     global numInstances
-    context := ""
+    #If, WinActive("Minecraft") && (WinActive("ahk_exe javaw.exe") || WinActive("ahk_exe java.exe"))
+    #If, WinActive("Full") && WinActive("screen Projector")
     FileRead, file, %hotkeysFile%
     Loop, Parse, file, `n`r, %A_Space%%A_Tab%
     {
         equalsPos := InStr(A_LoopField, "=")
-        if (InStr(A_LoopField, "[") && InStr(A_LoopField, "]")) {
-            context := SubStr(A_LoopField, 2, -1)
+        if (InStr(A_LoopField, "WinActive")) {
+            Hotkey, If, % SubStr(A_LoopField, 2)
         } else if (equalsPos && (InStr(A_LoopField, ";") != 1)) {
             function := SubStr(A_LoopField, 1, equalsPos - 1)
             keybind := StrReplace(SubStr(A_LoopField, equalsPos + 1), """", "")
-
             if (keybind == "unbound")
                 continue
             if(!RegExMatch(keybind, "([<>]?[#^!+*])+"))
                 keybind := Format("*{1}", keybind)
-            keybind := Format("~{1}", keybind)
             if (InStr(keybind, "idx")) {
                 Loop, %numInstances% {
-                    fn := Func("HandleHotkey").Bind(context, function, A_Index)
+                    fn := Func(function).Bind(A_Index)
                     Hotkey, % StrReplace(keybind, "idx", A_Index), %fn%, UseErrorLevel
                     if (ErrorLevel == 2) {
                         MsgBox, I think you're using more than 9 instances or tried to assign an invalid hotkey! Check the readme on the Rawalle GitHub page for help.
@@ -91,8 +90,7 @@ LoadHotkeys(hotkeysFile) {
                     }
                 }
             } else {
-                fn := Func("HandleHotkey").Bind(context, function)
-                Hotkey, %keybind%, %fn%, UseErrorLevel
+                Hotkey, %keybind%, %function%, %A_Index%, UseErrorLevel
                 if (ErrorLevel)
                     MsgBox, Error code %ErrorLevel% when creating a hotkey. Check the readme on the Rawalle GitHub page for help.
             }
