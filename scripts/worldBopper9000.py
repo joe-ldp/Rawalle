@@ -19,6 +19,7 @@ def sort_files_by_last_modified(files):
     for fname in files:
         if "New World" in fname or "Speedrun #" in fname:
             file_data[fname] = os.stat(fname).st_mtime
+            logging.log(logging.INFO, "Found world: " + fname)
 
     file_data = sorted(file_data.items(), key = itemgetter(1))
     return file_data
@@ -27,6 +28,7 @@ def delete_oldest_files(sorted_files):
     global bopped
     for x in range(0, len(sorted_files) - 10):
         shutil.rmtree(sorted_files[x][0])
+        logging.log(logging.INFO, "Bopped world: " + sorted_files[x][0])
         bopped += 1
 
 try:
