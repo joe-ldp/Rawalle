@@ -127,6 +127,7 @@ OnMessage(MSG_RESET,     "Reset")
 OnMessage(MSG_SWITCH,    "Switch")
 OnMessage(MSG_LOCK,      "Lock")
 OnMessage(MSG_AFFINITY,  "UpdateAffinity")
+OnMessage(MSG_GETSTATE,  "GetState")
 
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 FileAppend,, IM%idx%ready.tmp
@@ -173,6 +174,10 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             CountReset("Daily Resets")
         return
     }
+}
+
+GetState() {
+    return resetState
 }
 
 ManageState() {
