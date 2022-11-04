@@ -357,7 +357,7 @@ GetProjectorID(ByRef projID) {
             return
     }
     projID := -1
-    MsgBox, Could not detect OBS Fullscreen Projector window. Will try again at next Wall action. If this persists, contact Rawalle tech support.
+    Log("Could not detect OBS Fullscreen Projector window. Will try again at next Wall action. If this persists, contact Rawalle tech support.")"
 }
 
 HwndIsFullscreen(hwnd) { ; ahk_id or ID is HWND
