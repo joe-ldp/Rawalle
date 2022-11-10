@@ -60,7 +60,7 @@ def execute_cmd(cmd):
             lock_num = cmd[1]
             render = True if int(cmd[2]) else False
             wall_scene = S.obs_scene_get_source(S.obs_get_scene_by_name(settings.wall_scene))
-            lock_source = S.obs_scene_find_source(S.obs_scene_from_source(wall_scene), settings.lock_layer_format.replace("*", str(lock_num)))
+            lock_source = S.obs_scene_find_source_recursive(S.obs_scene_from_source(wall_scene), settings.lock_layer_format.replace("*", str(lock_num)))
             S.obs_sceneitem_set_visible(lock_source, render)
         elif (cmd[0] == "Reload"):
             script_init()
