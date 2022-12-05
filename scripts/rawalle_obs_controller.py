@@ -1,4 +1,4 @@
-# v1.3.0
+# v1.4.0
 
 # cmd formatting:
 # cmd[0] specifies command, later args are for cmd args
@@ -20,7 +20,7 @@ logging.basicConfig(
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S')
 
-version = "v1.3.0"
+version = "v1.4.0"
 
 def script_update(settings):
     script_init()
