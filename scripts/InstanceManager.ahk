@@ -24,6 +24,7 @@ global instName      := StrReplace(multiMCNameFormat, "*", idx)
 global instDir       := Format("{1}\instances\{2}", multiMCLocation, instName)
 global mcDir         := Format("{1}\.minecraft\", instDir)
 global pid           := 0
+global hwnd          := 0
 global lastResetTime := 0
 global lastNewWorld  := 0
 global locked        := False
@@ -108,6 +109,7 @@ if (!InStr(mcTitle, "-")) {
 }
 
 GetControls()
+WinGet, hwnd, ID, ahk_pid %pid%
 
 if (GetSetting("fullscreen") == "true")
     ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
@@ -154,11 +156,12 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
                 ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
                 DllCall("Sleep", "UInt", fullscreenDelay)
             }
-            WinRestore, ahk_pid %pid%
-            if (wideResets)
+            if (wideResets) {
+                WinRestore, ahk_pid %pid%
                 SetTimer, Widen, -100, -1
-            else
+            } else {
                 WinMaximize, ahk_pid %pid%
+            }
             SetTimer, ActualReset, -0
             return 0
         }
@@ -233,14 +236,23 @@ Switch() {
         playing := True
         SetTimer, UpdateAffinity, Off
         UpdateAffinity()
-        if (wideResets) ; && !fullscreen)
-            WinMaximize, ahk_pid %pid%
-        WinSet, AlwaysOnTop, On, ahk_pid %pid%
-        WinSet, AlwaysOnTop, Off, ahk_pid %pid%
-        if (fullscreen && mode == "Wall") {
+        ;if (wideResets) ; && !fullscreen)
+        ;    WinMaximize, ahk_pid %pid%
+        ; WinSet, AlwaysOnTop, On, ahk_pid %pid%
+        ; WinSet, AlwaysOnTop, Off, ahk_pid %pid%
+
+        if (fullscreen && mode == "Wall")
             ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
-            Sleep, %fullscreenDelay%
-        }
+
+        foregroundWindow := DllCall("GetForegroundWindow")
+        windowThreadProcessId := DllCall("GetWindowThreadProcessId", "UInt", foregroundWindow, "UInt", 0)
+        currentThreadId := DllCall("GetCurrentThreadId")
+        DllCall("AttachThreadInput", "UInt", windowThreadProcessId, "UInt", currentThreadId, "Int", 1)
+        if (wideResets && !fullscreen)
+            DllCall("SendMessage", "UInt", hwnd, "UInt", 0x0112, "UInt", 0xF030, "Int", 0) ; fast maximise
+        DllCall("SetForegroundWindow", "UInt", hwnd) ; Probably only important in windowed, helps application take input without a Send Click
+        DllCall("BringWindowToTop", "UInt", hwnd)
+        DllCall("AttachThreadInput", "UInt", windowThreadProcessId, "UInt", currentThreadId, "Int", 0)
 
         Send, {RButton}
         if (resetState == STATE_READY)
@@ -257,10 +269,8 @@ Play() {
     global fullscreen, mode, fullscreenDelay, unpauseOnSwitch, coopResets, key_fullscreen
     Log("Playing instance")
 
-    if (fullscreen && mode == "Multi") {
+    if (fullscreen && mode == "Multi")
         ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
-        Sleep, %fullscreenDelay%
-    }
     if (unpauseOnSwitch || coopResets || doF1) {
         ControlSend,, {Blind}{Esc}, ahk_pid %pid%
         if (doF1)
