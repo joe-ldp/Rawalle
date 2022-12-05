@@ -181,7 +181,6 @@ Reset(idx := -1, timestamp := -1) {
     if (activeInstance == idx) {
         FileDelete, %userProfileDir%\sleepbg.lock
         SendMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%,,1000
-        LogAction(idx, "exitworld")
         if (fullscreen)
             Sleep, %fullscreenDelay%
         if (mode == "Wall") {
@@ -193,7 +192,6 @@ Reset(idx := -1, timestamp := -1) {
         }
     } else {
         PostMessage, MSG_RESET, timestamp,,,ahk_pid %IM_PID%
-        LogAction(idx, "reset")
     }
 }
 
@@ -212,7 +210,6 @@ Play(idx := -1) {
             Sleep, %obsDelay%
             Send, {Numpad%idx% up}
         }
-        LogAction(idx, "play")
         LockInstance(idx, False)
         FileAppend,, %userProfileDir%\sleepbg.lock
         activeInstance := idx
@@ -268,7 +265,6 @@ LockInstance(idx := -1, sound := True) {
                 SendOBSCmd(Format("Lock,{1},{2}", idx, 1))
             locked[idx] := A_TickCount
             numLocked++
-            LogAction(idx, "lock")
         }
         PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     }
@@ -290,7 +286,6 @@ UnlockInstance(idx := -1, sound := True) {
     PostMessage, MSG_LOCK, locked[idx],,,ahk_pid %IM_PID%
     locked[idx] := 0
     numLocked--
-    LogAction(idx, "unlock")
     SetAffinities()
 }
 
@@ -394,10 +389,6 @@ SendOBSCmd(cmd) {
     static cmdDir := Format("{1}\scripts\pyCmds\", A_ScriptDir)
     FileAppend, %cmd%, %cmdDir%%cmdNum%.txt
     cmdNum++
-}
-
-LogAction(idx, action) {
-    FileAppend, %A_YYYY%-%A_MM%-%A_DD% %A_Hour%:%A_Min%:%A_Sec%`,%idx%`,%action%`n, actions.csv
 }
 
 OpenSettings() {
