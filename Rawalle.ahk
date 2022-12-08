@@ -24,7 +24,7 @@ global hotkeysFile := Format("{1}\hotkeys.ini", A_ScriptDir)
 
 ;region init
 
-currVersion := 1.3
+currVersion := 1.41
 UrlDownloadToFile, https://raw.githubusercontent.com/joe-ldp/Rawalle/main/versionCheck.ini, versionCheck.ini
 IniRead, versionCheck, versionCheck.ini, Check, version
 IniRead, versionString, versionCheck.ini, Check, name
