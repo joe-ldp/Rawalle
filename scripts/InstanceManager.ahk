@@ -250,7 +250,6 @@ Switch() {
         DllCall("BringWindowToTop", "UInt", hwnd)
         DllCall("AttachThreadInput", "UInt", windowThreadProcessId, "UInt", currentThreadId, "Int", 0)
 
-        Send, {RButton}
         if (resetState == STATE_READY)
             Play()
 
