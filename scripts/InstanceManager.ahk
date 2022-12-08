@@ -125,11 +125,11 @@ if (wideResets)
 else
     WinMaximize, ahk_pid %pid%
 
-OnMessage(MSG_RESET,     "Reset")
-OnMessage(MSG_SWITCH,    "Switch")
-OnMessage(MSG_LOCK,      "Lock")
-OnMessage(MSG_AFFINITY,  "UpdateAffinity")
-OnMessage(MSG_GETSTATE,  "GetState")
+OnMessage(MSG_RESET,    "Reset")
+OnMessage(MSG_SWITCH,   "Switch")
+OnMessage(MSG_LOCK,     "Lock")
+OnMessage(MSG_AFFINITY, "UpdateAffinity")
+OnMessage(MSG_GETSTATE, "GetState")
 
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 FileAppend,, IM%idx%ready.tmp
@@ -236,10 +236,6 @@ Switch() {
         playing := True
         SetTimer, UpdateAffinity, Off
         UpdateAffinity()
-        ;if (wideResets) ; && !fullscreen)
-        ;    WinMaximize, ahk_pid %pid%
-        ; WinSet, AlwaysOnTop, On, ahk_pid %pid%
-        ; WinSet, AlwaysOnTop, Off, ahk_pid %pid%
 
         if (fullscreen && mode == "Wall")
             ControlSend,, {Blind}{%key_fullscreen%}, ahk_pid %pid%
@@ -250,7 +246,7 @@ Switch() {
         DllCall("AttachThreadInput", "UInt", windowThreadProcessId, "UInt", currentThreadId, "Int", 1)
         if (wideResets && !fullscreen)
             DllCall("SendMessage", "UInt", hwnd, "UInt", 0x0112, "UInt", 0xF030, "Int", 0) ; fast maximise
-        DllCall("SetForegroundWindow", "UInt", hwnd) ; Probably only important in windowed, helps application take input without a Send Click
+        DllCall("SetForegroundWindow", "UInt", hwnd) ; helps application take input without a Send Click
         DllCall("BringWindowToTop", "UInt", hwnd)
         DllCall("AttachThreadInput", "UInt", windowThreadProcessId, "UInt", currentThreadId, "Int", 0)
 
