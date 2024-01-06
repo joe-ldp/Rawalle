@@ -5,6 +5,7 @@ global MSG_SWITCH   := 0x04E21
 global MSG_LOCK     := 0x04E22
 global MSG_AFFINITY := 0x04E23
 global MSG_GETSTATE := 0x04E24
+global MSG_WARMUP   := 0x04E25
 
 global STATE_RESETTING  := 1
 global STATE_PREVIEWING := 2

@@ -384,6 +384,24 @@ BypassWall() { ; returns 1 if instance was played
     }
 }
 
+Warmup() {
+    global numInstances
+    static warming := False
+    if (!warming) {
+        Loop, %numInstances% {
+            IM_PID := IM_PIDs[A_Index]
+            PostMessage, MSG_WARMUP, 1,,, ahk_pid %IM_PID%
+            Reset(A_Index, A_TickCount)
+        }
+    } else {
+        Loop, %numInstances% {
+            IM_PID := IM_PIDs[A_Index]
+            PostMessage, MSG_WARMUP, 0,,, ahk_pid %IM_PID%
+        }
+    }
+    warming := !warming
+}
+
 SendOBSCmd(cmd) {
     static cmdNum := 1
     static cmdDir := Format("{1}\scripts\pyCmds\", A_ScriptDir)

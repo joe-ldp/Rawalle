@@ -27,6 +27,7 @@ global pid           := 0
 global hwnd          := 0
 global lastResetTime := 0
 global lastNewWorld  := 0
+global warming       := 0
 global locked        := False
 global playing       := False
 global resetState    := STATE_READY
@@ -130,6 +131,7 @@ OnMessage(MSG_SWITCH,   "Switch")
 OnMessage(MSG_LOCK,     "Lock")
 OnMessage(MSG_AFFINITY, "UpdateAffinity")
 OnMessage(MSG_GETSTATE, "GetState")
+OnMessage(MSG_WARMUP,   "Warmup")
 
 WinSetTitle, ahk_pid %pid%,, Minecraft* - Instance %idx%
 FileAppend,, IM%idx%ready.tmp
@@ -146,7 +148,7 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
         Log("Discarding reset")
         return
     } else {
-        if (resetSounds)
+        if (resetSounds && !warming)
             SoundPlay, %A_ScriptDir%\..\media\reset.wav
         if (playing) {
             Log("Exiting world (unfullscreening and widening)")
@@ -173,9 +175,11 @@ Reset(msgTime) { ; msgTime is wParam from PostMessage
             lastResetTime := A_TickCount
             ControlSend,, {Blind}{%key_createnewworld%}{%key_leavepreview%}, ahk_pid %pid%
             SetTimer, ManageState, -200
-            CountReset("Resets")
-            CountReset("Daily Resets")
-        return
+            if (!warming) {
+                CountReset("Resets")
+                CountReset("Daily Resets")
+            }
+        return 1
     }
 }
 
@@ -191,7 +195,6 @@ ManageState() {
         Critical, Off
         Sleep, -1
         Critical, On
-        numLines := GetNumLogLines()
         Loop, Read, %mcDir%\logs\latest.log
         {
             if (A_Index > readFromLine) {
@@ -211,6 +214,10 @@ ManageState() {
                     SetAffinity(pid, boostMask)
                     SetTimer, UpdateAffinity, -500
                     ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+                    if (warming) {
+                        Sleep, 400
+                        Reset(A_NowUTC)
+                    }
                     if (mode == "Multi" && WinActive("ahk_pid " . pid))
                         Play()
                     return
@@ -279,6 +286,8 @@ Play() {
                 ControlSend,, {Blind}{Esc}, ahk_pid %pid%
             else
                 ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
+        } else {
+            ControlSend,, {Blind}{Esc 2}, ahk_pid %pid%
         }
     }
 }
@@ -368,6 +377,10 @@ GetControls() {
 
 Widen() {
     WinMove, ahk_pid %pid%,, 0, 0, %A_ScreenWidth%, %wideHeight%
+}
+
+Warmup(wParam) {
+    warming := wParam
 }
 
 IsInstanceOpen(instDir) {
